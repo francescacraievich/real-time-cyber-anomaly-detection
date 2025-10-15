@@ -30,11 +30,11 @@ Network / System Logs -> Stream Ingestion Layer (Kafka / MQTT / Python Script) -
 
 | Role | Main Responsibilities |
 |------|----------------------|
-| 🎯 AI Product Owner | Define goals, success metrics (detection rate, false positives, latency) |
-| 🗂️ Project Manager | Manage milestones, documentation, team communication |
-| 📊 Data Scientist | Analyze datasets, select features, train anomaly detection models |
-| 🤖 ML Engineer | Expose model as a microservice, optimize performance |
-| ☁️ Data Cloud Engineer | Configure streaming pipeline and database, simulate logs |
-| 💻 Software Engineer | Build interactive dashboard and real-time alerting |
+| AI Product Owner | Define goals, success metrics (detection rate, false positives, latency) |
+| Project Manager | Manage milestones, documentation, team communication |
+| Data Scientist | Analyze datasets, select features, train anomaly detection models |
+| ML Engineer | Expose model as a microservice, optimize performance |
+| Data Cloud Engineer | Configure streaming pipeline and database, simulate logs |
+| Software Engineer | Build interactive dashboard and real-time alerting |
 
 
