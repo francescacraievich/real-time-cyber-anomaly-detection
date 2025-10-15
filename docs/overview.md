@@ -4,8 +4,8 @@
 | Member | Role |
 |--------|------|
 | Francesca Craievich | Project Manager |
-| Lucas Jakin | xxx |
-| Francesco Rumiz | xxx |
+| Lucas Jakin | ML engineer |
+| Francesco Rumiz | Data scientist |
 
 ---
 
