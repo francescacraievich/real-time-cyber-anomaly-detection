@@ -23,19 +23,7 @@ The ultimate goal is to generate **automatic alerts** and display anomalous even
 
 ## 3. General Architecture
 
-Network / System Logs
-       |
-       v
-Stream Ingestion Layer (Kafka / MQTT / Python Script)
-       |
-       v
-Stream Processing & Anomaly Detection (ML Model + Rules)
-       |
-       v
-Storage Layer (PostgreSQL / MongoDB / InfluxDB)
-       |
-       v
-Dashboard / Alerting (Streamlit / Grafana / Web App)
+Network / System Logs -> Stream Ingestion Layer (Kafka / MQTT / Python Script) ->  Stream Processing & Anomaly Detection (ML Model + Rules) -> Storage Layer (PostgreSQL / MongoDB / InfluxDB) -> Dashboard / Alerting (Streamlit / Grafana / Web App)
 
 
 ## 4. Roles and Responsabilities 
