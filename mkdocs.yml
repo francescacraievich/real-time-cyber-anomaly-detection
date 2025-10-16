@@ -1,0 +1,23 @@
+site_name: Real-Time Cyber Anomaly Detection
+site_url: https://francescacraievich.github.io/real-time-cyber-anomaly-detection/
+site_author: Francesca Craievich
+site_description: Real-time network anomaly detection system
+
+repo_name: real-time-cyber-anomaly-detection
+repo_url: https://github.com/francescacraievich/real-time-cyber-anomaly-detection
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+
+nav:
+  - Home: index.md
+  - Overview: overview.md
+  - Kick Off: kick_off.md
