@@ -18,6 +18,8 @@ This project implements an advanced anomaly detection system for network securit
 
 - [Overview](overview.md) - Technical overview of the system
 - [Kick Off](kick_off.md) - Initial project documentation
+- [Data collection](data_collection.md) - Log extraction and analysis from TPOT
+- [Honeypot guide](HONEYPOT_GUIDE.md) - Overview and purpose of each honeypot
 
 ## Quick Start
 
