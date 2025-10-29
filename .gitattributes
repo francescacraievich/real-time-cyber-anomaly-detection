@@ -1,1 +1,2 @@
 *.tar.gz filter=lfs diff=lfs merge=lfs -text
+data/suricata/log/suricata.json filter=lfs diff=lfs merge=lfs -text
