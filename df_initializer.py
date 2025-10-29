@@ -2,7 +2,7 @@ import json
 import pandas as pd
 
 # Read logs and initialize as DataFrames
-class DfInitializer():
+class DataFrameInitializer():
     """
     Initializes DataFrames from JSON log files for Cowrie, Dionaea, Suricata, and Tanner.
     Attributes:
@@ -20,7 +20,7 @@ class DfInitializer():
     """
 
 
-    def __init__(self, cowrie_json,dionea_json,suricata_json,tanner_json):
+    def __init__(self, cowrie_json, dionea_json, suricata_json, tanner_json):
         self.cowrie_json = cowrie_json
         self.dionea_json = dionea_json
         self.suricata_json = suricata_json 
@@ -66,7 +66,7 @@ class DfInitializer():
         return df_tanner
 
 if __name__ == "__main__":
-    df_initializer = DfInitializer(
+    df_initializer = DataFrameInitializer(
         cowrie_json='data/cowrie/log/cowrie.json',
         dionea_json='data/dionaea/log/dionaea.json',
         suricata_json='data/suricata/log/suricata.json',
