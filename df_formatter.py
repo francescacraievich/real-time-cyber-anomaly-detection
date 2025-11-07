@@ -44,6 +44,12 @@ class DataFrameFormatter():
         })
         return tanner_df_renamed
     
+    def format_all_NaN_columns(self):
+        dataframes = [self.cowrie_df, self.dionea_df, self.suricata_df, self.tanner_df]
+        for df in dataframes:
+            df = df.loc[:, df.isnull().mean() > 0.5]
+        return dataframes
+    
 
 if __name__ == "__main__":
     df_initializer = DataFrameInitializer(
