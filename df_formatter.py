@@ -7,6 +7,7 @@ class DataFrameFormatter():
         self.dionea_df = dionea_df
         self.suricata_df = suricata_df
         self.tanner_df = tanner_df
+        self.format_all_dfs()
 
     def format_cowrie_df(self):
         cowrie_df_renamed = self.cowrie_df.rename(columns={
@@ -46,10 +47,22 @@ class DataFrameFormatter():
     
     def format_all_NaN_columns(self):
         dataframes = [self.cowrie_df, self.dionea_df, self.suricata_df, self.tanner_df]
+        filtered = []
         for df in dataframes:
-            df = df.loc[:, df.isnull().mean() > 0.5]
-        return dataframes
+            if df is None:
+                filtered.append(df)
+                continue
+            # keep columns with less than 50% missing values
+            keep_mask = df.isnull().mean() < 0.5
+            filtered.append(df.loc[:, keep_mask])
+        return filtered
     
+    def format_all_dfs(self):
+        self.cowrie_df = self.format_cowrie_df()
+        self.dionea_df = self.format_dionea_df()
+        self.suricata_df = self.format_suricata_df()
+        self.tanner_df = self.format_tanner_df()
+        self.cowrie_df, self.dionea_df, self.suricata_df, self.tanner_df = self.format_all_NaN_columns()
 
 if __name__ == "__main__":
     df_initializer = DataFrameInitializer(
@@ -61,12 +74,13 @@ if __name__ == "__main__":
     df_cowrie, df_dionea, df_suricata, df_tanner = df_initializer.initialize_dfs()
 
     df_formatter = DataFrameFormatter(df_cowrie, df_dionea, df_suricata, df_tanner)
-    cowrie_df_renamed = df_formatter.format_cowrie_df()
-    dionea_df_renamed = df_formatter.format_dionea_df()
-    suricata_df_renamed = df_formatter.format_suricata_df()
-    tanner_df_renamed = df_formatter.format_tanner_df()
 
-    print("Formatted Cowrie DataFrame:" , cowrie_df_renamed['event_time'].head())
-    print("Formatted Dionea DataFrame:" , dionea_df_renamed['event_time'].head())
-    print("Formatted Suricata DataFrame:" , suricata_df_renamed['event_time'].head())
-    print("Formatted Tanner DataFrame:" , tanner_df_renamed['event_time'].head())
+    print("Formatted Cowrie DataFrame:" , df_formatter.cowrie_df['event_time'].head())
+    print("Formatted Dionea DataFrame:" , df_formatter.dionea_df['event_time'].head())
+    print("Formatted Suricata DataFrame:" , df_formatter.suricata_df['event_time'].head())
+    print("Formatted Tanner DataFrame:" , df_formatter.tanner_df['event_time'].head())
+
+    print(df_formatter.cowrie_df.shape[1])
+    print(df_formatter.dionea_df.shape[1])
+    print(df_formatter.suricata_df.shape[1])
+    print(df_formatter.tanner_df.shape[1])
