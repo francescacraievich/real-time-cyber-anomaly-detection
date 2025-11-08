@@ -26,6 +26,16 @@
        'response_msg', 'timestamp', 'post_data'],
       dtype='object')
 
+## After the formatting
+- Cowrie Columns: Index(['eventid', 'source_ip', 'session', 'message', 'sensor', 'event_time'], dtype='object')  
+- Dionea Columns: Index(['connection', 'destination_ip', 'destination_port', 'src_hostname',
+       'source_ip', 'source_port', 'event_time'],
+      dtype='object')
+- Suricata Columns: Index(['event_time', 'flow_id', 'in_iface', 'event_type', 'source_ip',
+       'destination_ip', 'proto', 'pkt_src', 'flow', 'source_port',
+       'destination_port'],
+      dtype='object')
+
 ## Columns that are in common
 
 -   timestamp - Present in all 4 dataframes, essential for temporal correlation
@@ -75,5 +85,5 @@ uuid, peer (Tanner - internal references)
 - Tunner not used
 - Different IP probably beacuse of the different Honeypots
 - Unite all dataframes
-- col with > 50% NaN must be eliminated
+- col with > 50% NaN must be eliminated (currently i have a mask that keeps all the cols with less that 80% values missing)
 - Need event to analyze
