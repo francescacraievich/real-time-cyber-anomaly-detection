@@ -32,11 +32,11 @@ To unify the datasets, select only the **columns relevant for anomaly detection 
 
 | Concept | ISCX | Cowrie | Dionaea | Suricata | Unified Name |
 |---------|------|--------|---------|----------|--------------|
-| Source IP | `source` | `src_ip` | `src_ip` | `src_ip` | `src_ip` |
-| Source Port | `sourcePort` | `src_port` | `src_port` | `src_port` | `src_port` |
-| Destination IP | `destination` | `dst_ip` | `dst_ip` | `dest_ip` | `dst_ip` |
-| Destination Port | `destinationPort` | `dst_port` | `dst_port` | `dest_port` | `dst_port` |
-| Timestamp | `startDateTime` | `timestamp` | `timestamp` | `timestamp` | `timestamp` |
+| Source IP | `source` | `src_ip` | `src_ip` | `src_ip` | `source_ip` |
+| Source Port | `sourcePort` | `src_port` | `src_port` | `src_port` | `source_port` |
+| Destination IP | `destination` | `dst_ip` | `dst_ip` | `dest_ip` | `destination_ip` |
+| Destination Port | `destinationPort` | `dst_port` | `dst_port` | `dest_port` | `destination_port` |
+| Timestamp | `startDateTime` | `timestamp` | `timestamp` | `timestamp` | `event_time` |
 | Transport Protocol | `protocolName` | *(implicit TCP)* | `connection.transport` | `proto` | `protocol` |
 
 ## Table 2: SIMILAR COLUMNS WITH DIFFERENT REPRESENTATIONS
