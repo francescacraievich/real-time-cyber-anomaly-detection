@@ -83,35 +83,7 @@ is_internal = src_is_private and dst_is_private
 dst_port_is_common = dst_port in [80, 443, 22, 21, 25, 53, 3389]
 ```
 
-<<<<<<< HEAD
-=======
-## Feature Engineering - Calculate Real-Time
-```python
-# Sliding window aggregations (1min, 5min windows)
-events_last_1min = count_events_in_window(60)
-unique_src_ips_last_5min = count_unique_ips(300)
-
-# Per-IP tracking
-connections_per_src_ip = count_by_ip(src_ip, window=60)
-unique_dst_ports_per_src = len(set(dst_ports_for_ip(src_ip)))
-
-# Pattern detection
-is_port_scan = unique_dst_ports_per_src > 10  # >10 ports in 1min
-is_brute_force = failed_logins_per_src > 5    # >5 failures in 1min
-is_dos = packets_per_second > 100              # >100 pps
-
-# Timing features
-time_since_last_event = current_time - last_event_time
-inter_arrival_mean = calculate_mean_interval(event_buffer)
-```
-
-**Notes:**  
-- Remove columns with >50% missing values before merging.  
-- Convert categorical features like protocol and TCP flags to numeric or one-hot encoding.  
-- Timestamps must be in the same timezone and format.
-
----
->>>>>>> 0ff1146 (added normal traffic logs)
+>Note: Eliminate columns with >50% NaN values 
 
 ## Feature Engineering
 
