@@ -14,7 +14,6 @@ class DataFrameInitializer():
         initialize_dfs(): Initializes and returns DataFrames for all log types.
         initialize_cowrie(): Initializes and returns DataFrame for Cowrie logs.
         initialize_dionea(): Initializes and returns DataFrame for Dionaea logs.
-        initialize_suricata(): Initializes and returns DataFrame for Suricata logs.
     """
 
 
