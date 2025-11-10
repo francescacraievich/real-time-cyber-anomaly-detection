@@ -88,3 +88,5 @@ if __name__ == "__main__":
     print("Combined DataFrame:" , combined_df.head())
     print("Combined DataFrame shape:", combined_df.shape)
     print("Combined DataFrame columns:", combined_df.columns)
+
+    print(df_formatter.cowrie_df["message"].head())
