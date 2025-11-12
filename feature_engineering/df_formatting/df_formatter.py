@@ -1,4 +1,4 @@
-from df_initializer import DataFrameInitializer
+from feature_engineering.df_initializing.df_initializer import DataFrameInitializer
 import pandas as pd
 
 class DataFrameFormatter():
