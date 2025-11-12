@@ -87,3 +87,7 @@ uuid, peer (Tanner - internal references)
 - Unite all dataframes
 - col with > 50% NaN must be eliminated (currently i have a mask that keeps all the cols with less that 80% values missing)
 - Need event to analyze
+
+# Recap
+- need to reformat the class df_formatter for all 4 dataframes sparately and 1 class for uniting all the dataframes
+
