@@ -62,8 +62,7 @@ class DataFrameFormatter():
             'transport_protocol': coalesce(self.base_features[5]),
             'application_protocol': coalesce(self.base_features[6]),
             'label': coalesce(self.base_features[7]),
-            'timestamp_start': merged.get('timestamp_connect'),
-            'timestamp_end': merged.get('timestamp_closed'),
+            'timestamp': merged.get('timestamp_connect'),
             'duration': merged.get('duration_closed').fillna(merged.get('duration_connect'))
         })
 
@@ -72,7 +71,7 @@ class DataFrameFormatter():
         cols = [
             'session',
             'source_ip', 'destination_ip', 'source_port', 'destination_port',
-            'timestamp_start', 'timestamp_end',
+            'timestamp',
             'transport_protocol', 'application_protocol', 'duration', 'label'
         ]
         final = final.reindex(columns=cols)
