@@ -1,5 +1,11 @@
-from feature_engineering.df_initializing.handler_init_dfs import DataFrameInitializer
+
 import pandas as pd
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from df_initializing.handler_init_dfs import DataFrameInitializer
 
 class DataFrameFormatter():
 
@@ -140,12 +146,16 @@ class DataFrameFormatter():
         return combined_df
 
 if __name__ == "__main__":
+    
+
     df_initializer = DataFrameInitializer(
-        cowrie_json='data/cowrie/log/cowrie.json',
-        dionea_json='data/dionaea/log/dionaea.json',
-        suricata_json='data/suricata/log/suricata.json',
+        cowrie_json_path='data/cowrie/log/cowrie.json',
+        dionea_json_path='data/dionaea/log/dionaea.json',
+        suricata_json_path='data/suricata/log/suricata.json',
+        normal_traffic_json_path="data/normal_traffic/benign_traffic_fixed.json"
     )
-    df_cowrie, df_dionea, df_suricata = df_initializer.initialize_dfs()
+
+    df_cowrie, df_dionea, df_suricata, df_normal_traffic = df_initializer.initialize_dfs(sample_size=1000)
 
     df_formatter = DataFrameFormatter(df_cowrie, df_dionea, df_suricata)
 
@@ -166,4 +176,4 @@ if __name__ == "__main__":
     print("Combined DataFrame shape:", combined_df.shape)
     print("Combined DataFrame columns:", combined_df.columns)
 
-    print(df_formatter.cowrie_df.head())
+    print(df_formatter.cowrie_df.columns)

@@ -15,8 +15,8 @@ class NormalTrafficDataFrameInitializer():
     def __init__(self, benign_traffic_json_path):
         self.benign_traffic_json_path = benign_traffic_json_path
 
-    def initialize_benign_traffic(self):
-        sampled_records = self.sample_large_json_with_ijson(sample_size=10)
+    def initialize_benign_traffic(self, sample_size):
+        sampled_records = self.sample_large_json_with_ijson(sample_size)
         df_benign_traffic = pd.DataFrame(sampled_records)
         return df_benign_traffic
 

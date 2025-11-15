@@ -90,4 +90,9 @@ uuid, peer (Tanner - internal references)
 
 # Recap
 - need to reformat the class df_formatter for all 4 dataframes sparately and 1 class for uniting all the dataframes
-
+- anomaly score calculation, anomaly aggregation for timeframe, function geoip form mapping ip to state, unique ip aggregation, unique port aggregation, duration.
+- IMPORTANT: ip is private or public? -> feature added 
+- decide if a separate dataframe is needed 
+- aggregate data (like taking 5 logs and put a new feature in a column like number of connections in 5 minutes)
+- lucas is possibly using one class SVM
+  -   
