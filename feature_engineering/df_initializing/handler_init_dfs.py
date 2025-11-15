@@ -49,9 +49,9 @@ if __name__ == "__main__":
         cowrie_json_path='data/cowrie/log/cowrie.json',
         dionea_json_path='data/dionaea/log/dionaea.json',
         suricata_json_path='data/suricata/log/suricata.json',
-        normal_traffic_json_path="data/normal_traffic/benign_traffic_fixed.json"
+        normal_traffic_json_path="data/normal_traffic/benign_traffic.json"
     )
-    df_cowrie, df_dionea, df_suricata, df_normal_traffic = df_initializer.initialize_dfs()
+    df_cowrie, df_dionea, df_suricata, df_normal_traffic = df_initializer.initialize_dfs(preprocess_normal_traffic=True, sample_size=1000)
     print("Cowrie DataFrame:" , df_cowrie.head())
     print("Dionea DataFrame:" , df_dionea.head())
     print("Suricata DataFrame:" , df_suricata.head())

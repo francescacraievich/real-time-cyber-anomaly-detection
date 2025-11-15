@@ -1,6 +1,7 @@
 *.tar.gz filter=lfs diff=lfs merge=lfs -text
 *.json.gz filter=lfs diff=lfs merge=lfs -text
+*.json filter=lfs diff=lfs merge=lfs -text
 data/suricata/log/suricata.json filter=lfs diff=lfs merge=lfs -text
 data/normal_traffic/*.json.gz filter=lfs diff=lfs merge=lfs -text
 data/normal_traffic/*.json filter=lfs diff=lfs merge=lfs -text
-benign_traffic_fixed.json filter=lfs diff=lfs merge=lfs -text
+data/normal_traffic/benign_traffic_fixed.json filter=lfs diff=lfs merge=lfs -text
