@@ -24,7 +24,9 @@ nav:
   - Data Collection: data_collection.md
 
   - Data Engineering:
-      - Guide for Data Processing Classes: data_engineering_docs/Guide for Data Processing Classes.md
+      - Guide for Data Processing Classes: data_engineering_docs/Guide_for_Data_Processing_Classes.md
       - Feature Engineering: data_engineering_docs/feature_engineering.md
       - Data Engineer Logs: data_engineering_docs/data_engineer_logs.md
       - Log Formatting: data_engineering_docs/log_formatting.md
+
+  - Honeypot Guide: HONEYPOT_GUIDE.md
