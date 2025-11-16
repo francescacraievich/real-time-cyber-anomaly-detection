@@ -16,10 +16,9 @@
 2. [Infrastructure Setup](#infrastructure-setup)
 3. [Data Collection](#data-collection)
 4. [Dataset Overview](#dataset-overview)
-5. [Data Structure](#data-structure)
-6. [Data Access](#data-access)
-7. [Next Steps for Data Science](#next-steps-for-data-science)
-8. [Appendices](#appendices)
+5. [Data Access](#data-access)
+6. [Next Steps for Data Science](#next-steps-for-data-science)
+7. [Appendices](#appendices)
 
 ---
 
