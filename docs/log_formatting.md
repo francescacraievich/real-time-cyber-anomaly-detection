@@ -73,6 +73,11 @@ metadata (Suricata - often empty)
 uuid, peer (Tanner - internal references) 
 
 
+
+
+
+
+
 ### Questions
 - why do we have different src_ip for all the various attacks across all 4 dataframes?
 - Maybe do not use the dataframe obtained from the Tanner honeypot
@@ -95,4 +100,4 @@ uuid, peer (Tanner - internal references)
 - decide if a separate dataframe is needed 
 - aggregate data (like taking 5 logs and put a new feature in a column like number of connections in 5 minutes)
 - lucas is possibly using one class SVM
-  -   
+ 
