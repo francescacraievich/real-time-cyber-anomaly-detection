@@ -1,4 +1,4 @@
 *.venv
 *.pyc
 __pycache__/
-data/normal_traffic/*
+data/normal_traffic/*.json
