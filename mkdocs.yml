@@ -21,3 +21,10 @@ nav:
   - Home: index.md
   - Overview: overview.md
   - Kick Off: kick_off.md
+  - Data Collection: data_collection.md
+
+  - Data Engineering:
+      - Guide for Data Processing Classes: data_engineering_docs/Guide for Data Processing Classes.md
+      - Feature Engineering: data_engineering_docs/feature_engineering.md
+      - Data Engineer Logs: data_engineering_docs/data_engineer_logs.md
+      - Log Formatting: data_engineering_docs/log_formatting.md
