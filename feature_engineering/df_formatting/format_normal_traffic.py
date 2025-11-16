@@ -20,6 +20,9 @@ class DataFrameFormatterNormalTraffic():
             'label': self.list_of_features_to_rename[7]
         })
         
+        # Convert application_protocol to lowercase
+        normal_traffic_df_renamed['application_protocol'] = normal_traffic_df_renamed['application_protocol'].str.lower()
+        
         # Convert to datetime
         normal_traffic_df_renamed[self.list_of_features_to_rename[4]] = pd.to_datetime(normal_traffic_df_renamed[self.list_of_features_to_rename[4]])
         normal_traffic_df_renamed["stopDateTime"] = pd.to_datetime(normal_traffic_df_renamed["stopDateTime"])
