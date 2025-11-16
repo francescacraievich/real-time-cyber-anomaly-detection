@@ -23,5 +23,18 @@ class DataFrameFormatterDionea():
             'timestamp': self.list_of_features_to_rename[4],
             'transport': self.list_of_features_to_rename[5],
             'protocol': self.list_of_features_to_rename[6]
-        })
-        return dionea_df_renamed
+        })  
+        
+        dionea_df_renamed[self.list_of_features_to_rename[4]] = pd.to_datetime(
+        dionea_df_renamed[self.list_of_features_to_rename[4]]
+        ).dt.strftime('%m/%d/%Y %H:%M')  
+        
+        cols = [
+            'source_ip', 'destination_ip', 'source_port', 'destination_port',
+            'timestamp_start',
+            'transport_protocol', 'application_protocol', 'duration', 'label'
+        ]
+        
+        final = dionea_df_renamed.reindex(columns=cols)
+        return final
+    

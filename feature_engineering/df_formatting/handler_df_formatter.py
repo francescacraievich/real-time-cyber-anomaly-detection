@@ -32,7 +32,7 @@ class DataFrameFormatter():
         self.format_all_dfs()
 
 
-    
+
     def format_all_NaN_columns(self, threshold: float = 0.8):
         dataframes = [self.cowrie_df, self.dionea_df, self.suricata_df, self.normal_traffic_df]
         filtered = []
@@ -44,13 +44,16 @@ class DataFrameFormatter():
             keep_mask = (df.isnull().mean() < threshold).fillna(False)
             filtered.append(df.loc[:, keep_mask])
         return filtered
+
     
     def format_all_dfs(self):
         self.cowrie_df = DataFrameFormatterCowrie(self.cowrie_df, self.base_features).format_cowrie_df()
         self.dionea_df = DataFrameFormatterDionea(self.dionea_df, self.base_features).format_dionea_df()
         self.suricata_df = DataFrameFormatterSuricata(self.suricata_df, self.base_features).format_suricata_df()
         self.normal_traffic_df = DataFrameFormatterNormalTraffic(self.normal_traffic_df, self.base_features).format_normal_traffic_df()
-        self.cowrie_df, self.dionea_df, self.suricata_df, self.normal_traffic_df = self.format_all_NaN_columns()
+        # self.cowrie_df, self.dionea_df, self.suricata_df, self.normal_traffic_df = self.format_all_NaN_columns()
+        
+
 
     def unite_all_dfs(self):
         # concatenate rows from all sources and keep only base_features (as requested)

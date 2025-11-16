@@ -19,4 +19,16 @@ class DataFrameFormatterSuricata():
             'proto': self.list_of_features_to_rename[5],
             'app_proto': self.list_of_features_to_rename[6]
         })
-        return suricata_df_renamed
+        
+        suricata_df_renamed[self.list_of_features_to_rename[4]] = pd.to_datetime(
+        suricata_df_renamed[self.list_of_features_to_rename[4]]
+        ).dt.strftime('%m/%d/%Y %H:%M')
+        
+        cols = [
+            'source_ip', 'destination_ip', 'source_port', 'destination_port',
+            'timestamp_start',
+            'transport_protocol', 'application_protocol', 'duration', 'label'
+        ]
+        
+        final = suricata_df_renamed.reindex(columns=cols)
+        return final

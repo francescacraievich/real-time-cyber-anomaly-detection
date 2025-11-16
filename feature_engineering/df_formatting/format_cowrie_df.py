@@ -49,18 +49,23 @@ class DataFrameFormatterCowrie():
             'transport_protocol': coalesce(self.list_of_features_to_rename[5]),
             'application_protocol': coalesce(self.list_of_features_to_rename[6]),
             'label': coalesce(self.list_of_features_to_rename[7]),
-            'timestamp': merged.get('timestamp_connect'),
+            'timestamp_start': coalesce(self.list_of_features_to_rename[4]),
             'duration': merged.get('duration_closed').fillna(merged.get('duration_connect'))
         })
+        
+        final[self.list_of_features_to_rename[4]] = pd.to_datetime(
+        final[self.list_of_features_to_rename[4]]
+        ).dt.strftime('%m/%d/%Y %H:%M')      
+    
 
         # ensure columns order matches base_features where applicable
         # keep session and timestamp_start/end too
         cols = [
-            'session',
             'source_ip', 'destination_ip', 'source_port', 'destination_port',
-            'timestamp',
+            'timestamp_start',
             'transport_protocol', 'application_protocol', 'duration', 'label'
         ]
         final = final.reindex(columns=cols)
 
         return final
+    

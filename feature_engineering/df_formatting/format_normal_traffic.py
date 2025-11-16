@@ -17,6 +17,7 @@ class DataFrameFormatterNormalTraffic():
             'startDateTime': self.list_of_features_to_rename[4],
             'protocolName': self.list_of_features_to_rename[5],
             'appName': self.list_of_features_to_rename[6],
+            'label': self.list_of_features_to_rename[7]
         })
         
         # Convert to datetime
@@ -29,7 +30,15 @@ class DataFrameFormatterNormalTraffic():
             normal_traffic_df_renamed[self.list_of_features_to_rename[4]]
         ).dt.total_seconds()
         
-        self.df_normal_traffic[self.list_of_features_to_rename[7]] = 'benign'
+        normal_traffic_df_renamed[self.list_of_features_to_rename[7]] = 'benign'
         
-        return normal_traffic_df_renamed
+        cols = [
+            'source_ip', 'destination_ip', 'source_port', 'destination_port',
+            'timestamp_start',
+            'transport_protocol', 'application_protocol', 'duration', 'label'
+        ]
+        
+        final = normal_traffic_df_renamed.reindex(columns=cols)
+        return final
+        
     
