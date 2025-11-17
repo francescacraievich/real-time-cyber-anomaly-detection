@@ -8,14 +8,14 @@ from deprecated import deprecated
 #from format_dionea_df import DataFrameFormatterDionea
 #from format_suricata_df import DataFrameFormatterSuricata
 
-sys.path.insert(0, os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..')))
+#sys.path.insert(0, os.path.abspath(
+    #os.path.join(os.path.dirname(__file__), '..')))
 
-from df_initializing.handler_init_dfs import DataFrameInitializer
-from format_normal_traffic import DataFrameFormatterNormalTraffic
-from format_cowrie_df import DataFrameFormatterCowrie
-from format_dionea_df import DataFrameFormatterDionea
-from format_suricata_df import DataFrameFormatterSuricata
+from feature_engineering.df_initializing.handler_init_dfs import DataFrameInitializer
+from feature_engineering.df_formatting.format_normal_traffic import DataFrameFormatterNormalTraffic
+from feature_engineering.df_formatting.format_cowrie_df import DataFrameFormatterCowrie
+from feature_engineering.df_formatting.format_dionea_df import DataFrameFormatterDionea
+from feature_engineering.df_formatting.format_suricata_df import DataFrameFormatterSuricata
 
 class DataFrameFormatter():
 
