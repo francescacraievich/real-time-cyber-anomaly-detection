@@ -11,7 +11,6 @@ class DataFrameFormatterDionea():
             
         expanded = pd.json_normalize(self.dionea_df['connection'])
         self.dionea_df = pd.concat([self.dionea_df.drop(columns=['connection']), expanded], axis=1)
-        print(self.dionea_df.columns)
         
         self.dionea_df[self.list_of_features_to_rename[7]] = 'malicious'
         
