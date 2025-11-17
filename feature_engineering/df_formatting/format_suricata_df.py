@@ -24,6 +24,8 @@ class DataFrameFormatterSuricata():
         suricata_df_renamed[self.list_of_features_to_rename[4]]
         ).dt.strftime('%m/%d/%Y %H:%M')
         
+        suricata_df_renamed[self.list_of_features_to_rename[8]] = 0
+        
         cols = [
             'source_ip', 'destination_ip', 'source_port', 'destination_port',
             'timestamp_start',
