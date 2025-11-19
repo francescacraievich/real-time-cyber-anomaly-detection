@@ -29,7 +29,8 @@ class DataFrameFormatter():
             'transport_protocol',
             'application_protocol',
             'label',
-            'duration'
+            'duration',
+            'origin_name'
         ]
         self.format_all_dfs()
 

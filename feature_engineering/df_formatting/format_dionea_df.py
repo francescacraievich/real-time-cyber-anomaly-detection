@@ -24,17 +24,21 @@ class DataFrameFormatterDionea():
             'protocol': self.list_of_features_to_rename[6]
         })  
         
+        dionea_df_renamed[self.list_of_features_to_rename[2]] = pd.to_numeric(dionea_df_renamed[self.list_of_features_to_rename[2]], errors='coerce').astype('Int64')
+        dionea_df_renamed[self.list_of_features_to_rename[3]] = pd.to_numeric(dionea_df_renamed[self.list_of_features_to_rename[3]], errors='coerce').astype('Int64')
+        
         dionea_df_renamed[self.list_of_features_to_rename[4]] = pd.to_datetime(
         dionea_df_renamed[self.list_of_features_to_rename[4]]
-        ).dt.strftime('%m/%d/%Y %H:%M')  
+        ).dt.tz_localize(None) 
         
         dionea_df_renamed[self.list_of_features_to_rename[8]] = 0
         
-        cols = [
-            'source_ip', 'destination_ip', 'source_port', 'destination_port',
-            'timestamp_start',
-            'transport_protocol', 'application_protocol', 'duration', 'label'
-        ]
+        dionea_df_renamed[self.list_of_features_to_rename[8]] = dionea_df_renamed[self.list_of_features_to_rename[8]].astype(float)
+    
+        
+        dionea_df_renamed["origin_name"] = "dionea"
+        
+        cols = self.list_of_features_to_rename
         
         final = dionea_df_renamed.reindex(columns=cols)
         return final

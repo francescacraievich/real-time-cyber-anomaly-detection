@@ -53,18 +53,22 @@ class DataFrameFormatterCowrie():
             'duration': merged.get('duration_closed').fillna(merged.get('duration_connect'))
         })
         
+        final[self.list_of_features_to_rename[2]] = pd.to_numeric(final[self.list_of_features_to_rename[2]], errors='coerce').astype('Int64')
+        final[self.list_of_features_to_rename[3]] = pd.to_numeric(final[self.list_of_features_to_rename[3]], errors='coerce').astype('Int64')
+        
         final[self.list_of_features_to_rename[4]] = pd.to_datetime(
         final[self.list_of_features_to_rename[4]]
-        ).dt.strftime('%m/%d/%Y %H:%M')      
+        ).dt.tz_localize(None) 
+        
+        final[self.list_of_features_to_rename[8]] = final[self.list_of_features_to_rename[8]].astype(float)
     
+        final["origin_name"] = "cowrie"
 
         # ensure columns order matches base_features where applicable
         # keep session and timestamp_start/end too
-        cols = [
-            'source_ip', 'destination_ip', 'source_port', 'destination_port',
-            'timestamp_start',
-            'transport_protocol', 'application_protocol', 'duration', 'label'
-        ]
+        
+        cols = self.list_of_features_to_rename
+        
         final = final.reindex(columns=cols)
 
         return final

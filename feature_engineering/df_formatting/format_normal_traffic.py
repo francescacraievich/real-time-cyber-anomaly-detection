@@ -20,6 +20,9 @@ class DataFrameFormatterNormalTraffic():
             'label': self.list_of_features_to_rename[7]
         })
         
+        #remove '_ip' from protocolName
+        normal_traffic_df_renamed[self.list_of_features_to_rename[5]] = normal_traffic_df_renamed[self.list_of_features_to_rename[5]].str.replace('_ip', '', regex=False)
+        
         # Convert application_protocol to lowercase
         normal_traffic_df_renamed[self.list_of_features_to_rename[6]] = normal_traffic_df_renamed[self.list_of_features_to_rename[6]].str.lower()
         
@@ -35,11 +38,9 @@ class DataFrameFormatterNormalTraffic():
         
         normal_traffic_df_renamed[self.list_of_features_to_rename[7]] = 'benign'
         
-        cols = [
-            'source_ip', 'destination_ip', 'source_port', 'destination_port',
-            'timestamp_start',
-            'transport_protocol', 'application_protocol', 'duration', 'label'
-        ]
+        normal_traffic_df_renamed["origin_name"] = "normal_traffic"
+        
+        cols = self.list_of_features_to_rename
         
         final = normal_traffic_df_renamed.reindex(columns=cols)
         return final

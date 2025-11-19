@@ -22,8 +22,12 @@ class DataFrameFormatterSuricata():
         
         suricata_df_renamed[self.list_of_features_to_rename[4]] = pd.to_datetime(
         suricata_df_renamed[self.list_of_features_to_rename[4]]
-        ).dt.strftime('%m/%d/%Y %H:%M')
+        ).dt.tz_localize(None) 
         
+        suricata_df_renamed[self.list_of_features_to_rename[8]] = 0
+        
+        suricata_df_renamed[self.list_of_features_to_rename[8]] = suricata_df_renamed[self.list_of_features_to_rename[8]].astype(float)
+    
         suricata_df_renamed[self.list_of_features_to_rename[5]] = suricata_df_renamed[self.list_of_features_to_rename[5]].str.lower()
         
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[0]].isna(), self.list_of_features_to_rename[0]] = "0.0.0.0"
@@ -33,13 +37,12 @@ class DataFrameFormatterSuricata():
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[5]].isna(), self.list_of_features_to_rename[5]] = "unknown"
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[6]].isna(), self.list_of_features_to_rename[6]] = "unknown"
         
-        suricata_df_renamed[self.list_of_features_to_rename[8]] = 0
+        suricata_df_renamed[self.list_of_features_to_rename[2]] = pd.to_numeric(suricata_df_renamed[self.list_of_features_to_rename[2]], errors='coerce').astype('Int64')
+        suricata_df_renamed[self.list_of_features_to_rename[3]] = pd.to_numeric(suricata_df_renamed[self.list_of_features_to_rename[3]], errors='coerce').astype('Int64')
         
-        cols = [
-            'source_ip', 'destination_ip', 'source_port', 'destination_port',
-            'timestamp_start',
-            'transport_protocol', 'application_protocol', 'duration', 'label'
-        ]
+        suricata_df_renamed["origin_name"] = "suricata"
+        
+        cols = self.list_of_features_to_rename
         
         final = suricata_df_renamed.reindex(columns=cols)
         return final
