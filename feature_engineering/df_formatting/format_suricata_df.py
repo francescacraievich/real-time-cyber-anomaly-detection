@@ -46,6 +46,7 @@ class DataFrameFormatterSuricata():
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[3]].isna(), self.list_of_features_to_rename[3]] = "0.0"
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[5]].isna(), self.list_of_features_to_rename[5]] = "unknown"
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[6]].isna(), self.list_of_features_to_rename[6]] = "unknown"
+        suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[12]].isna(), self.list_of_features_to_rename[12]] = "unknown"
         
         # ports in int
         suricata_df_renamed[self.list_of_features_to_rename[2]] = pd.to_numeric(suricata_df_renamed[self.list_of_features_to_rename[2]], errors='coerce').astype('Int64')
@@ -54,11 +55,17 @@ class DataFrameFormatterSuricata():
         # Add label columns
         suricata_df_renamed[self.list_of_features_to_rename[13]] = 'malicious'
         
-        cols = self.list_of_features_to_rename
+        # Standardize direction values
+        suricata_df_renamed[self.list_of_features_to_rename[12]] = suricata_df_renamed[self.list_of_features_to_rename[12]].str.replace('to_server', 'L2R', regex=False)
+        suricata_df_renamed[self.list_of_features_to_rename[12]] = suricata_df_renamed[self.list_of_features_to_rename[12]].str.replace('to_client', 'R2L', regex=False)
         
-        suricata_df_renamed = suricata_df_renamed.reindex(columns=cols)
+        # Select only the required features in correct order
+        final_features = self.list_of_features_to_rename
+        suricata_df_renamed = suricata_df_renamed[final_features]
+        
         return suricata_df_renamed
-
+    
+    
     def _extract_flow_data(self, df):
             """Extract nested flow data and calculate derived features"""
             
