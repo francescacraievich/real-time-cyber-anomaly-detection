@@ -5,8 +5,6 @@ import sys
 import os
 from deprecated import deprecated
 from format_normal_traffic import DataFrameFormatterNormalTraffic
-from format_cowrie_df import DataFrameFormatterCowrie
-from format_dionea_df import DataFrameFormatterDionea
 from format_suricata_df import DataFrameFormatterSuricata
 
 sys.path.insert(0, os.path.abspath(
@@ -15,9 +13,7 @@ sys.path.insert(0, os.path.abspath(
 
 class DataFrameFormatter():
 
-    def __init__(self, cowrie_df, dionea_df, suricata_df, normal_traffic_df):
-        self.cowrie_df = cowrie_df
-        self.dionea_df = dionea_df
+    def __init__(self, suricata_df, normal_traffic_df):
         self.suricata_df = suricata_df
         self.normal_traffic_df = normal_traffic_df
         self.base_features = [
@@ -28,30 +24,19 @@ class DataFrameFormatter():
             'timestamp_start',
             'transport_protocol',
             'application_protocol',
+            'duration',
+            'bytes_sent',
+            'bytes_received',
+            'pkts_sent',
+            'pkts_received',
+            'direction',
             'label',
-            'duration'
+            
         ]
         self.format_all_dfs()
 
-    @deprecated(reason="Automatically filtering all the columns needed")
-    def format_all_NaN_columns(self, threshold: float = 0.8):
-        dataframes = [self.cowrie_df, self.dionea_df,
-                      self.suricata_df, self.normal_traffic_df]
-        filtered = []
-        for df in dataframes:
-            if df is None:
-                filtered.append(df)
-                continue
-            # keep columns with less than `threshold` fraction missing
-            keep_mask = (df.isnull().mean() < threshold).fillna(False)
-            filtered.append(df.loc[:, keep_mask])
-        return filtered
 
     def format_all_dfs(self):
-        self.cowrie_df = DataFrameFormatterCowrie(
-            self.cowrie_df, self.base_features).format_cowrie_df()
-        self.dionea_df = DataFrameFormatterDionea(
-            self.dionea_df, self.base_features).format_dionea_df()
         self.suricata_df = DataFrameFormatterSuricata(
             self.suricata_df, self.base_features).format_suricata_df()
         self.normal_traffic_df = DataFrameFormatterNormalTraffic(
@@ -60,21 +45,8 @@ class DataFrameFormatter():
     def unite_honeypot_and_normal_traffic_dfs(self):
         # concatenate rows from all sources and keep only base_features (as requested)
         combined_df = pd.concat([
-            self.cowrie_df[self.base_features],
-            self.dionea_df[self.base_features],
             self.suricata_df[self.base_features],
             self.normal_traffic_df[self.base_features]
-        ], ignore_index=True, sort=False)
-        # enforce column order
-        combined_df = combined_df.loc[:, self.base_features]
-        return combined_df
-
-    def unite_all_honeypot_dfs(self):
-        # concatenate rows from all honeypot sources and keep only base_features (as requested)
-        combined_df = pd.concat([
-            self.cowrie_df[self.base_features],
-            self.dionea_df[self.base_features],
-            self.suricata_df[self.base_features]
         ], ignore_index=True, sort=False)
         # enforce column order
         combined_df = combined_df.loc[:, self.base_features]
