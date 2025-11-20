@@ -13,7 +13,7 @@ def is_private_ip(ip):
         return False  # Invalid IP or NaN
     
     
-def calculate_ip_classification_features_minimal(df, src_ip_col='source_ip', 
+def calculate_ip_classification_features(df, src_ip_col='source_ip', 
                                                  dst_ip_col='destination_ip'):
     """
     Calculate:
