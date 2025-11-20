@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-def extract_temporal_features(df, timestamp_col='timestamp_start'):
+def calculate_temporal_features(df, timestamp_col='timestamp_start'):
     """
     Calculate:
     - hour: Hour of day (0-23)
