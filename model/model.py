@@ -16,6 +16,7 @@ if str(project_root) not in sys.path:
 #sys.path.append(os.path.abspath(feature_engineering_path))
 from feature_engineering.df_initializing.handler_init_dfs import DataFrameInitializer
 from feature_engineering.df_formatting.handler_df_formatter import DataFrameFormatter
+from feature_engineering.test import TestFormatter
 import pandas as pd
 
 data_path = project_root / "data"
@@ -27,24 +28,28 @@ df_initializer = DataFrameInitializer(
     normal_traffic_json_path=data_path / "normal_traffic/benign_traffic_fixed.json"
 )
 
-df_cowrie, df_dionea, df_suricata, df_normal_traffic = df_initializer.initialize_dfs(sample_size=10000)
+df_cowrie, df_dionea, df_suricata, df_normal_traffic = df_initializer.initialize_dfs(sample_size=100000)
 
 df_formatter = DataFrameFormatter(df_cowrie, df_dionea, df_suricata, df_normal_traffic)
 
+test_formatter = TestFormatter(df_suricata, df_normal_traffic)
+
+pd.set_option('display.max_rows', None)        # Show all rows
+pd.set_option('display.max_columns', None)     # Show all columns
+pd.set_option('display.width', None)           # No line wrapping
+pd.set_option('display.max_colwidth', None)    # Show full cell content
+
+#print("-------------------------------------------------------------------------------")
 #print("Suricata Columns:", df_formatter.suricata_df.columns)
-print("Suricata Columns:", df_suricata.columns)
-
-#print("Dionea Columns:", df_formatter.dionea_df.columns)
-print("Dionea Columns:", df_dionea.columns)
-
-#print("Cowrie Columns:", df_formatter.cowrie_df.columns)
-print("Cowrie Columns:", df_cowrie.columns)
-
-#print("Normal Traffic Columns:", df_formatter.normal_traffic_df.columns)
-print("Normal Traffic Columns:", df_normal_traffic.columns)
-
-combined_honeypot_df = df_formatter.unite_all_honeypot_dfs()
-print("Combined Honeypot DataFrame columns:", combined_honeypot_df.columns)
-
-combined_all_df = df_formatter.unite_honeypot_and_normal_traffic_dfs()
-print("Combined All DataFrame columns:", combined_all_df.columns)
+#print("Suricata Columns:", df_suricata.columns)
+#print("Suricata Size:", df_suricata.shape)
+#print(df_suricata["flow"].head(10))
+#df_suricata.to_csv("suricata_sample.csv", index=False)
+print("-------------------------------------------------------------------------------")
+print("Suricata Formatted Columns:", test_formatter.suricata_df.columns)
+print(test_formatter.suricata_df.info())
+print(test_formatter.suricata_df.head(10))
+#print("-------------------------------------------------------------------------------")
+print("Normal Traffic Formatted Columns:", test_formatter.normal_traffic_df.columns)
+print(test_formatter.normal_traffic_df.info())
+print(test_formatter.normal_traffic_df.head(10))
