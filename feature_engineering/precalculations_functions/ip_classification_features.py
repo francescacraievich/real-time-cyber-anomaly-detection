@@ -14,7 +14,7 @@ def is_private_ip(ip):
     
     
 def calculate_ip_classification_features(df, src_ip_col='source_ip', 
-                                                 dst_ip_col='destination_ip'):
+                                        dst_ip_col='destination_ip'):
     """
     Calculate:
     - src_is_private: 1 if source IP is private, 0 otherwise
