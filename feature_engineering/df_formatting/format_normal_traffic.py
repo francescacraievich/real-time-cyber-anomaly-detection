@@ -9,7 +9,9 @@ class DataFrameFormatterNormalTraffic():
         
     def format_normal_traffic_df(self):
         
-        normal_traffic_df_renamed = self.df_normal_traffic.rename(columns={
+        normal_traffic_df_renamed = self.df_normal_traffic.copy()
+        
+        normal_traffic_df_renamed = normal_traffic_df_renamed.rename(columns={
             'source': self.list_of_features_to_rename[0],
             'destination': self.list_of_features_to_rename[1],
             'sourcePort': self.list_of_features_to_rename[2],
@@ -17,8 +19,11 @@ class DataFrameFormatterNormalTraffic():
             'startDateTime': self.list_of_features_to_rename[4],
             'protocolName': self.list_of_features_to_rename[5],
             'appName': self.list_of_features_to_rename[6],
-            'label': self.list_of_features_to_rename[7]
+            'label': self.list_of_features_to_rename[13]
         })
+        
+        #remove '_ip' from protocolName
+        normal_traffic_df_renamed[self.list_of_features_to_rename[5]] = normal_traffic_df_renamed[self.list_of_features_to_rename[5]].str.replace('_ip', '', regex=False)
         
         # Convert application_protocol to lowercase
         normal_traffic_df_renamed[self.list_of_features_to_rename[6]] = normal_traffic_df_renamed[self.list_of_features_to_rename[6]].str.lower()
@@ -33,15 +38,12 @@ class DataFrameFormatterNormalTraffic():
             normal_traffic_df_renamed[self.list_of_features_to_rename[4]]
         ).dt.total_seconds()
         
-        normal_traffic_df_renamed[self.list_of_features_to_rename[7]] = 'benign'
+        # add label column
+        normal_traffic_df_renamed[self.list_of_features_to_rename[13]] = 'benign'
         
-        cols = [
-            'source_ip', 'destination_ip', 'source_port', 'destination_port',
-            'timestamp_start',
-            'transport_protocol', 'application_protocol', 'duration', 'label'
-        ]
+        cols = self.list_of_features_to_rename
         
-        final = normal_traffic_df_renamed.reindex(columns=cols)
-        return final
+        normal_traffic_df_renamed = normal_traffic_df_renamed.reindex(columns=cols)
+        return normal_traffic_df_renamed
         
     
