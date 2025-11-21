@@ -6,7 +6,8 @@ from feature_engineering.aggregation_functions import (
     calculate_total_events_processed,
     calculate_total_anomalous_events,
     calculate_total_unique_malicious_ips,
-    calculate_trend_percentage_change
+    calculate_trend_percentage_change,
+    calculate_total_events_for_dst_ports
 )
 
 
@@ -169,6 +170,54 @@ class TestAggregateStatusMetrics:
         assert result['burst_indicator'].iloc[7] == 1
         assert result['burst_indicator'].iloc[8] == 1
 
+        
+        # Check that original dataframe length is preserved
+        assert len(result) == len(df)
+        
+
+    def test_calculate_total_events_for_dst_ports(self):
+        """test basic event counting per destination port"""
+        
+        time_window = 60  # mins
+        
+        df = pd.DataFrame({
+            'timestamp_start': pd.to_datetime([
+                '2025-01-06 10:00:00',
+                '2025-01-06 10:15:00',
+                '2025-01-06 10:30:00',
+                '2025-01-06 10:45:00',
+                '2025-01-06 11:00:00',
+            ]),
+            'destination_port': [80, 80, 22, 80, 22],
+            'label': ['normal', 'malicious', 'malicious', 'normal', 'malicious']
+        })
+        
+        result = calculate_total_events_for_dst_ports(
+            df,
+            timestamp_col='timestamp_start',
+            destination_port_col='destination_port',
+            window_minutes=time_window
+        )
+        
+        # Check that the column was added
+        assert 'events_to_dst_port' in result.columns
+        assert 'destination_port' in result.columns
+        
+        # Window 1 (10:00-11:00):
+        # Port 80: 3 events (rows 0, 1, 3)
+        # Port 22: 1 event (row 2)
+        
+        # Rows 0, 1, 3: Port 80
+        assert result['events_to_dst_port'].iloc[0] == 3
+        assert result['events_to_dst_port'].iloc[1] == 3
+        assert result['events_to_dst_port'].iloc[3] == 3
+        
+        # Row 2: Port 22
+        assert result['events_to_dst_port'].iloc[2] == 1
+        
+        # Window 2 (11:00-12:00):
+        # Port 22: 1 event (row 4)
+        assert result['events_to_dst_port'].iloc[4] == 1
         
         # Check that original dataframe length is preserved
         assert len(result) == len(df)
