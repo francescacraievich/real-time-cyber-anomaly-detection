@@ -4,6 +4,7 @@ import numpy as np
 
 from feature_engineering.aggregation_functions import (
     calculate_total_events_processed,
+    calculate_total_anomalous_events,
 )
 
 
@@ -35,6 +36,38 @@ class TestAggregateStatusMetrics:
         
         # Last event is in the 11:00-12:00 window
         assert result['events_in_window'].iloc[3] == 1
+        
+        # Check that original dataframe length is preserved
+        assert len(result) == len(df)
+        
+        
+    def test_calculate_total_anomalous_events(self):
+        """test basic aggregation of malicious events per time window"""
+        
+        time_window = 60  # mins
+        
+        df = pd.DataFrame({
+            'timestamp_start': pd.to_datetime([
+                '2025-01-06 10:00:00',
+                '2025-01-06 10:30:00',
+                '2025-01-06 10:45:00',
+                '2025-01-06 11:03:00']),
+            'label': ['malicious', 'malicious', 'benign', 'malicious']
+        })
+        
+        result = calculate_total_anomalous_events(df, timestamp_col='timestamp_start', label_col='label', malicious_label='malicious', window_minutes=time_window)
+        
+        # Check that the column was added
+        assert 'malicious_events_in_window' in result.columns
+        assert 'label' in result.columns
+        
+        # First 3 events are in the 10:00-11:00 window and 2 are malicious
+        assert result['malicious_events_in_window'].iloc[0] == 2
+        assert result['malicious_events_in_window'].iloc[1] == 2
+        assert result['malicious_events_in_window'].iloc[2] == 2
+        
+        # Last event is in the 11:00-12:00 window and 1 is malicious
+        assert result['malicious_events_in_window'].iloc[3] == 1
         
         # Check that original dataframe length is preserved
         assert len(result) == len(df)
