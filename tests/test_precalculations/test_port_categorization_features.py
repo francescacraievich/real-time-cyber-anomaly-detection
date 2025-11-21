@@ -6,7 +6,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from feature_engineering.precalculations_functions.port_categorization_features import (
+from feature_engineering.precalculations_functions import (
     is_port_common,
     calculate_port_categorization
 )

@@ -9,12 +9,16 @@ from .rate_features import calculate_rate_features
 from .ratio_features import calculate_ratio_features
 from .temporal_features import calculate_temporal_features
 from .port_categorization_features import calculate_port_categorization
+from .port_categorization_features import is_port_common
 from .ip_classification_features import calculate_ip_classification_features
+from .ip_classification_features import is_private_ip
 
 __all__ = [
     'calculate_rate_features',
     'calculate_ratio_features',
     'calculate_temporal_features',
     'calculate_port_categorization',
+    'is_port_common',
     'calculate_ip_classification_features',
+    'is_private_ip'
 ]
