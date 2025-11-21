@@ -119,3 +119,32 @@ def calculate_trend_percentage_change(df, timestamp_col='timestamp_start', windo
     df = df.drop(columns=['time_window'])
     
     return df
+
+
+def calculate_total_events_for_dst_ports(df, timestamp_col='timestamp_start', destination_port_col='destination_port',  window_minutes=60):
+    """
+    Calculate number of events for a dst_port in a timewindow.
+    """
+    
+    df = df.copy()
+    
+    # Create time window identifier
+    df['time_window'] = df[timestamp_col].dt.floor(f'{window_minutes}min')
+    
+    # Count events per (time_window, dst_port) combination
+    port_counts = (
+        df.groupby(['time_window', destination_port_col])
+        .size()
+        .reset_index(name='events_to_dst_port')
+    )
+    
+    # Merge back to original dataframe
+    df = df.merge(port_counts, on=['time_window', destination_port_col], how='left')
+    
+    # Fill NaN with 0 (shouldn't happen, but safe)
+    df['events_to_dst_port'] = df['events_to_dst_port'].fillna(0).astype(int)
+    
+    # Drop temporary column
+    df = df.drop(columns=['time_window'])
+    
+    return df
