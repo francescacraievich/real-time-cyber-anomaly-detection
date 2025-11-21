@@ -5,7 +5,8 @@ import numpy as np
 from feature_engineering.aggregation_functions import (
     calculate_total_events_processed,
     calculate_total_anomalous_events,
-    calculate_total_unique_malicious_ips
+    calculate_total_unique_malicious_ips,
+    calculate_trend_percentage_change
 )
 
 
@@ -103,6 +104,71 @@ class TestAggregateStatusMetrics:
         
         # Last event is in the 11:00-12:00 window and 1 unique ip
         assert result['unique_malicious_ips'].iloc[3] == 1
+        
+        # Check that original dataframe length is preserved
+        assert len(result) == len(df)
+        
+        
+    def test_calculate_trend_percentage_change(self):
+        """test percentage change calculation between time windows"""
+        
+        time_window = 60  # mins
+        
+        df = pd.DataFrame({
+            'timestamp_start': pd.to_datetime([
+                '2025-01-06 10:00:00',
+                '2025-01-06 10:30:00',  # Window 1: 2 events
+                '2025-01-06 11:00:00',
+                '2025-01-06 11:30:00',  # Window 2: 2 events (0% change)
+                '2025-01-06 12:00:00',
+                '2025-01-06 12:10:00',
+                '2025-01-06 12:20:00',
+                '2025-01-06 12:30:00',
+                '2025-01-06 12:40:00',  # Window 3: 5 events (+150% change)
+            ]),
+            'label': ['malicious', 'normal', 'malicious', 'normal', 
+                    'malicious', 'malicious', 'malicious', 'malicious', 'normal']
+        })
+        
+        result = calculate_trend_percentage_change(
+            df, 
+            timestamp_col='timestamp_start',
+            window_minutes=time_window
+        )
+        
+        # Check that the columns were added
+        assert 'events_pct_change' in result.columns
+        assert 'malicious_events_pct_change' in result.columns
+        assert 'burst_indicator' in result.columns
+        
+        # Window 1 (rows 0-1): First window, no previous data
+        assert result['events_pct_change'].iloc[0] == 0  # or NaN filled with 0
+        assert result['events_pct_change'].iloc[1] == 0
+        
+        # Window 2 (rows 2-3): Same as window 1 (2 events), 0% change
+        assert result['events_pct_change'].iloc[2] == 0
+        assert result['events_pct_change'].iloc[3] == 0
+        
+        # Window 3 (rows 4-8): 5 events vs 2 previous = 150% increase
+        assert result['events_pct_change'].iloc[4] == 150.0
+        assert result['events_pct_change'].iloc[5] == 150.0
+        assert result['events_pct_change'].iloc[6] == 150.0
+        assert result['events_pct_change'].iloc[7] == 150.0
+        assert result['events_pct_change'].iloc[8] == 150.0
+        
+        # Burst indicator shouldn't be triggered (<50% increase)
+        assert result['burst_indicator'].iloc[0] == 0
+        assert result['burst_indicator'].iloc[1] == 0
+        assert result['burst_indicator'].iloc[2] == 0
+        assert result['burst_indicator'].iloc[3] == 0
+        
+        # Burst indicator should be triggered (>50% increase)
+        assert result['burst_indicator'].iloc[4] == 1
+        assert result['burst_indicator'].iloc[5] == 1
+        assert result['burst_indicator'].iloc[6] == 1
+        assert result['burst_indicator'].iloc[7] == 1
+        assert result['burst_indicator'].iloc[8] == 1
+
         
         # Check that original dataframe length is preserved
         assert len(result) == len(df)
