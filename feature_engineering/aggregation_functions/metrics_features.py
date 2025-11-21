@@ -77,3 +77,45 @@ def calculate_total_unique_malicious_ips(df, timestamp_col='timestamp_start', so
     df = df.drop(columns=['time_window'])
     
     return df
+
+
+def calculate_trend_percentage_change(df, timestamp_col='timestamp_start', window_minutes=60):
+    """
+    Calculate percentage change from previous time window.
+    """
+    
+    df = df.copy()
+    df['time_window'] = df[timestamp_col].dt.floor(f'{window_minutes}min')
+    
+    # Aggregate metrics per window
+    window_stats = df.groupby('time_window')['label'].count().reset_index()
+    window_stats.columns = ['time_window', 'events_in_window']
+    
+    # Malicious events
+    malicious_df = df[df['label'] == 'malicious']
+    malicious_stats = malicious_df.groupby('time_window').size().reset_index(name='malicious_events_in_window')
+    window_stats = window_stats.merge(malicious_stats, on='time_window', how='left')
+    window_stats['malicious_events_in_window'] = window_stats['malicious_events_in_window'].fillna(0)
+    
+    # Sort by time
+    window_stats = window_stats.sort_values('time_window')
+    
+    # Calculate percentage change: (current - previous) / previous * 100
+    window_stats['events_pct_change'] = window_stats['events_in_window'].pct_change() * 100
+    window_stats['malicious_events_pct_change'] = window_stats['malicious_events_in_window'].pct_change() * 100
+    
+    # Replace inf (division by zero) with 0
+    window_stats = window_stats.replace([np.inf, -np.inf], 0)
+    window_stats['events_pct_change'] = window_stats['events_pct_change'].fillna(0)
+    window_stats['malicious_events_pct_change'] = window_stats['malicious_events_pct_change'].fillna(0)
+    
+    # Create burst indicator (e.g., >50% increase)
+    window_stats['burst_indicator'] = (window_stats['events_pct_change'] > 50).astype(int)
+    
+    # Merge back
+    df = df.merge(window_stats[['time_window', 'events_pct_change', 'malicious_events_pct_change', 'burst_indicator']], 
+                  on='time_window', how='left')
+    
+    df = df.drop(columns=['time_window'])
+    
+    return df
