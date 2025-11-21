@@ -7,7 +7,8 @@ from feature_engineering.aggregation_functions import (
     calculate_total_anomalous_events,
     calculate_total_unique_malicious_ips,
     calculate_trend_percentage_change,
-    calculate_total_events_for_dst_ports
+    calculate_total_events_for_dst_ports,
+    calculate_total_malicious_events_per_protocol
 )
 
 
@@ -218,6 +219,67 @@ class TestAggregateStatusMetrics:
         # Window 2 (11:00-12:00):
         # Port 22: 1 event (row 4)
         assert result['events_to_dst_port'].iloc[4] == 1
+        
+        # Check that original dataframe length is preserved
+        assert len(result) == len(df)
+        
+        
+    def test_calculate_total_malicious_events_per_protocol(self):
+        """test basic malicious event counting per protocol"""
+        
+        time_window = 60  # mins
+        
+        df = pd.DataFrame({
+            'timestamp_start': pd.to_datetime([
+                '2025-01-06 10:00:00',
+                '2025-01-06 10:15:00',
+                '2025-01-06 10:30:00',
+                '2025-01-06 10:45:00',
+                '2025-01-06 11:00:00',
+            ]),
+            'application_protocol': ['http', 'dns', 'http', 'dns', 'ssh'],
+            'label': ['normal', 'malicious', 'normal', 'malicious', 'malicious']
+        })
+        
+        result = calculate_total_malicious_events_per_protocol(
+            df,
+            timestamp_col='timestamp_start',
+            app_protocol_col='application_protocol',
+            window_minutes=time_window
+        )
+        
+        # Check columns exist
+        assert 'total_events_for_protocol' in result.columns
+        assert 'malicious_events_for_protocol' in result.columns
+        assert 'malicious_ratio_for_protocol' in result.columns
+        
+        # Window 1 (10:00-11:00):
+        # HTTP: 2 total, 0 malicious (0%)
+        # DNS: 2 total, 2 malicious (100%)
+        
+        # Row 0: HTTP, window 1
+        assert result['total_events_for_protocol'].iloc[0] == 2
+        assert result['malicious_events_for_protocol'].iloc[0] == 0
+        assert result['malicious_ratio_for_protocol'].iloc[0] == 0.0
+        
+        # Row 1: DNS, window 1
+        assert result['total_events_for_protocol'].iloc[1] == 2
+        assert result['malicious_events_for_protocol'].iloc[1] == 2
+        assert result['malicious_ratio_for_protocol'].iloc[1] == 100.0
+        
+        # Row 2: HTTP, window 1 (same as row 0)
+        assert result['total_events_for_protocol'].iloc[2] == 2
+        assert result['malicious_events_for_protocol'].iloc[2] == 0
+        
+        # Row 3: DNS, window 1 (same as row 1)
+        assert result['total_events_for_protocol'].iloc[3] == 2
+        assert result['malicious_events_for_protocol'].iloc[3] == 2
+        
+        # Window 2 (11:00-12:00):
+        # SSH: 1 total, 1 malicious (100%)
+        assert result['total_events_for_protocol'].iloc[4] == 1
+        assert result['malicious_events_for_protocol'].iloc[4] == 1
+        assert result['malicious_ratio_for_protocol'].iloc[4] == 100.0
         
         # Check that original dataframe length is preserved
         assert len(result) == len(df)
