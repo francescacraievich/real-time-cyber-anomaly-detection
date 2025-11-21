@@ -12,6 +12,9 @@ from .port_categorization_features import calculate_port_categorization
 from .port_categorization_features import is_port_common
 from .ip_classification_features import calculate_ip_classification_features
 from .ip_classification_features import is_private_ip
+from .ip_geolocation_features import calculate_ip_info
+from .ip_geolocation_features import calculate_dst_ip_geolocation_features
+from .ip_geolocation_features import calculate_src_ip_geolocation_features
 
 __all__ = [
     'calculate_rate_features',
@@ -20,5 +23,8 @@ __all__ = [
     'calculate_port_categorization',
     'is_port_common',
     'calculate_ip_classification_features',
-    'is_private_ip'
+    'is_private_ip',
+    'calculate_ip_info',
+    'calculate_dst_ip_geolocation_features',
+    'calculate_src_ip_geolocation_features'
 ]
