@@ -148,3 +148,56 @@ def calculate_total_events_for_dst_ports(df, timestamp_col='timestamp_start', de
     df = df.drop(columns=['time_window'])
     
     return df
+
+
+def calculate_total_malicious_events_per_protocol(df, timestamp_col='timestamp_start', app_protocol_col='application_protocol', label_col='label', malicious_label='malicious', window_minutes=60):
+    """
+    Count malicious events per protocol within time windows.
+    Helps identify which protocols are being exploited for attacks.
+    """
+    
+    df = df.copy()
+    
+    # Create time window identifier
+    df['time_window'] = df[timestamp_col].dt.floor(f'{window_minutes}min')
+    
+    # === 1. Count total events per (time_window, protocol) ===
+    total_counts = (
+        df.groupby(['time_window', app_protocol_col])
+        .size()
+        .reset_index(name='total_events_for_protocol')
+    )
+    
+    # === 2. Count malicious events per (time_window, protocol) ===
+    malicious_df = df[df[label_col] == malicious_label]
+    malicious_counts = (
+        malicious_df.groupby(['time_window', app_protocol_col])
+        .size()
+        .reset_index(name='malicious_events_for_protocol')
+    )
+    
+    # === 3. Merge statistics ===
+    protocol_stats = total_counts.merge(malicious_counts, on=['time_window', app_protocol_col], how='left')
+    protocol_stats['malicious_events_for_protocol'] = protocol_stats['malicious_events_for_protocol'].fillna(0).astype(int)
+    
+    # === 4. Calculate malicious ratio ===
+    protocol_stats['malicious_ratio_for_protocol'] = (
+        protocol_stats['malicious_events_for_protocol'] / protocol_stats['total_events_for_protocol'] * 100
+    )
+    
+    # === 5. Merge back to original dataframe ===
+    df = df.merge(protocol_stats, on=['time_window', app_protocol_col], how='left')
+    
+    # Fill NaN with 0
+    df['total_events_for_protocol'] = df['total_events_for_protocol'].fillna(0).astype(int)
+    df['malicious_events_for_protocol'] = df['malicious_events_for_protocol'].fillna(0).astype(int)
+    df['malicious_ratio_for_protocol'] = df['malicious_ratio_for_protocol'].fillna(0)
+    
+    # Drop temporary column
+    df = df.drop(columns=['time_window'])
+    
+    return df
+
+
+
+
