@@ -4,9 +4,7 @@ import numpy as np
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
-from feature_engineering.precalculations_functions.ip_classification_features import (
+from feature_engineering.precalculations_functions import (
     is_private_ip,
     calculate_ip_classification_features
 )

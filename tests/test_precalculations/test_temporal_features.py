@@ -3,10 +3,10 @@ import pandas as pd
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from feature_engineering.precalculations_functions.temporal_features import calculate_temporal_features
-
+from feature_engineering.precalculations_functions import (
+    calculate_temporal_features
+    )
 
 class TestCalculateTemporalFeatures:
     
