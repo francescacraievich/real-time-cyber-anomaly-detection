@@ -41,3 +41,4 @@ if __name__ == "__main__":
         print(f"\nERROR: File not found at {gz_path}")
         if os.path.exists('data/normal_traffic/'):
             print("\nContents of data/normal_traffic/:", os.listdir('data/normal_traffic/'))
+
