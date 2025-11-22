@@ -16,7 +16,6 @@ if str(project_root) not in sys.path:
 #sys.path.append(os.path.abspath(feature_engineering_path))
 from feature_engineering.df_initializing.handler_init_dfs import DataFrameInitializer
 from feature_engineering.df_formatting.handler_df_formatter import DataFrameFormatter
-from feature_engineering.test import TestFormatter
 import pandas as pd
 
 data_path = project_root / "data"
@@ -32,8 +31,6 @@ df_cowrie, df_dionea, df_suricata, df_normal_traffic = df_initializer.initialize
 
 df_formatter = DataFrameFormatter(df_cowrie, df_dionea, df_suricata, df_normal_traffic)
 
-test_formatter = TestFormatter(df_suricata, df_normal_traffic)
-
 pd.set_option('display.max_rows', None)        # Show all rows
 pd.set_option('display.max_columns', None)     # Show all columns
 pd.set_option('display.width', None)           # No line wrapping
@@ -45,11 +42,7 @@ pd.set_option('display.max_colwidth', None)    # Show full cell content
 #print("Suricata Size:", df_suricata.shape)
 #print(df_suricata["flow"].head(10))
 #df_suricata.to_csv("suricata_sample.csv", index=False)
-print("-------------------------------------------------------------------------------")
-print("Suricata Formatted Columns:", test_formatter.suricata_df.columns)
-print(test_formatter.suricata_df.info())
-print(test_formatter.suricata_df.head(10))
 #print("-------------------------------------------------------------------------------")
-print("Normal Traffic Formatted Columns:", test_formatter.normal_traffic_df.columns)
-print(test_formatter.normal_traffic_df.info())
-print(test_formatter.normal_traffic_df.head(10))
+#print("Suricata Formatted Columns:", test_formatter.suricata_df.columns)
+#print(test_formatter.suricata_df.info())
+#print(test_formatter.suricata_df.head(10))
