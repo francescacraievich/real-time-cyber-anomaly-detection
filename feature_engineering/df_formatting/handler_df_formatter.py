@@ -1,11 +1,15 @@
-
-from df_initializing.handler_init_dfs import DataFrameInitializer
 import pandas as pd
 from deprecated import deprecated
-from format_normal_traffic import DataFrameFormatterNormalTraffic
-from format_suricata_df import DataFrameFormatterSuricata
+import sys
+import os
 
-from aggregation_functions import (
+# Add parent directory to path for absolute imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from feature_engineering.df_initializing.handler_init_dfs import DataFrameInitializer
+from feature_engineering.df_formatting.format_normal_traffic import DataFrameFormatterNormalTraffic
+from feature_engineering.df_formatting.format_suricata_df import DataFrameFormatterSuricata
+from feature_engineering.aggregation_functions import (
     calculate_total_events_processed,
     calculate_total_anomalous_events,
     calculate_total_unique_malicious_ips,
@@ -13,8 +17,7 @@ from aggregation_functions import (
     calculate_total_events_for_dst_ports,
     calculate_total_malicious_events_per_protocol
 )
-
-from precalculations_functions import (
+from feature_engineering.precalculations_functions import (
     calculate_rate_features,
     calculate_ratio_features,
     calculate_temporal_features,
