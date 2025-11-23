@@ -3,6 +3,7 @@ import random
 import pandas as pd
 import ijson
 import re
+import gzip
 
 
 class NormalTrafficDataFrameInitializer():
@@ -24,12 +25,20 @@ class NormalTrafficDataFrameInitializer():
         N = sample_size
         result = []
 
-        with open(self.benign_traffic_json_path, "r") as f:
+        # Check if file is gzipped
+        if self.benign_traffic_json_path.endswith('.gz'):
+            f = gzip.open(self.benign_traffic_json_path, "rt", encoding="utf-8")
+        else:
+            f = open(self.benign_traffic_json_path, "r", encoding="utf-8")
+
+        try:
             parser = ijson.items(f, "item")
             for i, item in enumerate(parser):
-                if i == N:   
+                if i == N:
                     break
                 result.append(item)
+        finally:
+            f.close()
 
         return(result)
     
@@ -47,7 +56,7 @@ if __name__ == "__main__":
     df_initializer = NormalTrafficDataFrameInitializer(
         benign_traffic_json_path="data/normal_traffic/benign_traffic_fixed.json"
     )
-    df_benign_traffic = df_initializer.initialize_benign_traffic()
+    df_benign_traffic = df_initializer.initialize_benign_traffic(sample_size=1000)
     print("Benign Traffic DataFrame:" , df_benign_traffic.head())
     print("DataFrame shape:", df_benign_traffic.shape)
     print("Columns:", df_benign_traffic.columns.tolist())
