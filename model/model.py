@@ -21,28 +21,33 @@ import pandas as pd
 data_path = project_root / "data"
 
 df_initializer = DataFrameInitializer(
-    cowrie_json_path=data_path / 'cowrie/log/cowrie.json',
-    dionea_json_path=data_path / 'dionaea/log/dionaea.json',
     suricata_json_path=data_path / 'suricata/log/suricata.json',
     normal_traffic_json_path=data_path / "normal_traffic/benign_traffic_fixed.json"
 )
 
-df_cowrie, df_dionea, df_suricata, df_normal_traffic = df_initializer.initialize_dfs(sample_size=100000)
+df_suricata, df_normal_traffic = df_initializer.initialize_dfs(sample_size=100000)
 
-df_formatter = DataFrameFormatter(df_cowrie, df_dionea, df_suricata, df_normal_traffic)
+df_formatter = DataFrameFormatter(df_suricata, df_normal_traffic)
+combined_df = df_formatter.unite_honeypot_and_normal_traffic_dfs()
+combined_df_shuffled = combined_df.sample(frac=1).reset_index(drop=True)
 
 pd.set_option('display.max_rows', None)        # Show all rows
 pd.set_option('display.max_columns', None)     # Show all columns
 pd.set_option('display.width', None)           # No line wrapping
 pd.set_option('display.max_colwidth', None)    # Show full cell content
 
-#print("-------------------------------------------------------------------------------")
-#print("Suricata Columns:", df_formatter.suricata_df.columns)
-#print("Suricata Columns:", df_suricata.columns)
-#print("Suricata Size:", df_suricata.shape)
-#print(df_suricata["flow"].head(10))
-#df_suricata.to_csv("suricata_sample.csv", index=False)
-#print("-------------------------------------------------------------------------------")
-#print("Suricata Formatted Columns:", test_formatter.suricata_df.columns)
-#print(test_formatter.suricata_df.info())
-#print(test_formatter.suricata_df.head(10))
+print("-------------------------------------------------------------------------------")
+print("Suricata Columns:", df_formatter.suricata_df.columns)
+print("Suricata Size:", df_formatter.suricata_df.shape)
+print(df_formatter.suricata_df.info())
+print(df_formatter.suricata_df.head(10))
+print("-------------------------------------------------------------------------------")
+print("Normal Traffic Columns:", df_formatter.normal_traffic_df.columns)
+print("Normal Traffic Size:", df_formatter.normal_traffic_df.shape)
+print(df_formatter.normal_traffic_df.info())
+print(df_formatter.normal_traffic_df.head(10))
+print("-------------------------------------------------------------------------------")
+print("Combined DataFrame Size:", combined_df_shuffled.shape)
+print("Combined DataFrame Columns:", combined_df_shuffled.columns)
+print(combined_df_shuffled.info())
+print(combined_df_shuffled.head(10))
