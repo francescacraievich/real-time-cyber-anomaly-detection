@@ -29,7 +29,7 @@ from sklearn.metrics import classification_report, confusion_matrix, precision_s
 
 
 class OneClassSVMModel:
-    def __init__(self, nu=0.01, kernel="rbf", gamma='scale'):
+    def __init__(self, nu=0.5, kernel="rbf", gamma='scale'):
 
         self.random_state = 42
 
@@ -64,8 +64,10 @@ class OneClassSVMModel:
         self.cat_features = [
             'transport_protocol', 'application_protocol', 'direction',
             'day_of_week', 'is_weekend', 'is_business_hours', 'src_is_private',
-            'dst_is_private', 'is_internal', 'dst_port_is_common'
+           'dst_is_private', 'is_internal', 'dst_port_is_common'
         ]
+
+         
 
         self.num_features = [col for col in df.columns if col not in self.cat_features and col not in self.features_to_drop]
 
@@ -143,7 +145,7 @@ class OneClassSVMModel:
                 self.preprocessor_path.exists() and 
                 self.config_path.exists())
 
-    def fit(self, df_benign, max_train_samples=50000):
+    def fit(self, df_benign, max_train_samples=50000, contamination=0.05):
         """
         Trains the One-Class SVM on Benign data.
         
@@ -182,14 +184,14 @@ class OneClassSVMModel:
         scores = self.model.decision_function(X_val_processed)
 
         # We set the boundary such that 99% of our validation data is considered "Normal"
-        self.threshold_boundary = np.percentile(scores, 1)
+        self.threshold_boundary = np.percentile(scores, contamination * 100)
         print(f"   -> Decision Boundary adjusted to: {self.threshold_boundary:.4f}")
 
         # 6. Save Model
         self.save_model()
 
     
-    def fit_or_load(self, df_benign, max_train_samples=50000):
+    def fit_or_load(self, df_benign, max_train_samples=50000, contamination=0.05):
         """
         Either load existing model or train a new one
         """
@@ -204,7 +206,7 @@ class OneClassSVMModel:
             print("[System] No existing model found. Training new model...")
         
         # Train new model
-        self.fit(df_benign, max_train_samples)
+        self.fit(df_benign, max_train_samples, contamination)
         return True
     
     
@@ -484,10 +486,10 @@ if __name__ == "__main__":
 
     # Running system
     print("\n2. Initializing One-Class SVM...")
-    svm_detector = OneClassSVMModel(nu=0.02)
+    svm_detector = OneClassSVMModel(nu=0.2, gamma='scale')
 
     print("\n3. Training or loading model...")
-    svm_detector.fit_or_load(df_benign, max_train_samples=10000)
+    svm_detector.fit_or_load(df_benign, max_train_samples=10000, contamination=0.1)
 
     #print("\n4. Running anomaly detection simulation...")
     #svm_detector.run_simulation(df_combined)
@@ -515,7 +517,7 @@ if __name__ == "__main__":
     else:
         print("  High False Alarm Rate (>10%) - Too many false positives")
     
-    if simulation_results['attack_detection_rate'] > 0.8:
+    if simulation_results['attack_detection_rate'] > 0.80:
         print(" Good Attack Detection Rate (>80%)")
     else:
         print("  Low Attack Detection Rate (<80%) - Missing too many attacks")
