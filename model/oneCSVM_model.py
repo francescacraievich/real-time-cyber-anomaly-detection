@@ -238,7 +238,7 @@ class OneClassSVMModel:
         return results
     
 
-    """
+    
     def run_simulation(self, stream_df, chunk_size=10):
         print("\n" + "="*50)
         print("STARTING ONE-CLASS SVM STREAM")
@@ -275,9 +275,10 @@ class OneClassSVMModel:
                     lbl = true_labels.iloc[global_idx]
                     actual_text = f"| Actual: {lbl}"
 
+                # Apply colors based on severity
                 if severity != "GREEN":
                     color = COLOR_RED if severity == "RED" else COLOR_ORANGE
-                    print(f"{color}[{severity}] {msg} | Dist: {score:.3f} {actual_text}{COLOR_RESET}")
+                    print(f"{color}[{severity}] [ROW {global_idx}] {msg} | Dist: {score:.3f} {actual_text}{COLOR_RESET}")
                     anomaly_count += 1
             
             if i > 100: 
@@ -286,7 +287,7 @@ class OneClassSVMModel:
         print(f"\n[Simulation stopped - Processed {total_processed} samples]")
         print(f"[Detection Summary: {anomaly_count} anomalies detected out of {total_processed} samples]")
     
-        """
+        
 
 
 
@@ -377,10 +378,10 @@ class OneClassSVMModel:
             attack_detection_rate = attack_detected / attack_total
             print(f"   • Attack Detection: {attack_detected}/{attack_total} ({attack_detection_rate:.3f})")
     
-        print(f"\n SEVERITY DISTRIBUTION:")
-        for severity, count in severity_counts.items():
-            percentage = (count / len(stream_df)) * 100
-            print(f"   • {severity}: {count} ({percentage:.1f}%)")
+        #print(f"\n SEVERITY DISTRIBUTION:")
+        #for severity, count in severity_counts.items():
+           # percentage = (count / len(stream_df)) * 100
+            #print(f"   • {severity}: {count} ({percentage:.1f}%)")
     
         if attack_types:
             print(f"\n PERFORMANCE BY ATTACK TYPE:")
@@ -474,7 +475,7 @@ if __name__ == "__main__":
         df_benign = pd.read_csv(data_path / "normal_traffic_formatted.csv")
         df_combined = pd.read_csv(data_path / "combined_shuffled_dataset.csv")
         #df_suricata = pd.read_csv(data_path / "suricata_formatted.csv")
-        print(f"   -> Loaded {len(df_benign)} benign logs and {len(df_combined)} stream logs.")
+        print(f"   -> Loaded {len(df_benign)} benign logs and {len(df_combined)} bombined logs.")
         
         # Ensure benign label column exists (mostly for consistency, SVM ignores the column anyway)
         if 'label' not in df_benign.columns: df_benign['label'] = 'benign'
@@ -491,20 +492,25 @@ if __name__ == "__main__":
     print("\n3. Training or loading model...")
     svm_detector.fit_or_load(df_benign, max_train_samples=10000, contamination=0.1)
 
-    #print("\n4. Running anomaly detection simulation...")
-    #svm_detector.run_simulation(df_combined)
+    print("\n4. Running anomaly detection simulation on new_df_combined...")
+    #new_df_combined = df_combined.sample(n=40000, random_state=42)
+    print(df_combined['label'].head(40))
+    svm_detector.run_simulation(df_combined)
 
-    print("4. Evaluating model performance...")
+
+    print("5. Evaluating model performance...")
     # Test on a subset for evaluation
-    test_sample = df_combined.sample(n=2000, random_state=42)  # Sample for faster evaluation
+    test_sample = df_combined.sample(n=10000, random_state=42)  # Sample for faster evaluation
     
     # Method 1: Detailed performance metrics
     performance_metrics = svm_detector.evaluate_model_performance(test_sample)
     
+
+    print("\n6. Running anomaly detection detailed simulation...")
     # Method 2: Detailed simulation
     simulation_results = svm_detector.run_detailed_simulation(test_sample)
     
-    print("\n5. Model Quality Assessment:")
+    print("\n7. Model Quality Assessment:")
     
     # Good performance indicators:
     if performance_metrics['f1_score'] > 0.7:
@@ -517,7 +523,7 @@ if __name__ == "__main__":
     else:
         print("  High False Alarm Rate (>10%) - Too many false positives")
     
-    if simulation_results['attack_detection_rate'] > 0.80:
+    if simulation_results['attack_detection_rate'] > 0.8:
         print(" Good Attack Detection Rate (>80%)")
     else:
         print("  Low Attack Detection Rate (<80%) - Missing too many attacks")
