@@ -52,6 +52,9 @@ class OneClassSVMModel:
         self.model_path = self.model_dir / "oneclass_svm_model.pkl"
         self.preprocessor_path = self.model_dir / "oneclass_svm_preprocessor.pkl"
         self.config_path = self.model_dir / "oneclass_svm_config.pkl"
+
+        # Best parameters from tuning
+        self.best_params = None
     
     def _configure_features(self, df):
         # Identify categorical and numerical features
@@ -78,7 +81,226 @@ class OneClassSVMModel:
                  [col for col in self.cat_features if col in df.columns])
             ]
         )
+
+
+
+
+
+
+
+
+
+#                  HYPERPARAMETER GRID SEARCH METHODS   
+
+
+
+
+
+    def grid_search_hyperparameters(self, df_benign, df_test=None, max_train_samples=5000, quick_search=True):
+        """ 
+        Perform grid search to find optimal hyperparameters
+        """
+
+        print("\n" + "="*60)
+        print("GRID SEARCH HYPERPARAMETER OPTIMIZATION")
+        print("="*60)
+
+         # Configure features
+        print("[GridSearch] Configuring features...")
+        self._configure_features(df_benign)
+
+        # Prepare data
+        X_benign = df_benign.drop(columns=self.features_to_drop, errors='ignore')
+
+        # Downsample for speed
+        if len(X_benign) > max_train_samples:
+            X_benign = X_benign.sample(n=max_train_samples, random_state=self.random_state)
+            print(f"[GridSearch] Using {max_train_samples} samples for grid search")
+
+        # Fit preprocessor
+        self.preprocessor.fit(X_benign)
+        X_processed = self.preprocessor.transform(X_benign)
+
+        # Define parameter grid
+        if quick_search:
+            param_grid = {
+                'nu': [0.05, 0.1, 0.15, 0.2],
+                'kernel': ['rbf', 'linear'], 
+                'gamma': ['scale', 'auto']
+            }
+        else:
+            param_grid = {
+                'nu': [0.01, 0.05, 0.1, 0.15, 0.2, 0.3],
+                'kernel': ['rbf', 'linear', 'poly'],
+                'gamma': ['scale', 'auto', 0.001, 0.01]
+            }
         
+        # Generate all parameter combinations
+        from itertools import product
+        param_combinations = []
+        for nu in param_grid['nu']:
+            for kernel in param_grid['kernel']:
+                for gamma in param_grid['gamma']:
+                    param_combinations.append({'nu': nu, 'kernel': kernel, 'gamma': gamma})
+
+        print(f"[GridSearch] Testing {len(param_combinations)} parameter combinations...")
+
+        best_score = -np.inf
+        best_params = None
+        results = []
+
+        # Test each parameter combination
+        for i, params in enumerate(param_combinations):
+            try:
+                print(f"\n[{i+1}/{len(param_combinations)}] Testing: {params}")
+            
+                # Create and train model
+                model = OneClassSVM(**params)
+                model.fit(X_processed)
+            
+                # Simple evaluation: use F1-score if test data available, else decision function stats
+                if df_test is not None and len(df_test) > 100:
+                    score = self._simple_test_evaluation(model, df_test, params)
+                else:
+                    score = self._simple_unsupervised_evaluation(model, X_processed)
+            
+                results.append({'params': params, 'score': score})
+                print(f"   Score: {score:.4f}")
+            
+                # Update best
+                if score > best_score:
+                    best_score = score
+                    best_params = params.copy()
+                    print(f"   *** New best score: {best_score:.4f} ***")
+                
+            except Exception as e:
+                print(f"   Error: {e}")
+                continue
+
+        # Store and display results
+        self.best_params = best_params
+        self.model = OneClassSVM(**best_params)
+    
+        print(f"\n" + "="*50)
+        print("GRID SEARCH COMPLETED")
+        print("="*50)
+        print(f"Best Parameters: {best_params}")
+        print(f"Best Score: {best_score:.4f}")
+    
+        return best_params, best_score, results
+    
+
+
+    
+
+    def _simple_test_evaluation(self, model, df_test, params):
+        """Simple evaluation using test data with labels"""
+        try:
+            # Sample test data if too large
+            test_sample = df_test.sample(n=min(1000, len(df_test)), random_state=42)
+        
+            # Prepare test data
+            X_test = test_sample.drop(columns=self.features_to_drop, errors='ignore')
+            y_true = test_sample['label']
+        
+            # Get predictions
+            X_test_processed = self.preprocessor.transform(X_test)
+            predictions = model.predict(X_test_processed)  # 1 for inliers, -1 for outliers
+        
+            # Convert to binary
+            y_pred = [1 if pred == -1 else 0 for pred in predictions]  # 1=anomaly, 0=normal
+            y_true_binary = [0 if label == "benign" else 1 for label in y_true]
+        
+            # Calculate F1-score
+            from sklearn.metrics import f1_score
+            score = f1_score(y_true_binary, y_pred, zero_division=0)
+            return score
+        
+        except Exception as e:
+            print(f"   Test evaluation error: {e}")
+            return 0.0
+
+
+
+
+    def _simple_unsupervised_evaluation(self, model, X_processed):
+        """Simple evaluation using decision function statistics"""
+        try:
+            scores = model.decision_function(X_processed)
+        
+            # We want reasonable spread in scores and not too many outliers
+            outlier_fraction = np.sum(scores < 0) / len(scores)
+            mean_score = np.mean(scores)
+        
+            # Score based on: not too many outliers (should be ~nu), reasonable mean
+            target_outlier_fraction = 0.1  # Expect about 10% outliers
+            outlier_penalty = abs(outlier_fraction - target_outlier_fraction)
+        
+            score = mean_score - outlier_penalty * 2  # Penalty for wrong outlier fraction
+            return score
+        
+        except Exception as e:
+            print(f"   Unsupervised evaluation error: {e}")
+            return -1.0
+        
+
+    def fit_with_grid_search(self, df_benign, df_test=None, max_train_samples=10000, 
+                        contamination=0.1, quick_search=True):
+        """
+        Train model with grid search optimization
+        """
+        print("\n" + "="*50)
+        print("TRAINING WITH GRID SEARCH")
+        print("="*50)
+    
+        # Run grid search
+        best_params, best_score, results = self.grid_search_hyperparameters(
+            df_benign, df_test, max_train_samples//2, quick_search  # Use half samples for grid search
+        )
+    
+        # Train final model with best parameters and full training process
+        self.model = OneClassSVM(**best_params)
+        print(f"\n[Final Training] Using best parameters: {best_params}")
+        self.fit(df_benign, max_train_samples, contamination)
+    
+        return best_params, best_score
+
+    def fit_or_load_with_grid_search(self, df_benign, df_test=None, max_train_samples=10000, 
+                                 contamination=0.1, force_retrain=False, quick_search=True):
+        """
+        Load existing model or train new one with grid search
+        """
+        if self.model_exists() and not force_retrain:
+            print("[System] Found existing model files.")
+            if self.load_model():
+                print("[System] Successfully loaded existing model.")
+                if self.best_params:
+                    print(f"[System] Loaded model was trained with: {self.best_params}")
+                return True
+            else:
+                print("[System] Failed to load existing model. Training new one...")
+        else:
+            print("[System] Training new model with grid search...")
+    
+        # Train with grid search
+        best_params, best_score = self.fit_with_grid_search(
+            df_benign, df_test, max_train_samples, contamination, quick_search
+        )
+    
+        print(f"\n[System] Training completed with best F1-score: {best_score:.3f}")
+        return True
+    
+
+
+
+
+
+
+
+    #                   FUNCTIONS FOR SAVING/LOADING MODEL
+
+
+
     def save_model(self):
         """Save the trained model, preprocessor, and configuration"""
         try:
@@ -144,7 +366,24 @@ class OneClassSVMModel:
         return (self.model_path.exists() and 
                 self.preprocessor_path.exists() and 
                 self.config_path.exists())
+    
 
+
+
+
+
+
+
+
+
+
+
+
+
+    #                  TRAINING AND PREDICTION METHODS       # 
+
+
+    
     def fit(self, df_benign, max_train_samples=50000, contamination=0.05):
         """
         Trains the One-Class SVM on Benign data.
@@ -189,12 +428,13 @@ class OneClassSVMModel:
 
         # 6. Save Model
         self.save_model()
-
     
+    
+    """
     def fit_or_load(self, df_benign, max_train_samples=50000, contamination=0.05):
-        """
+        
         Either load existing model or train a new one
-        """
+        
         if self.model_exists():
             print("[System] Found existing model files.")
             if self.load_model():
@@ -208,6 +448,7 @@ class OneClassSVMModel:
         # Train new model
         self.fit(df_benign, max_train_samples, contamination)
         return True
+    """
     
     
     def predict(self, row_data):
@@ -238,7 +479,11 @@ class OneClassSVMModel:
         return results
     
 
-    
+
+
+
+
+    """
     def run_simulation(self, stream_df, chunk_size=10):
         print("\n" + "="*50)
         print("STARTING ONE-CLASS SVM STREAM")
@@ -286,11 +531,11 @@ class OneClassSVMModel:
 
         print(f"\n[Simulation stopped - Processed {total_processed} samples]")
         print(f"[Detection Summary: {anomaly_count} anomalies detected out of {total_processed} samples]")
-    
+    """
         
 
 
-
+    #                   DETAILED SIMULATION AND EVALUATION METHODS        
 
 
 
@@ -487,15 +732,25 @@ if __name__ == "__main__":
 
     # Running system
     print("\n2. Initializing One-Class SVM...")
-    svm_detector = OneClassSVMModel(nu=0.2, gamma='scale')
+    #svm_detector = OneClassSVMModel(nu=0.2, gamma='scale')
+    svm_detector = OneClassSVMModel()
 
     print("\n3. Training or loading model...")
-    svm_detector.fit_or_load(df_benign, max_train_samples=10000, contamination=0.1)
+    #svm_detector.fit_or_load(df_benign, max_train_samples=10000, contamination=0.1)
+    test_for_tuning = df_combined.sample(n=2000, random_state=42)
+    svm_detector.fit_or_load_with_grid_search(
+        df_benign, 
+        df_test=test_for_tuning,
+        max_train_samples=8000,
+        contamination=0.1,
+        force_retrain=False,  # Set to True to force retraining
+        quick_search=True     # Set to False for exhaustive search
+    )
 
-    print("\n4. Running anomaly detection simulation on new_df_combined...")
+    #print("\n4. Running anomaly detection simulation on df_combined...")
     #new_df_combined = df_combined.sample(n=40000, random_state=42)
-    print(df_combined['label'].head(40))
-    svm_detector.run_simulation(df_combined)
+    #print(df_combined['label'].head(40))
+    #svm_detector.run_simulation(df_combined)
 
 
     print("5. Evaluating model performance...")
@@ -511,7 +766,13 @@ if __name__ == "__main__":
     simulation_results = svm_detector.run_detailed_simulation(test_sample)
     
     print("\n7. Model Quality Assessment:")
-    
+
+    print(f"   Best parameters found: {svm_detector.best_params}")
+    print(f"   F1-Score: {performance_metrics['f1_score']:.3f}")
+    print(f"   Detection Rate: {simulation_results['attack_detection_rate']:.3f}")
+    print(f"   False Alarm Rate: {simulation_results['false_alarm_rate']:.3f}")
+
+    """
     # Good performance indicators:
     if performance_metrics['f1_score'] > 0.7:
         print(" Good F1-Score (>0.7)")
@@ -527,7 +788,7 @@ if __name__ == "__main__":
         print(" Good Attack Detection Rate (>80%)")
     else:
         print("  Low Attack Detection Rate (<80%) - Missing too many attacks")
-
+    """
     
 
 
