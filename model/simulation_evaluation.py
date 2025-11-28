@@ -159,23 +159,23 @@ class SimulationEvaluator:
     def _display_simulation_results(self, metrics):
         """Display simulation results"""
         print(f"\n SIMULATION RESULTS:")
-        print(f"   Total Samples: {metrics['total_samples']}")
-        print(f"   Benign Samples: {metrics['benign_total']}")
-        print(f"   Attack Samples: {metrics['attack_total']}")
+        print(f" Total Samples: {metrics['total_samples']}")
+        print(f" Benign Samples: {metrics['benign_total']}")
+        print(f" Attack Samples: {metrics['attack_total']}")
     
         print(f"\n DETECTION PERFORMANCE:")
         if metrics['benign_total'] > 0:
-            print(f"   • Benign Classification: {metrics['benign_accuracy']:.3f}")
-            print(f"   • False Alarm Rate: {metrics['false_alarm_rate']:.3f}")
+            print(f" • Benign Classification: {metrics['benign_accuracy']:.3f}")
+            print(f" • False Alarm Rate: {metrics['false_alarm_rate']:.3f}")
     
         if metrics['attack_total'] > 0:
-            print(f"   • Attack Detection: {metrics['attack_detection_rate']:.3f}")
+            print(f" • Attack Detection: {metrics['attack_detection_rate']:.3f}")
     
         if metrics['attack_type_performance']:
             print(f"\n PERFORMANCE BY ATTACK TYPE:")
             for attack_type, stats in metrics['attack_type_performance'].items():
                 detection_rate = stats['detected'] / stats['total']
-                print(f"   • {attack_type}: {stats['detected']}/{stats['total']} ({detection_rate:.3f})")
+                print(f" • {attack_type}: {stats['detected']}/{stats['total']} ({detection_rate:.3f})")
 
 
 
@@ -236,9 +236,9 @@ class SimulationEvaluator:
     def _display_evaluation_results(self, metrics, true_binary, predicted_labels):
         """Display evaluation results"""
         print(f"PERFORMANCE METRICS:")
-        print(f"   • Precision: {metrics['precision']:.3f}")
-        print(f"   • Recall:    {metrics['recall']:.3f}")
-        print(f"   • F1-Score:  {metrics['f1_score']:.3f}")
+        print(f" • Precision: {metrics['precision']:.3f}")
+        print(f" • Recall:    {metrics['recall']:.3f}")
+        print(f" • F1-Score:  {metrics['f1_score']:.3f}")
     
         print(f"\n CONFUSION MATRIX:")
         print("              Predicted")
@@ -247,14 +247,14 @@ class SimulationEvaluator:
         print(f"Actual Anomaly  {metrics['fn']:4d}    {metrics['tp']:4d}")
     
         print(f"\n DETAILED BREAKDOWN:")
-        print(f"   • True Negatives (Correct Normal):     {metrics['tn']:4d}")
-        print(f"   • False Positives (False Alarms):      {metrics['fp']:4d}")
-        print(f"   • False Negatives (Missed Attacks):    {metrics['fn']:4d}")
-        print(f"   • True Positives (Detected Attacks):   {metrics['tp']:4d}")
+        print(f" • True Negatives (Correct Normal):     {metrics['tn']:4d}")
+        print(f" • False Positives (False Alarms):      {metrics['fp']:4d}")
+        print(f" • False Negatives (Missed Attacks):    {metrics['fn']:4d}")
+        print(f" • True Positives (Detected Attacks):   {metrics['tp']:4d}")
     
         print(f"\n KEY RATES:")
-        print(f"   • Detection Rate:    {metrics['detection_rate']:.3f} ({metrics['detection_rate']*100:.1f}%)")
-        print(f"   • False Alarm Rate:  {metrics['false_alarm_rate']:.3f} ({metrics['false_alarm_rate']*100:.1f}%)")
+        print(f" • Detection Rate:    {metrics['detection_rate']:.3f} ({metrics['detection_rate']*100:.1f}%)")
+        print(f" • False Alarm Rate:  {metrics['false_alarm_rate']:.3f} ({metrics['false_alarm_rate']*100:.1f}%)")
 
 
 

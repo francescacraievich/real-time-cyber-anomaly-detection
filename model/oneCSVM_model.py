@@ -97,9 +97,9 @@ class OneClassSVMModel:
             with open(self.config_path, 'wb') as f:
                 pickle.dump(config, f)
             
-            print(f"   -> Model saved to: {self.model_path}")
-            print(f"   -> Preprocessor saved to: {self.preprocessor_path}")
-            print(f"   -> Config saved to: {self.config_path}")
+            print(f" -> Model saved to: {self.model_path}")
+            print(f" -> Preprocessor saved to: {self.preprocessor_path}")
+            print(f" -> Config saved to: {self.config_path}")
             
         except Exception as e:
             print(f"[ERROR] Failed to save model: {e}")
@@ -131,9 +131,9 @@ class OneClassSVMModel:
                 self.best_params = config['best_params']
                 print(f"   -> Best parameters: {self.best_params}")
             
-            print(f"   -> Model loaded from: {self.model_path}")
-            print(f"   -> Threshold boundary: {self.threshold_boundary:.4f}")
-            print(f"   -> Features configured: {len(self.num_features)} numeric, {len(self.cat_features)} categorical")
+            print(f" -> Model loaded from: {self.model_path}")
+            print(f" -> Threshold boundary: {self.threshold_boundary:.4f}")
+            print(f" -> Features configured: {len(self.num_features)} numeric, {len(self.cat_features)} categorical")
             
             return True
             
@@ -142,12 +142,16 @@ class OneClassSVMModel:
             return False
         
 
+
+
     
     def model_exists(self):
         """Check if all required model files exist"""
         return (self.model_path.exists() and 
                 self.preprocessor_path.exists() and 
                 self.config_path.exists())
+
+
 
 
 
@@ -184,33 +188,15 @@ class OneClassSVMModel:
 
         
         self.threshold_boundary = np.percentile(scores, contamination * 100)
-        print(f"   -> Decision Boundary adjusted to: {self.threshold_boundary:.4f}")
+        print(f" -> Decision Boundary adjusted to: {self.threshold_boundary:.4f}")
 
         # 6. Save Model
         self.save_model()
     
     
-    """
-    def fit_or_load(self, df_benign, max_train_samples=50000, contamination=0.05):
-        
-        Either load existing model or train a new one
-        
-        if self.model_exists():
-            print("[System] Found existing model files.")
-            if self.load_model():
-                print("[System] Successfully loaded existing model.")
-                return True
-            else:
-                print("[System] Failed to load existing model. Training new one...")
-        else:
-            print("[System] No existing model found. Training new model...")
-        
-        # Train new model
-        self.fit(df_benign, max_train_samples, contamination)
-        return True
-    """
     
-    
+
+
     def predict(self, row_data):
         """
         Returns: (severity_color, description, distance_score)
