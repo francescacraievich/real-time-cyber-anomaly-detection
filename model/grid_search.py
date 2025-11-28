@@ -8,7 +8,7 @@ class GridSearchOptimizer:
     def __init__(self, model_instance):
         self.model = model_instance
         
-    def grid_search_hyperparameters(self, df_benign, df_test=None, max_train_samples=5000, quick_search=True):
+    def grid_search_hyperparameters(self, df_benign, df_test=None, max_train_samples=5000):
         """Perform grid search to find optimal hyperparameters"""
         print("\n" + "="*60)
         print("GRID SEARCH HYPERPARAMETER OPTIMIZATION")
@@ -31,7 +31,7 @@ class GridSearchOptimizer:
         X_processed = self.model.preprocessor.transform(X_benign)
 
         # Define parameter grid
-        param_grid = self._get_parameter_grid(quick_search)
+        param_grid = self._get_parameter_grid()
 
         # Generate parameter combinations
         param_combinations = self._generate_param_combinations(param_grid)
@@ -52,20 +52,22 @@ class GridSearchOptimizer:
     
     
 
-    def _get_parameter_grid(self, quick_search):
+    def _get_parameter_grid(self):
         """Define parameter grid based on search type"""
-        if quick_search:
-            return {
+        #if quick_search:
+        return {
                 'nu': [0.05, 0.1, 0.15, 0.2],
                 'kernel': ['rbf', 'linear'], 
                 'gamma': ['scale', 'auto']
-            }
-        else:
-            return {
-                'nu': [0.01, 0.05, 0.1, 0.15, 0.2, 0.3],
-                'kernel': ['rbf', 'linear', 'poly'],
-                'gamma': ['scale', 'auto', 0.001, 0.01]
-            }
+        }
+        
+
+#else:
+#return {
+#'nu': [0.01, 0.05, 0.1, 0.15, 0.2, 0.3],
+#'kernel': ['rbf', 'linear', 'poly'],
+#'gamma': ['scale', 'auto', 0.001, 0.01]
+#}
         
 
     
@@ -176,7 +178,7 @@ class GridSearchOptimizer:
 
 
     def fit_with_grid_search(self, df_benign, df_test=None, max_train_samples=10000, 
-                            contamination=0.1, quick_search=True):
+                            contamination=0.1):
         """Train model with grid search optimization"""
         print("\n" + "="*50)
         print("TRAINING WITH GRID SEARCH")
@@ -184,11 +186,12 @@ class GridSearchOptimizer:
     
         # Run grid search
         best_params, best_score, results = self.grid_search_hyperparameters(
-            df_benign, df_test, max_train_samples//2, quick_search
+            df_benign, df_test, max_train_samples//2
         )
     
         # Train final model with best parameters
         print(f"\n[Final Training] Using best parameters: {best_params}")
+        # The fit part of the model is here! 
         self.model.fit(df_benign, max_train_samples, contamination)
     
         return best_params, best_score
@@ -196,7 +199,7 @@ class GridSearchOptimizer:
 
 
     def fit_or_load_with_grid_search(self, df_benign, df_test=None, max_train_samples=10000, 
-                                    contamination=0.1, force_retrain=False, quick_search=True):
+                                    contamination=0.1, force_retrain=False):
         """Load existing model or train new one with grid search"""
         if self.model.model_exists() and not force_retrain:
             print("[System] Found existing model files.")
@@ -212,7 +215,7 @@ class GridSearchOptimizer:
     
         # Train with grid search
         best_params, best_score = self.fit_with_grid_search(
-            df_benign, df_test, max_train_samples, contamination, quick_search
+            df_benign, df_test, max_train_samples, contamination
         )
     
         print(f"\n[System] Training completed with best F1-score: {best_score:.3f}")
