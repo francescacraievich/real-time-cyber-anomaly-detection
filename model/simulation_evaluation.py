@@ -7,6 +7,62 @@ class SimulationEvaluator:
     def __init__(self, model_instance):
         self.model = model_instance
 
+
+
+            ###########      SIMULATION METHODS      ###########
+
+
+    def run_simulation(self, stream_df, chunk_size=10):
+        
+        print("\n" + "="*50)
+        print("STARTING ONE-CLASS SVM STREAM")
+        print("="*50)
+
+        # Check for labels in the combined dataset
+        has_labels = 'label' in stream_df.columns
+        true_labels = stream_df['label'] if has_labels else None
+
+        stream_input = stream_df.drop(columns=self.model.features_to_drop, errors='ignore')
+
+        COLOR_RED = '\033[91m'
+        COLOR_ORANGE = '\033[93m'
+        COLOR_RESET = '\033[0m'
+
+        anomaly_count = 0
+        total_processed = 0
+
+        for i in range(0, len(stream_input), chunk_size):
+            time.sleep(0.1)
+            chunk = stream_input.iloc[i : i+chunk_size]
+            if chunk.empty: 
+                break
+            
+            batch_results = self.model.predict(chunk)  # Fixed: use self.model.predict()
+            
+            print(f"\n--- Batch {i//chunk_size + 1} ---")
+            for idx, (severity, msg, score) in enumerate(batch_results):
+                global_idx = i + idx
+                total_processed += 1
+                
+                # Format "Actual" label if available
+                actual_text = ""
+                if has_labels:
+                    lbl = true_labels.iloc[global_idx]
+                    actual_text = f"| Actual: {lbl}"
+
+                # Apply colors based on severity
+                if severity != "GREEN":
+                    color = COLOR_RED if severity == "RED" else COLOR_ORANGE
+                    print(f"{color}[{severity}] [ROW {global_idx}] {msg} | Dist: {score:.3f} {actual_text}{COLOR_RESET}")
+                    anomaly_count += 1
+            
+            if i > 100: 
+                break
+
+        print(f"\n[Simulation stopped - Processed {total_processed} samples]")
+        print(f"[Detection Summary: {anomaly_count} anomalies detected out of {total_processed} samples]")
+
+
     def run_detailed_simulation(self, stream_df, chunk_size=50):
         """Run detailed simulation with performance tracking"""
         print("\n" + "="*50)
@@ -121,6 +177,13 @@ class SimulationEvaluator:
                 detection_rate = stats['detected'] / stats['total']
                 print(f"   • {attack_type}: {stats['detected']}/{stats['total']} ({detection_rate:.3f})")
 
+
+
+
+            ############      EVALUATION METHODS      ###########
+
+
+
     def evaluate_model_performance(self, test_df):
         """Comprehensive model performance evaluation"""
         print("\n" + "="*60)
@@ -195,55 +258,4 @@ class SimulationEvaluator:
 
 
 
-        # KEEP THIS SIMULATION !!!! -> Will probably delete detailed simulation later and use this
-
-
-    """
-    def run_simulation(self, stream_df, chunk_size=10):
-        print("\n" + "="*50)
-        print("STARTING ONE-CLASS SVM STREAM")
-        print("="*50)
-
-        # Check for labels in the combined dataset
-        has_labels = 'label' in stream_df.columns
-        true_labels = stream_df['label'] if has_labels else None
-
-        stream_input = stream_df.drop(columns=self.features_to_drop, errors='ignore')
-
-        COLOR_RED = '\033[91m'
-        COLOR_ORANGE = '\033[93m'
-        COLOR_RESET = '\033[0m'
-
-        anomaly_count = 0
-        total_processed = 0
-
-        for i in range(0, len(stream_input), chunk_size):
-            time.sleep(0.1)
-            chunk = stream_input.iloc[i : i+chunk_size]
-            if chunk.empty: break
-            
-            batch_results = self.predict(chunk)
-            
-            print(f"\n--- Batch {i//chunk_size + 1} ---")
-            for idx, (severity, msg, score) in enumerate(batch_results):
-                global_idx = i + idx
-                total_processed += 1
-                
-                # Format "Actual" label if available
-                actual_text = ""
-                if has_labels:
-                    lbl = true_labels.iloc[global_idx]
-                    actual_text = f"| Actual: {lbl}"
-
-                # Apply colors based on severity
-                if severity != "GREEN":
-                    color = COLOR_RED if severity == "RED" else COLOR_ORANGE
-                    print(f"{color}[{severity}] [ROW {global_idx}] {msg} | Dist: {score:.3f} {actual_text}{COLOR_RESET}")
-                    anomaly_count += 1
-            
-            if i > 100: 
-                break
-
-        print(f"\n[Simulation stopped - Processed {total_processed} samples]")
-        print(f"[Detection Summary: {anomaly_count} anomalies detected out of {total_processed} samples]")
-    """
+        

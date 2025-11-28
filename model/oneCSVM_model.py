@@ -247,24 +247,7 @@ class OneClassSVMModel:
         
 
 
-    """
-    # Good performance indicators:
-    if performance_metrics['f1_score'] > 0.7:
-        print(" Good F1-Score (>0.7)")
-    else:
-        print("  Low F1-Score (<0.7) - Consider tuning parameters")
-    
-    if simulation_results['false_alarm_rate'] < 0.1:
-        print(" Low False Alarm Rate (<10%)")
-    else:
-        print("  High False Alarm Rate (>10%) - Too many false positives")
-    
-    if simulation_results['attack_detection_rate'] > 0.8:
-        print(" Good Attack Detection Rate (>80%)")
-    else:
-        print("  Low Attack Detection Rate (<80%) - Missing too many attacks")
-    """
-    
+
 
 
 
