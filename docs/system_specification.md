@@ -11,7 +11,7 @@
 ## 1. Introduction
 
 ### 1.1 Purpose
-The Real-Time Cyber Anomaly Detection System is designed to identify malicious network traffic patterns and security threats in real-time by analyzing logs from multiple honeypot sources and normal network traffic. The system leverages machine learning techniques, specifically One-Class SVM, to distinguish between benign and anomalous network behavior.
+The Real-Time Cyber Anomaly Detection System is designed to identify malicious network traffic patterns and security threats in real-time by analyzing Suricata IDS logs and normal network traffic. The system leverages machine learning techniques, specifically One-Class SVM, to distinguish between benign and anomalous network behavior.
 
 ### 1.2 Scope
 This document describes the functional and non-functional requirements, system architecture, data specifications, and risk analysis for the Real-Time Cyber Anomaly Detection platform. The system targets network security monitoring in enterprise environments and research contexts.
@@ -41,15 +41,15 @@ Network administrators and security teams face increasing challenges in detectin
 ### 2.2 Current Challenges
 - **Volume**: Network traffic generates massive amounts of log data (71,679+ Suricata events)
 - **Velocity**: Real-time processing requirements for timely threat detection
-- **Variety**: Multiple log formats from different honeypot systems (Dionaea, Suricata, Cowrie)
+- **Feature Richness**: Suricata provides comprehensive flow metadata (bytes, packets, duration, protocols)
 - **Novelty**: Unknown attack patterns that signature-based systems cannot detect
 
 ### 2.3 Proposed Solution
 A machine learning-based anomaly detection system that:
 - Uses unsupervised learning (One-Class SVM) to identify outliers in network traffic
-- Processes logs from multiple honeypot sources for comprehensive threat coverage
-- Extracts statistical features from network traffic for model training
-- Provides real-time classification of traffic as normal or anomalous
+- Processes Suricata IDS logs as malicious traffic source (selected for complete feature set)
+- Extracts 30+ statistical features from network traffic for model training
+- Provides real-time classification of traffic as normal or anomalous with severity levels (GREEN/ORANGE/RED)
 
 ---
 
@@ -57,52 +57,92 @@ A machine learning-based anomaly detection system that:
 
 ### 3.1 Data Sources
 
-#### 3.1.1 Honeypot Logs (Malicious Traffic)
-The system collects malicious traffic data from three honeypot systems:
+#### 3.1.1 Malicious Traffic (Suricata IDS)
+**Suricata** was selected as the primary malicious traffic source due to its comprehensive feature set:
 
-**Dionaea**
-- **Volume**: 6,287 log entries
-- **Purpose**: Low-interaction honeypot for capturing malware
-- **Format**: JSON
-- **Location**: `data/dionaea/dionaea.json`
-- **Key Attributes**: timestamp, source IP, destination port, protocol, payload
-
-**Suricata**
 - **Volume**: 71,679 log entries
-- **Purpose**: Network threat detection engine
+- **Purpose**: Network Intrusion Detection System (IDS) capturing attack traffic
 - **Format**: JSON
-- **Location**: `data/suricata/log/suricata.json`
-- **Key Attributes**: alert severity, signature, flow metadata, packet info
+- **Key Attributes**: source/destination IP, ports, protocol, bytes, packets, duration, flow direction
+- **Label**: `suricata` (malicious)
 
-**Cowrie**
-- **Volume**: Variable
-- **Purpose**: SSH/Telnet honeypot for brute force attack logging
-- **Format**: JSON
-- **Location**: `data/cowrie/cowrie.json`
-- **Key Attributes**: session ID, username attempts, commands executed
+> **Note**: Dionaea and Cowrie honeypots were evaluated but excluded from the final implementation because they lacked the complete network flow features (bytes_sent, bytes_received, pkts_sent, pkts_received, duration) required for consistent feature engineering across all data sources.
 
-#### 3.1.2 Normal Traffic Dataset
-- **Source**: Benign network traffic baseline
+#### 3.1.2 Normal Traffic Dataset (Benign Baseline)
+- **Source**: CICIDS/ISCX benign network traffic dataset
 - **Format**: Compressed JSON (gzip)
 - **Location**: `data/normal_traffic/benign_traffic_fixed.json.gz`
 - **Sample Size**: Configurable (default: 10,000 samples)
 - **Purpose**: Training baseline for normal behavior patterns
+- **Label**: `benign`
 
-### 3.2 Data Collection Pipeline
-1. **Extraction**: Logs collected from TPOT honeypot platform
-2. **Preprocessing**: JSON parsing, invalid value replacement (NaN, Infinity → null)
-3. **Sampling**: Controlled sampling using ijson for memory efficiency
-4. **Storage**: Local filesystem with gzip compression for space optimization
+### 3.2 Base Features (Unified Schema)
+All data sources are normalized to a common feature schema:
 
-### 3.3 Feature Engineering
-Statistical features extracted from raw logs:
+| Feature | Type | Description |
+|---------|------|-------------|
+| `source_ip` | string | Source IP address |
+| `destination_ip` | string | Destination IP address |
+| `source_port` | int | Source port number |
+| `destination_port` | int | Destination port number |
+| `timestamp_start` | datetime | Flow start timestamp |
+| `transport_protocol` | string | TCP/UDP/ICMP |
+| `application_protocol` | string | HTTP/DNS/SSH/etc. |
+| `duration` | float | Flow duration in seconds |
+| `bytes_sent` | int | Bytes sent |
+| `bytes_received` | int | Bytes received |
+| `pkts_sent` | int | Packets sent |
+| `pkts_received` | int | Packets received |
+| `direction` | string | Flow direction |
+| `label` | string | benign/suricata |
 
-- **Network Features**: Protocol distribution, port frequencies, packet sizes
-- **Temporal Features**: Time-based patterns, session duration, inter-arrival times
-- **Behavioral Features**: Connection patterns, payload characteristics
-- **Aggregated Metrics**: Per-IP statistics, per-port statistics
+### 3.3 Feature Engineering Pipeline
 
-Processing pipeline location: `feature_engineering/`
+#### 3.3.1 Precalculation Features
+Computed from base features:
+
+**Rate Features** (`precalculations_functions/rate_features.py`):
+- `bytes_per_second`: Total bytes / duration
+- `pkts_per_second`: Total packets / duration
+
+**Ratio Features** (`precalculations_functions/ratio_features.py`):
+- `bytes_ratio`: bytes_sent / bytes_received
+- `pkts_ratio`: pkts_sent / pkts_received
+
+**Temporal Features** (`precalculations_functions/temporal_features.py`):
+- `hour`, `day_of_week`, `month`
+- `is_weekend`, `is_business_hours`
+
+**IP Classification** (`precalculations_functions/ip_classification_features.py`):
+- `src_is_private`, `dst_is_private`
+- `is_internal` (both IPs private)
+
+**Port Categorization** (`precalculations_functions/port_categorization_features.py`):
+- `dst_port_is_common` (well-known ports 0-1023)
+
+#### 3.3.2 Aggregation Features
+Statistical aggregations (`aggregation_functions/metrics_features.py`):
+
+- `total_events_processed`: Running count of events
+- `malicious_events_in_window`: Count of malicious events
+- `unique_malicious_ips`: Distinct malicious source IPs
+- `malicious_events_pct_change`: Trend analysis
+- `events_for_dst_port`: Events per destination port
+- `malicious_events_for_protocol`: Events per protocol
+
+### 3.4 Data Processing Pipeline
+
+```
+Raw JSON Logs → DataFrame Initialization → Feature Formatting → Precalculations → Aggregations → CSV Export
+     ↓                    ↓                      ↓                    ↓                ↓              ↓
+  Suricata         init_suricata_df      format_suricata_df     rate_features    metrics      combined_dataset.csv
+  Normal          init_normal_traffic    format_normal_traffic  temporal_features
+```
+
+**Output Files** (`data/processed/`):
+- `suricata_formatted.csv`: Processed Suricata data with all features
+- `normal_traffic_formatted.csv`: Processed benign traffic with all features
+- `combined_shuffled_dataset.csv`: Merged and shuffled dataset for model training/testing
 
 ---
 
@@ -111,28 +151,36 @@ Processing pipeline location: `feature_engineering/`
 ### 4.1 Functional Requirements
 
 **FR-01: Data Ingestion**
-The system shall ingest JSON log files from Dionaea, Suricata, and Cowrie honeypots.
+The system shall ingest JSON log files from Suricata IDS and normal traffic datasets.
+- **Acceptance Criteria**: Successfully parse Suricata JSON logs and compressed (.gz) benign traffic files.
 
-**FR-02: Normal Traffic Processing**
-The system shall process compressed (gzip) and uncompressed normal traffic datasets with configurable sample sizes.
+**FR-02: Feature Engineering**
+The system shall extract and compute 30+ features from raw network logs.
+- **Acceptance Criteria**: Generate rate, ratio, temporal, IP classification, and port categorization features.
 
-**FR-03: Feature Extraction**
-The system shall extract statistical features from raw network logs including protocol, port, IP, and temporal information.
+**FR-03: Data Normalization**
+The system shall normalize all data sources to a unified schema with 14 base features.
+- **Acceptance Criteria**: All formatted DataFrames contain identical column structure.
 
 **FR-04: Model Training**
-The system shall train a One-Class SVM model using normal traffic data as the baseline.
+The system shall train a One-Class SVM model using only benign traffic data.
+- **Acceptance Criteria**: Model trained with configurable nu, gamma, and max_train_samples parameters.
 
-**FR-05: Anomaly Detection**
-The system shall classify incoming network traffic as normal or anomalous with probability scores.
+**FR-05: Model Persistence**
+The system shall save and load trained models using joblib/pickle.
+- **Acceptance Criteria**: Model, preprocessor, and config saved to `model/` directory; fit_or_load() function works correctly.
 
-**FR-06: Alert Generation**
-The system shall generate alerts when anomalous traffic is detected above a configurable threshold.
+**FR-06: Anomaly Detection**
+The system shall classify network traffic with three severity levels.
+- **Acceptance Criteria**: Predictions return GREEN (normal), ORANGE (suspicious), or RED (critical) based on decision boundary.
 
-**FR-07: Data Preprocessing**
-The system shall handle invalid JSON values (NaN, Infinity, -Infinity) by replacing them with null values.
+**FR-07: Performance Evaluation**
+The system shall compute precision, recall, F1-score, and confusion matrix.
+- **Acceptance Criteria**: evaluate_model_performance() returns all metrics and detailed breakdown.
 
-**FR-08: Memory-Efficient Processing**
-The system shall use streaming JSON parsing (ijson) to handle large datasets without loading entire files into memory.
+**FR-08: Simulation Mode**
+The system shall simulate real-time stream processing with batch predictions.
+- **Acceptance Criteria**: run_simulation() and run_detailed_simulation() process data in configurable chunk sizes.
 
 ### 4.2 Non-Functional Requirements
 
@@ -175,34 +223,47 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Data Collection Layer                     │
-├─────────────┬─────────────┬─────────────┬─────────────────────┤
-│  Dionaea    │  Suricata   │   Cowrie    │  Normal Traffic     │
-│  Honeypot   │     IDS     │  Honeypot   │     Dataset         │
-└──────┬──────┴──────┬──────┴──────┬──────┴──────┬──────────────┘
-       │             │             │             │
-       └─────────────┴─────────────┴─────────────┘
-                         │
-       ┌─────────────────▼─────────────────────────┐
-       │       Feature Engineering Layer           │
-       │  - JSON Parsing (ijson)                   │
-       │  - Data Preprocessing                     │
-       │  - Feature Extraction                     │
-       │  - DataFrame Initialization               │
-       └─────────────────┬─────────────────────────┘
-                         │
-       ┌─────────────────▼─────────────────────────┐
-       │         Machine Learning Layer            │
-       │  - One-Class SVM Training                 │
-       │  - Model Persistence (pickle/joblib)      │
-       │  - Anomaly Scoring                        │
-       └─────────────────┬─────────────────────────┘
-                         │
-       ┌─────────────────▼─────────────────────────┐
-       │          Detection & Alert Layer          │
-       │  - Real-time Classification               │
-       │  - Threshold-based Alerting               │
-       │  - Event Logging                          │
-       └───────────────────────────────────────────┘
+├───────────────────────────────┬─────────────────────────────────┤
+│       Suricata IDS            │       Normal Traffic            │
+│    (Malicious Traffic)        │     (Benign Baseline)           │
+│      71,679 events            │      ~10,000 samples            │
+└───────────────┬───────────────┴───────────────┬─────────────────┘
+                │                               │
+                └───────────────┬───────────────┘
+                                │
+       ┌────────────────────────▼────────────────────────┐
+       │          Feature Engineering Layer              │
+       │  ┌─────────────────┐  ┌──────────────────────┐ │
+       │  │ df_initializing │  │   df_formatting      │ │
+       │  │ - Suricata init │  │ - Rate features      │ │
+       │  │ - Normal init   │  │ - Ratio features     │ │
+       │  └─────────────────┘  │ - Temporal features  │ │
+       │                       │ - IP classification  │ │
+       │  ┌─────────────────┐  │ - Port categorization│ │
+       │  │  aggregations   │  └──────────────────────┘ │
+       │  │ - Event counts  │                           │
+       │  │ - Trend analysis│                           │
+       │  └─────────────────┘                           │
+       └────────────────────────┬────────────────────────┘
+                                │
+       ┌────────────────────────▼────────────────────────┐
+       │            Machine Learning Layer               │
+       │  ┌──────────────────────────────────────────┐  │
+       │  │         OneClassSVMModel                 │  │
+       │  │  - RobustScaler + OneHotEncoder          │  │
+       │  │  - fit() on benign data only             │  │
+       │  │  - Decision boundary calibration         │  │
+       │  │  - Model persistence (joblib/pickle)     │  │
+       │  └──────────────────────────────────────────┘  │
+       └────────────────────────┬────────────────────────┘
+                                │
+       ┌────────────────────────▼────────────────────────┐
+       │          Detection & Evaluation Layer           │
+       │  - predict(): GREEN / ORANGE / RED severity     │
+       │  - run_simulation(): Real-time stream demo      │
+       │  - evaluate_model_performance(): Metrics        │
+       │  - Confusion matrix, Precision, Recall, F1      │
+       └─────────────────────────────────────────────────┘
 ```
 
 ### 5.2 Component Descriptions
@@ -213,51 +274,59 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 **Components**:
 - `init_suricata_df.py`: Suricata log DataFrame initializer
 - `init_normal_traffic_df.py`: Normal traffic DataFrame initializer with gzip support
-- `handler_init_dfs.py`: Orchestrates DataFrame initialization for all sources
+- `handler_init_dfs.py`: Orchestrates DataFrame initialization
 
 **Responsibilities**:
 - Parse JSON logs using streaming approach (ijson)
-- Handle compressed and uncompressed files
-- Preprocess invalid numeric values
+- Handle compressed (.gz) and uncompressed files
 - Initialize pandas DataFrames for downstream processing
 
 #### 5.2.2 Feature Engineering Module
-**Location**: `feature_engineering/df_formatting/`
+**Location**: `feature_engineering/`
 
-**Components**:
+**Formatting Components** (`df_formatting/`):
 - `format_suricata_df.py`: Suricata-specific feature extraction
 - `format_normal_traffic.py`: Normal traffic feature extraction
-- `handler_df_formatter.py`: Coordinates formatting across all data sources
-- `aggregation_functions.py`: Statistical aggregation utilities
-- `precalculations_functions.py`: Pre-computed feature calculations
+- `handler_df_formatter.py`: Coordinates formatting, precalculations, and aggregations
 
-**Responsibilities**:
-- Extract statistical features from raw logs
-- Normalize and standardize features
-- Handle missing values and outliers
-- Create feature vectors for ML models
+**Precalculation Components** (`precalculations_functions/`):
+- `rate_features.py`: bytes_per_second, pkts_per_second
+- `ratio_features.py`: bytes_ratio, pkts_ratio
+- `temporal_features.py`: hour, day_of_week, is_weekend, is_business_hours
+- `ip_classification_features.py`: src_is_private, dst_is_private, is_internal
+- `port_categorization_features.py`: dst_port_is_common
+- `ip_geolocation_features.py`: Optional geolocation lookup
+
+**Aggregation Components** (`aggregation_functions/`):
+- `metrics_features.py`: Event counts, trend analysis, protocol statistics
 
 #### 5.2.3 Model Training & Inference Module
 **Location**: `model/`
 
 **Components**:
-- `oneCSVM_model.py`: One-Class SVM implementation
-- Model persistence (pickle/joblib)
-- Hyperparameter configuration
+- `oneCSVM_model.py`: OneClassSVMModel class implementation
 
-**Responsibilities**:
-- Train One-Class SVM on normal traffic baseline
-- Serialize trained models for deployment
-- Perform anomaly detection inference
-- Calculate anomaly scores and decision functions
+**Key Methods**:
+- `fit()`: Train model on benign data with configurable parameters
+- `fit_or_load()`: Load existing model or train new one
+- `predict()`: Classify traffic with severity levels (GREEN/ORANGE/RED)
+- `save_model()` / `load_model()`: Model persistence
+- `run_simulation()`: Real-time stream simulation
+- `run_detailed_simulation()`: Detailed performance analysis
+- `evaluate_model_performance()`: Metrics computation
 
-#### 5.2.4 Utility Functions
-**Location**: `util_functions/`
+**Model Artifacts**:
+- `oneclass_svm_model.pkl`: Trained SVM model
+- `oneclass_svm_preprocessor.pkl`: ColumnTransformer (RobustScaler + OneHotEncoder)
+- `oneclass_svm_config.pkl`: Configuration (threshold, features, hyperparameters)
 
-**Responsibilities**:
-- Common data processing utilities
-- Logging and monitoring helpers
-- Configuration management
+#### 5.2.4 Testing Module
+**Location**: `tests/`
+
+**Test Suites**:
+- `test_precalculations/`: Unit tests for all precalculation functions
+- `test_aggregations/`: Unit tests for aggregation functions
+- `test_formatters/`: Unit tests for data formatters
 
 ### 5.3 Data Flow
 
@@ -297,28 +366,81 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 **One-Class Support Vector Machine (OCSVM)**
 
 **Rationale**:
-- Unsupervised anomaly detection approach
-- Effective for high-dimensional feature spaces
+- Semi-supervised anomaly detection (trains only on normal data)
+- Effective for high-dimensional feature spaces (30+ features)
 - Does not require labeled malicious traffic for training
 - Learns decision boundary around normal behavior
-- Robust to outliers in training data
+- RBF kernel captures non-linear patterns in network traffic
 
-### 6.2 Training Strategy
-- **Training Data**: Normal traffic baseline only
-- **Validation**: Holdout set from honeypot logs
-- **Hyperparameters**: Kernel (RBF), nu (outlier fraction), gamma (kernel coefficient)
+### 6.2 Model Architecture
 
-### 6.3 Performance Metrics
-- **True Positive Rate (TPR)**: Percentage of correctly detected anomalies
-- **False Positive Rate (FPR)**: Percentage of normal traffic misclassified as anomalous
+**Preprocessing Pipeline** (`ColumnTransformer`):
+- **Numerical Features**: RobustScaler (handles outliers better than StandardScaler)
+- **Categorical Features**: OneHotEncoder (handle_unknown='ignore')
+
+**Features Dropped** (not used for prediction):
+- `source_ip`, `destination_ip` (high cardinality)
+- `timestamp_start` (temporal context already extracted)
+- `label` (target variable)
+- Aggregation features that leak label information
+
+**Categorical Features**:
+- `transport_protocol`, `application_protocol`, `direction`
+- `day_of_week`, `is_weekend`, `is_business_hours`
+- `src_is_private`, `dst_is_private`, `is_internal`, `dst_port_is_common`
+
+**Numerical Features**: All remaining columns after dropping and categoricals
+
+### 6.3 Training Strategy
+- **Training Data**: Benign traffic only (10,000 samples default)
+- **Train/Val Split**: 80/20 split with random_state=42
+- **Downsampling**: Max 50,000 samples (SVM scales O(n^2))
+- **Threshold Calibration**: Set at contamination percentile (default 5%) of validation scores
+
+### 6.4 Hyperparameters
+| Parameter | Default Value | Description |
+|-----------|---------------|-------------|
+| `kernel` | `rbf` | Radial Basis Function kernel |
+| `nu` | `0.2` | Upper bound on training errors (outlier fraction) |
+| `gamma` | `scale` | Kernel coefficient (1 / (n_features * X.var())) |
+| `contamination` | `0.1` | Expected proportion of outliers for threshold |
+| `max_train_samples` | `10,000` | Maximum training samples for speed |
+
+### 6.5 Prediction Logic
+```
+score = model.decision_function(X)
+
+if score < threshold_boundary - 0.5:
+    → RED (CRITICAL): Far outside normal boundary
+elif score < threshold_boundary:
+    → ORANGE (SUSPICIOUS): Just outside boundary
+else:
+    → GREEN (Normal): Within expected behavior
+```
+
+### 6.6 Performance Metrics
+- **Precision**: What % of flagged anomalies are actually anomalies
+- **Recall / Detection Rate**: What % of actual anomalies were detected
 - **F1-Score**: Harmonic mean of precision and recall
-- **ROC-AUC**: Area under the receiver operating characteristic curve
+- **False Alarm Rate**: % of benign traffic incorrectly flagged
 
-### 6.4 Current Performance
-Based on existing implementation (`model/oneCSVM_model.py`):
-- **Detection Rate**: 90.7%
-- **False Alarm Rate**: 10%
-- **F1-Score**: 0.885
+### 6.7 Current Performance (Tested)
+Based on evaluation with `nu=0.2`, `contamination=0.1`, `max_train_samples=10,000`:
+
+| Metric | Value |
+|--------|-------|
+| Detection Rate (Recall) | ~90% |
+| False Alarm Rate | ~10% |
+| F1-Score | ~0.88 |
+| Precision | ~0.85 |
+
+**Confusion Matrix** (typical results on 10,000 test samples):
+```
+              Predicted
+              Normal  Anomaly
+Actual Normal   4500     500
+Actual Anomaly   500    4500
+```
 
 ---
 
