@@ -11,7 +11,7 @@
 ## 1. Executive Summary
 
 ### 1.1 Project Overview
-The Real-Time Cyber Anomaly Detection System is a machine learning-based platform designed to identify malicious network traffic patterns and security threats in real-time. By analyzing logs from multiple honeypot sources (Dionaea, Suricata, Cowrie) and normal network traffic, the system employs One-Class SVM to distinguish between benign and anomalous network behavior.
+The Real-Time Cyber Anomaly Detection System is a machine learning-based platform designed to identify malicious network traffic patterns and security threats in real-time. By analyzing Suricata IDS logs (selected for complete feature set) and normal network traffic, the system employs One-Class SVM to distinguish between benign and anomalous network behavior.
 
 ### 1.2 Business Value
 - **Proactive Threat Detection**: Identify security threats before they cause damage
@@ -136,18 +136,18 @@ The Real-Time Cyber Anomaly Detection System is a machine learning-based platfor
 - 1.1.5 Documentation coordination
 
 **1.2 Data Engineering**
-- 1.2.1 Honeypot log collection (Dionaea, Suricata, Cowrie)
-- 1.2.2 Normal traffic dataset acquisition
+- 1.2.1 Suricata IDS log collection from TPOT (selected as primary malicious source)
+- 1.2.2 Normal traffic dataset acquisition (CICIDS/ISCX benign traffic)
 - 1.2.3 JSON parsing and preprocessing
 - 1.2.4 Data validation and quality checks
 - 1.2.5 Feature extraction pipeline
   - 1.2.5.1 Suricata feature extraction
   - 1.2.5.2 Normal traffic feature extraction
-  - 1.2.5.3 Aggregation functions
-  - 1.2.5.4 Precalculation utilities
+  - 1.2.5.3 Aggregation functions (metrics_features.py)
+  - 1.2.5.4 Precalculation utilities (rate, ratio, temporal, IP, port features)
 - 1.2.6 DataFrame initialization modules
   - 1.2.6.1 Suricata DataFrame initializer
-  - 1.2.6.2 Normal traffic DataFrame initializer
+  - 1.2.6.2 Normal traffic DataFrame initializer (with gzip support)
   - 1.2.6.3 Handler orchestration
 
 **1.3 Machine Learning**

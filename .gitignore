@@ -1,4 +1,13 @@
 *.venv
 *.pyc
 __pycache__/
-data/normal_traffic/*.json
+.vscode/
+.pytest_cache/
+.idea/
+data/
+site/
+.env
+info/
+node_modules/
+package-lock.json
+package

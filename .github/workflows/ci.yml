@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # Run CI on all branches
   pull_request:
     branches: [main]
 
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.11', '3.12']
 
     steps:
       - name: Checkout code
