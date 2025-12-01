@@ -67,7 +67,7 @@ def main():
         max_train_samples=8000,
         contamination=0.1,
         force_retrain=False,  # Set to True to force retraining
-        #quick_search=True     # Set to False for exhaustive search
+        #quick_search=True     
     )
 
     print("\n4. Evaluating model performance...")
@@ -76,7 +76,7 @@ def main():
     performance_metrics = evaluator.evaluate_model_performance(test_sample)
 
     print("\n5. Running real-time simulation...")
-    evaluator.run_simulation(df_combined, chunk_size=10)
+    evaluator.run_simulation(df_combined, chunk_size=1)
 
     print("\n6. Running detailed simulation...")
     simulation_results = evaluator.run_detailed_simulation(test_sample)

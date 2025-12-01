@@ -1,12 +1,13 @@
 import time
 import numpy as np
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
+from drift_detector import DriftDetector
 
 
 class SimulationEvaluator:
     def __init__(self, model_instance):
         self.model = model_instance
-
+        self.drift_detector = DriftDetector(threshold=0.01)
 
 
             ###########      SIMULATION METHODS      ###########
@@ -31,13 +32,34 @@ class SimulationEvaluator:
         anomaly_count = 0
         total_processed = 0
 
+
+        print("STARTING STREAM WITH DRIFT DETECTION")
         for i in range(0, len(stream_input), chunk_size):
-            time.sleep(0.1)
+            time.sleep(1)  # Simulate real-time delay
             chunk = stream_input.iloc[i : i+chunk_size]
             if chunk.empty: 
                 break
             
-            batch_results = self.model.predict(chunk)  # Fixed: use self.model.predict()
+            # Add data to model buffer
+            self.model.add_to_buffer(chunk)
+
+            # Predict
+            batch_results = self.model.predict(chunk)  
+
+            # Checking for drift
+            drift_flag = False
+            for _, _, score in batch_results:
+                # Update ADWIN with the decision function score
+                if self.drift_detector.update(score):
+                    drift_flag = True
+            
+            if drift_flag:
+                print(f"CONCEPT DRIFT DETECTED at batch {i//chunk_size}!")
+
+                if self.model.retrain():
+                    self.drift_detector.reset()
+                    print("Resuming stream with updated model...")
+                    
             
             print(f"\n--- Batch {i//chunk_size + 1} ---")
             for idx, (severity, msg, score) in enumerate(batch_results):
@@ -56,11 +78,13 @@ class SimulationEvaluator:
                     print(f"{color}[{severity}] [ROW {global_idx}] {msg} | Dist: {score:.3f} {actual_text}{COLOR_RESET}")
                     anomaly_count += 1
             
-            if i > 100: 
+            if i > 200: 
                 break
 
         print(f"\n[Simulation stopped - Processed {total_processed} samples]")
         print(f"[Detection Summary: {anomaly_count} anomalies detected out of {total_processed} samples]")
+
+
 
 
     def run_detailed_simulation(self, stream_df, chunk_size=50):
