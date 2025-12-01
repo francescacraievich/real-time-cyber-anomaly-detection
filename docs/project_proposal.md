@@ -41,13 +41,17 @@ The Real-Time Cyber Anomaly Detection System is a machine learning-based platfor
 
 ### 2.2 Out of Scope (Future Phases)
 - Real-time stream processing (Kafka/MQTT integration)
-- Interactive dashboard (Streamlit/Grafana)
 - Multi-model ensemble approaches
 - Cloud deployment infrastructure
 - Advanced alert notification systems (email, Slack)
 - User authentication and access control
 
-### 2.3 Deliverables
+### 2.3 Implemented Features
+- **Flask REST API**: Backend API for serving predictions and statistics (`dashboard/flask_api.py`)
+- **Streamlit Dashboard**: Interactive real-time visualization dashboard with Kibana-style interface (`dashboard/streamlit_app.py`)
+- **Geolocation Service**: IP geolocation for attack source mapping (`dashboard/geolocation_service.py`)
+
+### 2.4 Deliverables
 
 | Deliverable | Description | Owner |
 |-------------|-------------|-------|
@@ -395,6 +399,7 @@ This is an academic/research project with zero financial budget. All tools and s
 - TPOT honeypot platform availability
 - Python package ecosystem stability
 - GitHub service uptime
+- Git LFS (Large File Storage) for dataset management
 
 **Internal Dependencies**:
 - Data pipeline must complete before model training
@@ -513,16 +518,16 @@ The project is considered successful when:
 
 ### 13.1 Version 2.0 Features
 - Real-time stream processing with Kafka
-- Interactive dashboard (Streamlit)
 - Multi-model ensemble (Isolation Forest, Autoencoder)
 - Advanced alert notification (Email, Slack, webhooks)
+- Enhanced dashboard features
 
 ### 13.2 Version 3.0 Features
 - Cloud deployment (AWS/Azure/GCP)
 - Kubernetes orchestration
 - Distributed processing with Apache Spark
 - Time-series database integration (InfluxDB)
-- Explainable AI (SHAP/LIME)
+- Experiment tracking with Neptune.ai
 
 ---
 
