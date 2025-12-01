@@ -48,7 +48,7 @@ Network administrators and security teams face increasing challenges in detectin
 A machine learning-based anomaly detection system that:
 - Uses unsupervised learning (One-Class SVM) to identify outliers in network traffic
 - Processes Suricata IDS logs as malicious traffic source (selected for complete feature set)
-- Extracts 30+ statistical features from network traffic for model training
+- Extracts 28 statistical features from network traffic for model training
 - Provides real-time classification of traffic as normal or anomalous with severity levels (GREEN/ORANGE/RED)
 
 ---
@@ -64,7 +64,7 @@ A machine learning-based anomaly detection system that:
 - **Purpose**: Network Intrusion Detection System (IDS) capturing attack traffic
 - **Format**: JSON
 - **Key Attributes**: source/destination IP, ports, protocol, bytes, packets, duration, flow direction
-- **Label**: `suricata` (malicious)
+- **Label**: `malicious`
 
 > **Note**: Dionaea and Cowrie honeypots were evaluated but excluded from the final implementation because they lacked the complete network flow features (bytes_sent, bytes_received, pkts_sent, pkts_received, duration) required for consistent feature engineering across all data sources.
 
@@ -94,7 +94,7 @@ All data sources are normalized to a common feature schema:
 | `pkts_sent` | int | Packets sent |
 | `pkts_received` | int | Packets received |
 | `direction` | string | Flow direction |
-| `label` | string | benign/suricata |
+| `label` | string | benign/malicious |
 
 ### 3.3 Feature Engineering Pipeline
 
@@ -104,13 +104,14 @@ Computed from base features:
 **Rate Features** (`precalculations_functions/rate_features.py`):
 - `bytes_per_second`: Total bytes / duration
 - `pkts_per_second`: Total packets / duration
+- `bytes_per_packet`: Total bytes / total packets
 
 **Ratio Features** (`precalculations_functions/ratio_features.py`):
 - `bytes_ratio`: bytes_sent / bytes_received
 - `pkts_ratio`: pkts_sent / pkts_received
 
 **Temporal Features** (`precalculations_functions/temporal_features.py`):
-- `hour`, `day_of_week`, `month`
+- `hour`, `day_of_week`
 - `is_weekend`, `is_business_hours`
 
 **IP Classification** (`precalculations_functions/ip_classification_features.py`):
@@ -123,12 +124,13 @@ Computed from base features:
 #### 3.3.2 Aggregation Features
 Statistical aggregations (`aggregation_functions/metrics_features.py`):
 
-- `total_events_processed`: Running count of events
+- `events_in_window`: Count of events in current window
 - `malicious_events_in_window`: Count of malicious events
 - `unique_malicious_ips`: Distinct malicious source IPs
-- `malicious_events_pct_change`: Trend analysis
-- `events_for_dst_port`: Events per destination port
-- `malicious_events_for_protocol`: Events per protocol
+- `events_pct_change`: Trend analysis
+- `burst_indicator`: Flag for sudden traffic spikes
+- `events_for_protocol`: Events per protocol
+- `malicious_ratio_for_protocol`: Ratio of malicious events per protocol
 
 ### 3.4 Data Processing Pipeline
 
@@ -155,7 +157,7 @@ The system shall ingest JSON log files from Suricata IDS and normal traffic data
 - **Acceptance Criteria**: Successfully parse Suricata JSON logs and compressed (.gz) benign traffic files.
 
 **FR-02: Feature Engineering**
-The system shall extract and compute 30+ features from raw network logs.
+The system shall extract and compute 28 features from raw network logs.
 - **Acceptance Criteria**: Generate rate, ratio, temporal, IP classification, and port categorization features.
 
 **FR-03: Data Normalization**
@@ -194,7 +196,7 @@ The system shall classify a single network event within 100 milliseconds from fe
 The system shall process a minimum of 1,000 network events per second.
 
 **NFR-04: Data Loading Time**
-Feature extraction and DataFrame initialization shall complete within 5 seconds for datasets up to 10,000 samples.
+Feature extraction and DataFrame initialization shall complete within 2 minutes for the complete dataset.
 
 **NFR-05: Model Training Time**
 One-Class SVM model training shall complete within 60 seconds for datasets up to 10,000 samples.
@@ -348,6 +350,12 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - `scikit-learn`: Machine learning (One-Class SVM)
 - `ijson==3.4.0.post0`: Streaming JSON parser
 
+**Dashboard & API**:
+- `flask`: REST API backend for serving predictions
+- `flask-cors`: Cross-origin resource sharing support
+- `streamlit`: Interactive web dashboard
+- `plotly`: Interactive visualizations
+
 **Development Tools**:
 - `pytest==9.0.1`: Unit testing framework
 - `mkdocs==1.6.1`: Documentation generation
@@ -366,11 +374,12 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 **One-Class Support Vector Machine (OCSVM)**
 
 **Rationale**:
-- Semi-supervised anomaly detection (trains only on normal data)
-- Effective for high-dimensional feature spaces (30+ features)
+- Unsupervised anomaly detection (trains only on normal data)
+- Effective for high-dimensional feature spaces (28 features)
 - Does not require labeled malicious traffic for training
 - Learns decision boundary around normal behavior
 - RBF kernel captures non-linear patterns in network traffic
+- Grid Search used for hyperparameter optimization (kernel, nu, gamma)
 
 ### 6.2 Model Architecture
 
@@ -379,13 +388,14 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - **Categorical Features**: OneHotEncoder (handle_unknown='ignore')
 
 **Features Dropped** (not used for prediction):
-- `source_ip`, `destination_ip` (high cardinality)
-- `timestamp_start` (temporal context already extracted)
-- `label` (target variable)
-- Aggregation features that leak label information
+- `source_ip`, `destination_ip` (high cardinality, not generalizable)
+- `timestamp_start` (temporal context already extracted via hour, day_of_week)
+- `label` (target variable - would cause data leakage)
+- `application_protocol` (too many unique values)
+- Aggregation features that leak label information (malicious_events_in_window, unique_malicious_ips, malicious_ratio_for_protocol)
 
 **Categorical Features**:
-- `transport_protocol`, `application_protocol`, `direction`
+- `transport_protocol`, `direction`
 - `day_of_week`, `is_weekend`, `is_business_hours`
 - `src_is_private`, `dst_is_private`, `is_internal`, `dst_port_is_common`
 
@@ -406,25 +416,13 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 | `contamination` | `0.1` | Expected proportion of outliers for threshold |
 | `max_train_samples` | `10,000` | Maximum training samples for speed |
 
-### 6.5 Prediction Logic
-```
-score = model.decision_function(X)
-
-if score < threshold_boundary - 0.5:
-    → RED (CRITICAL): Far outside normal boundary
-elif score < threshold_boundary:
-    → ORANGE (SUSPICIOUS): Just outside boundary
-else:
-    → GREEN (Normal): Within expected behavior
-```
-
-### 6.6 Performance Metrics
+### 6.5 Performance Metrics
 - **Precision**: What % of flagged anomalies are actually anomalies
 - **Recall / Detection Rate**: What % of actual anomalies were detected
 - **F1-Score**: Harmonic mean of precision and recall
 - **False Alarm Rate**: % of benign traffic incorrectly flagged
 
-### 6.7 Current Performance (Tested)
+### 6.6 Current Performance (Tested)
 Based on evaluation with `nu=0.2`, `contamination=0.1`, `max_train_samples=10,000`:
 
 | Metric | Value |
@@ -518,16 +516,6 @@ Actual Anomaly   500    4500
   - Deploy auto-scaling infrastructure
   - Set resource quotas and circuit breakers
 
-**RISK-08: Model Poisoning**
-- **Description**: Malicious data injected into training pipeline
-- **Impact**: High - Compromised detection capability
-- **Probability**: Low
-- **Mitigation**:
-  - Validate training data sources
-  - Implement data provenance tracking
-  - Use secure data collection pipelines
-  - Regular audit of training datasets
-
 ---
 
 ## 8. Quality Attributes
@@ -575,11 +563,10 @@ Actual Anomaly   500    4500
 
 ### 10.1 Planned Features
 - **Real-time Stream Processing**: Integration with Apache Kafka or MQTT
-- **Interactive Dashboard**: Streamlit or Grafana visualization
 - **Multi-model Ensemble**: Combine OCSVM with Isolation Forest, Autoencoders
 - **Automated Retraining Pipeline**: Continuous learning from new data
 - **Alert Notification System**: Email, Slack, webhook integrations
-- **Explainable AI**: SHAP/LIME for anomaly explanation
+- **Experiment Tracking**: Neptune.ai for ML experiment management and monitoring
 
 ### 10.2 Scalability Roadmap
 - Distributed processing with Apache Spark
