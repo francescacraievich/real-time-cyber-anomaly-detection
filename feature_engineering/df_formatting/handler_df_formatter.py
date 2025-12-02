@@ -1,6 +1,6 @@
 
 import pandas as pd
-from feature_engineering.df_formatting.format_normal_traffic import DataFrameFormatterNormalTraffic
+from feature_engineering.df_formatting.format_normal_traffic_df import DataFrameFormatterNormalTraffic
 from feature_engineering.df_formatting.format_suricata_df import DataFrameFormatterSuricata
 
 from feature_engineering.aggregation_functions import (
