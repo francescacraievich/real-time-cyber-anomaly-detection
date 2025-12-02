@@ -30,6 +30,7 @@ class DataFrameFormatterSuricata():
         
          # Format timestamp
         suricata_df_renamed[self.list_of_features_to_rename[4]] = pd.to_datetime(
+        suricata_df_renamed[self.list_of_features_to_rename[4]]
         ).dt.tz_localize(None) 
         
         # Format duration as float
