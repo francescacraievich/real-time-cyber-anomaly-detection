@@ -25,7 +25,13 @@ class NormalTrafficDataFrameInitializer():
         N = sample_size
         result = []
 
-        with open(self.benign_traffic_json_path, "rb") as f:
+        # Check if file is gzipped
+        if self.benign_traffic_json_path.endswith('.gz'):
+            f = gzip.open(self.benign_traffic_json_path, "rb")  # ✅ Changed "rt" to "rb"
+        else:
+            f = open(self.benign_traffic_json_path, "rb")  # ✅ Changed "r" to "rb"
+
+        try:
             parser = ijson.items(f, "item")
             for i, item in enumerate(parser):
                 if i == N:
@@ -34,7 +40,7 @@ class NormalTrafficDataFrameInitializer():
         finally:
             f.close()
 
-        return(result)
+        return result
     
     def preprocess_json_replace_invalid_numbers(self, output_path):
         with open(self.benign_traffic_json_path, "rb", encoding="utf-8") as f_in, \
