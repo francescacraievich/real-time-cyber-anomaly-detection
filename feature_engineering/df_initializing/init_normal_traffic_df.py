@@ -24,7 +24,7 @@ class NormalTrafficDataFrameInitializer():
         N = sample_size
         result = []
 
-        with open(self.benign_traffic_json_path, "r") as f:
+        with open(self.benign_traffic_json_path, "rb") as f:
             parser = ijson.items(f, "item")
             for i, item in enumerate(parser):
                 if i == N:   
@@ -34,7 +34,7 @@ class NormalTrafficDataFrameInitializer():
         return(result)
     
     def preprocess_json_replace_invalid_numbers(self, output_path):
-        with open(self.benign_traffic_json_path, "r", encoding="utf-8") as f_in, \
+        with open(self.benign_traffic_json_path, "rb", encoding="utf-8") as f_in, \
             open(output_path, "w", encoding="utf-8") as f_out:
             for line in f_in:
                 # replace NaN, Infinity, -Infinity with null
