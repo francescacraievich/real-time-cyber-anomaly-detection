@@ -1,14 +1,7 @@
-import json
-import pandas as pd
-import gzip
-import os
-import sys
 
-# Add parent directory to path for absolute imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from init_suricata_df import SuricataDataFrameInitializer as SuricataInit
-from init_normal_traffic_df import NormalTrafficDataFrameInitializer as NormalTrafficInit
+from .init_suricata_df import SuricataDataFrameInitializer as SuricataInit
+from .init_normal_traffic_df import NormalTrafficDataFrameInitializer as NormalTrafficInit
 
 # Read logs and initialize as DataFrames
 class DataFrameInitializer():
