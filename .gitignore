@@ -11,3 +11,4 @@ info/
 node_modules/
 package-lock.json
 package
+suricata.json
