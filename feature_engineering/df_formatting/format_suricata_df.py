@@ -42,8 +42,8 @@ class DataFrameFormatterSuricata():
         # Handle NaN values
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[0]].isna(), self.list_of_features_to_rename[0]] = "0.0.0.0"
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[1]].isna(), self.list_of_features_to_rename[1]] = "0.0.0.0"
-        suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[2]].isna(), self.list_of_features_to_rename[2]] = "0.0"
-        suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[3]].isna(), self.list_of_features_to_rename[3]] = "0.0"
+        suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[2]].isna(), self.list_of_features_to_rename[2]] = 0.0
+        suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[3]].isna(), self.list_of_features_to_rename[3]] = 0.0
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[5]].isna(), self.list_of_features_to_rename[5]] = "unknown"
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[6]].isna(), self.list_of_features_to_rename[6]] = "unknown"
         suricata_df_renamed.loc[suricata_df_renamed[self.list_of_features_to_rename[12]].isna(), self.list_of_features_to_rename[12]] = "unknown"
