@@ -3,6 +3,7 @@ import random
 import pandas as pd
 import ijson
 import re
+import gzip
 
 
 class NormalTrafficDataFrameInitializer():
@@ -27,9 +28,11 @@ class NormalTrafficDataFrameInitializer():
         with open(self.benign_traffic_json_path, "rb") as f:
             parser = ijson.items(f, "item")
             for i, item in enumerate(parser):
-                if i == N:   
+                if i == N:
                     break
                 result.append(item)
+        finally:
+            f.close()
 
         return(result)
     
