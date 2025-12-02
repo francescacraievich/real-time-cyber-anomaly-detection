@@ -1,6 +1,5 @@
 
 import pandas as pd
-from deprecated import deprecated
 from feature_engineering.df_formatting.format_normal_traffic import DataFrameFormatterNormalTraffic
 from feature_engineering.df_formatting.format_suricata_df import DataFrameFormatterSuricata
 

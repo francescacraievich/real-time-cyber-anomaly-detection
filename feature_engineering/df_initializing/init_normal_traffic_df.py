@@ -47,7 +47,7 @@ if __name__ == "__main__":
     df_initializer = NormalTrafficDataFrameInitializer(
         benign_traffic_json_path="data/normal_traffic/benign_traffic_fixed.json"
     )
-    df_benign_traffic = df_initializer.initialize_benign_traffic()
+    df_benign_traffic = df_initializer.initialize_benign_traffic(sample_size=1000)
     print("Benign Traffic DataFrame:" , df_benign_traffic.head())
     print("DataFrame shape:", df_benign_traffic.shape)
     print("Columns:", df_benign_traffic.columns.tolist())

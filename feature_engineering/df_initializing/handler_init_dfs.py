@@ -14,8 +14,6 @@ class DataFrameInitializer():
     """
     Initializes DataFrames from JSON log files for Cowrie, Dionaea, Suricata, and Tanner.
     Attributes:
-        cowrie_json_path (str): Path to Cowrie JSON log file.
-        dionea_json_path (str): Path to Dionaea JSON log file.
         suricata_json_path (str): Path to Suricata JSON log file.
         normal_traffic_json_path (str): Path to Normal Traffic JSON log file.
 
