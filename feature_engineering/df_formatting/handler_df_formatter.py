@@ -1,10 +1,8 @@
-
 import pandas as pd
-from deprecated import deprecated
-from format_normal_traffic import DataFrameFormatterNormalTraffic
-from format_suricata_df import DataFrameFormatterSuricata
+from feature_engineering.df_formatting.format_normal_traffic_df import DataFrameFormatterNormalTraffic
+from feature_engineering.df_formatting.format_suricata_df import DataFrameFormatterSuricata
 
-from aggregation_functions import (
+from feature_engineering.aggregation_functions import (
     calculate_total_events_processed,
     calculate_total_anomalous_events,
     calculate_total_unique_malicious_ips,
@@ -13,7 +11,7 @@ from aggregation_functions import (
     calculate_total_malicious_events_per_protocol
 )
 
-from precalculations_functions import (
+from feature_engineering.precalculations_functions import (
     calculate_rate_features,
     calculate_ratio_features,
     calculate_temporal_features,
