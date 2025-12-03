@@ -1,14 +1,7 @@
 import pandas as pd
-from deprecated import deprecated
-import sys
-import os
-
-# Add parent directory to path for absolute imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-
-from feature_engineering.df_initializing.handler_init_dfs import DataFrameInitializer
-from feature_engineering.df_formatting.format_normal_traffic import DataFrameFormatterNormalTraffic
+from feature_engineering.df_formatting.format_normal_traffic_df import DataFrameFormatterNormalTraffic
 from feature_engineering.df_formatting.format_suricata_df import DataFrameFormatterSuricata
+
 from feature_engineering.aggregation_functions import (
     calculate_total_events_processed,
     calculate_total_anomalous_events,
@@ -17,6 +10,7 @@ from feature_engineering.aggregation_functions import (
     calculate_total_events_for_dst_ports,
     calculate_total_malicious_events_per_protocol
 )
+
 from feature_engineering.precalculations_functions import (
     calculate_rate_features,
     calculate_ratio_features,
@@ -65,11 +59,11 @@ class DataFrameFormatter():
     def unite_honeypot_and_normal_traffic_dfs(self):
         # concatenate rows from all sources and keep only base_features (as requested)
         combined_df = pd.concat([
-            self.suricata_df[self.base_features],
-            self.normal_traffic_df[self.base_features]
+            self.suricata_df,
+            self.normal_traffic_df
         ], ignore_index=True, sort=False)
         # enforce column order
-        combined_df = combined_df.loc[:, self.base_features]
+        #combined_df = combined_df.loc[:, self.base_features]
         return combined_df
     
     
