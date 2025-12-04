@@ -58,7 +58,7 @@ def main():
     print("\n3. Training with grid search optimization...")
     
     # Prepare test data for grid search
-    test_for_tuning = df_combined.sample(n=4000, random_state=42)
+    test_for_tuning = df_combined.sample(n=10000, random_state=42)
     
     # Train or load model with grid search
     grid_search.fit_or_load_with_grid_search(
@@ -72,14 +72,16 @@ def main():
 
     print("\n4. Evaluating model performance...")
     # Comprehensive evaluation
-    test_sample = df_combined.sample(n=50000, random_state=88)
+    test_sample = df_combined.sample(n=30000, random_state=88)
     performance_metrics = evaluator.evaluate_model_performance(test_sample)
 
-    print("\n5. Running real-time simulation...")
-    evaluator.run_simulation(test_sample, chunk_size=20)
-
-    print("\n6. Running detailed simulation...")
+    print("\n5. Running brief simulation with details...")
     simulation_results = evaluator.run_detailed_simulation(test_sample)
+
+    print("\n6. Running MAIN real-time simulation. of system..")
+    evaluator.run_simulation(df_combined, chunk_size=20)
+
+    
     
     #test_drift_mechanism(svm_model, df_benign, df_combined)
 
