@@ -7,7 +7,7 @@ from drift_detector import DriftDetector
 class SimulationEvaluator:
     def __init__(self, model_instance):
         self.model = model_instance
-        self.drift_detector = DriftDetector(threshold=0.01)
+        self.drift_detector = DriftDetector(threshold=0.001)
 
 
             ###########      SIMULATION METHODS      ###########
@@ -27,6 +27,7 @@ class SimulationEvaluator:
 
         COLOR_RED = '\033[91m'
         COLOR_ORANGE = '\033[93m'
+        COLOR_GREEN = '\033[92m'
         COLOR_RESET = '\033[0m'
 
         anomaly_count = 0
@@ -35,7 +36,7 @@ class SimulationEvaluator:
 
         print("STARTING STREAM WITH DRIFT DETECTION")
         for i in range(0, len(stream_input), chunk_size):
-            time.sleep(1)  # Simulate real-time delay
+            #time.sleep(1)  # Simulate real-time delay
             chunk = stream_input.iloc[i : i+chunk_size]
             if chunk.empty: 
                 break
@@ -48,17 +49,21 @@ class SimulationEvaluator:
 
             # Checking for drift
             drift_flag = False
-            for _, _, score in batch_results:
-                # Update ADWIN with the decision function score
-                if self.drift_detector.update(score):
+            for severity, msg, score in batch_results:
+                # Determine if this specific log is an anomaly
+                is_anomaly = (severity != "GREEN")
+                
+                # Update detector with the BOOLEAN status, not the score
+                if self.drift_detector.update(is_anomaly):
                     drift_flag = True
             
             if drift_flag:
-                print(f"CONCEPT DRIFT DETECTED at batch {i//chunk_size}!")
-
+                current_rate = self.drift_detector.get_current_anomaly_rate()
+                print(f" CONCEPT DRIFT DETECTED! Anomaly Rate shifted to {current_rate:.1%}")
+                
                 if self.model.retrain():
                     self.drift_detector.reset()
-                    print("Resuming stream with updated model...")
+                    print(" Resuming stream with updated model...")
                     
             
             print(f"\n--- Batch {i//chunk_size + 1} ---")
@@ -73,12 +78,19 @@ class SimulationEvaluator:
                     actual_text = f"| Actual: {lbl}"
 
                 # Apply colors based on severity
-                if severity != "GREEN":
-                    color = COLOR_RED if severity == "RED" else COLOR_ORANGE
-                    print(f"{color}[{severity}] [ROW {global_idx}] {msg} | Dist: {score:.3f} {actual_text}{COLOR_RESET}")
+                if severity == "RED":
+                    color = COLOR_RED
                     anomaly_count += 1
+                elif severity == "ORANGE":
+                    color = COLOR_ORANGE
+                    anomaly_count += 1
+                else:  # severity == "GREEN"
+                    color = COLOR_GREEN
+                    
+                print(f"{color}[{severity}] [ROW {global_idx}] {msg} | Dist: {score:.3f} {actual_text}{COLOR_RESET}")
+                time.sleep(1)  
             
-            if i > 200: 
+            if i > 100: 
                 break
 
         print(f"\n[Simulation stopped - Processed {total_processed} samples]")

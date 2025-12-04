@@ -116,29 +116,40 @@ class TestOneClassSVMModel:
 class TestDriftDetector:
     
     def test_drift_detection_logic(self):
-        """Test if drift detector triggers on changing data distribution"""
+        """Test if drift detector triggers on changing anomaly rate"""
+        # Use a small threshold for faster detection in tests
         detector = DriftDetector(threshold=0.01)
         
-        # Feed stable data (no drift)
+        # Phase 1: Stable Normal Traffic (All Green / False)
+        # The anomaly rate is 0%
         drift_detected = False
         for _ in range(50):
-            if detector.update(0.5): # Constant value
+            # update() now takes a boolean: False = Normal
+            if detector.update(False): 
                 drift_detected = True
         
-        assert drift_detected is False
+        assert drift_detected is False, "Drift detected too early on stable data"
         
-        # Feed drastically different data (drift)
-        # Note: ADWIN needs enough data to detect change, so we loop
+        # Phase 2: Sudden Attack (All Red / True)
+        # The anomaly rate shifts from 0% to 100%
+        drift_detected = False
         for _ in range(100):
-            if detector.update(10.0): # Sudden jump
+            # update() now takes a boolean: True = Anomaly
+            if detector.update(True): 
                 drift_detected = True
                 break
                 
-        assert drift_detected is True
+        assert drift_detected is True, "Drift failed to detect shift from Normal to Anomaly"
 
     def test_reset(self):
         """Test if reset clears the state"""
         detector = DriftDetector()
         detector.drift_detected = True
+        
+        # Add some history
+        detector.history.append(1)
+        
         detector.reset()
+        
         assert detector.drift_detected is False
+        assert len(detector.history) == 0 # History should be cleared too
