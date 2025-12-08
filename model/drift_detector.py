@@ -23,6 +23,8 @@ class DriftDetector:
         self.change_threshold = change_threshold  # 8% change triggers drift
         self.last_reported_rate = None  # Track last rate when drift was reported/checked
         self.check_interval = 50  # Check for drift every N samples
+        self.last_drift_sample = None  # Track when last drift occurred
+        self.min_unstable_duration = 100  # Stay UNSTABLE for at least N samples (~4 sec)
 
     def update(self, is_anomaly):
         # Convert boolean to integer (1 for Anomaly, 0 for Benign)
@@ -65,17 +67,28 @@ class DriftDetector:
 
         if drift_occurred:
             self.drift_detected = True
+            self.last_drift_sample = self.processed_samples
             if METRICS_ENABLED:
                 drift_detected_total.inc()
                 drift_detected_flag.set(1)
             return True
 
-        # If we just did a check (every check_interval) and no drift was found, set to stable
+        # If we just did a check (every check_interval) and no drift was found
         if len(self.history) >= self.history.maxlen and self.processed_samples % self.check_interval == 0:
-            # We checked and found no drift - back to stable
-            self.drift_detected = False
-            if METRICS_ENABLED:
-                drift_detected_flag.set(0)
+            # Only go back to stable if enough time has passed since last drift
+            if self.last_drift_sample is None:
+                # No drift ever detected, stay stable
+                self.drift_detected = False
+                if METRICS_ENABLED:
+                    drift_detected_flag.set(0)
+            else:
+                samples_since_last = self.processed_samples - self.last_drift_sample
+                if samples_since_last >= self.min_unstable_duration:
+                    # Enough time passed, back to stable
+                    self.drift_detected = False
+                    if METRICS_ENABLED:
+                        drift_detected_flag.set(0)
+                # else: stay UNSTABLE until min_unstable_duration passes
 
         return False
     
@@ -91,6 +104,7 @@ class DriftDetector:
         self.drift_detected = False
         self.history.clear()
         self.last_reported_rate = None
+        self.last_drift_sample = None
         self.processed_samples = 0
 
         if METRICS_ENABLED:
