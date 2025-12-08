@@ -13,6 +13,7 @@ flask
 flask-cors
 streamlit
 plotly
+psutil
 
 # Monitoring
 prometheus_client>=0.17.0

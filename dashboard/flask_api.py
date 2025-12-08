@@ -20,6 +20,7 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 from model.oneCSVM_model import OneClassSVMModel
+from model.drift_detector import DriftDetector
 from dashboard.geolocation_service import get_geo_service
 
 # Prometheus metrics (optional - graceful fallback if not available)
@@ -39,6 +40,7 @@ CORS(app)
 # Global variables
 model = None
 df_logs = None
+drift_detector = None
 current_index = 0  # Simulates real-time log streaming
 
 
@@ -70,9 +72,13 @@ def track_request_metrics(f):
 
 def load_resources():
     """Load the ML model and dataset on startup."""
-    global model, df_logs
+    global model, df_logs, drift_detector
 
     print("[Flask API] Loading resources...")
+
+    # Initialize drift detector
+    drift_detector = DriftDetector(threshold=0.05, window_size=100)
+    print("[Flask API] Drift detector initialized")
 
     # Load the trained model
     model = OneClassSVMModel()
@@ -170,6 +176,12 @@ def stream_logs():
             batch['severity'] = [p[0] for p in predictions]
             batch['description'] = [p[1] for p in predictions]
             batch['anomaly_score'] = [p[2] for p in predictions]
+
+            # Update drift detector with each prediction
+            if drift_detector is not None:
+                for severity in batch['severity']:
+                    is_anomaly = severity in ['RED', 'ORANGE']
+                    drift_detector.update(is_anomaly)
         except Exception as e:
             print(f"[Flask API] Prediction error: {e}")
             batch['severity'] = 'UNKNOWN'
@@ -179,12 +191,20 @@ def stream_logs():
     # Convert to JSON-serializable format
     batch = batch.replace({np.nan: None})
 
+    # Get drift status
+    drift_info = {
+        "detected": drift_detector.drift_detected if drift_detector else False,
+        "anomaly_rate": drift_detector.get_current_anomaly_rate() if drift_detector else 0.0,
+        "samples_processed": drift_detector.processed_samples if drift_detector else 0
+    }
+
     return jsonify({
         "logs": batch.to_dict(orient='records'),
         "count": len(batch),
         "current_index": current_index,
         "total_records": len(df_logs),
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
+        "drift": drift_info
     })
 
 
@@ -500,18 +520,18 @@ def evaluate_model():
             cm_metric.labels(actual='anomaly', predicted='anomaly').set(tp)
 
         return jsonify({
-            "precision": precision,
-            "recall": recall,
-            "f1_score": f1,
-            "detection_rate": det_rate,
-            "false_alarm_rate": far,
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1_score": float(f1),
+            "detection_rate": float(det_rate),
+            "false_alarm_rate": float(far),
             "confusion_matrix": {
                 "tn": int(tn), "fp": int(fp),
                 "fn": int(fn), "tp": int(tp)
             },
-            "sample_size": len(sample),
-            "anomaly_count": sum(y_pred),
-            "malicious_count": sum(y_true)
+            "sample_size": int(len(sample)),
+            "anomaly_count": int(sum(y_pred)),
+            "malicious_count": int(sum(y_true))
         })
 
     except Exception as e:

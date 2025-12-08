@@ -15,6 +15,8 @@ import sys
 import socket
 import time
 import requests
+import atexit
+import signal
 from pathlib import Path
 from datetime import datetime
 import plotly.graph_objects as go
@@ -47,6 +49,32 @@ def is_port_in_use(port):
     """Check if a port is already in use."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('localhost', port)) == 0
+
+
+def stop_prediction_workers():
+    """Stop all running prediction worker processes."""
+    try:
+        import psutil
+        killed = 0
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                cmdline = proc.info.get('cmdline') or []
+                if any('prediction_worker.py' in str(c) for c in cmdline):
+                    proc.terminate()
+                    killed += 1
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        if killed > 0:
+            print(f"[Streamlit] Stopped {killed} prediction worker(s)")
+    except ImportError:
+        # psutil not available - workers will stop on their own when Flask dies
+        pass
+    except Exception as e:
+        print(f"[Streamlit] Error stopping workers: {e}")
+
+
+# Register cleanup function to run on exit
+atexit.register(stop_prediction_workers)
 
 
 def start_flask_server():
