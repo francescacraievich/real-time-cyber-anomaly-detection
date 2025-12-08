@@ -14,8 +14,9 @@ except ImportError:
 
 
 class DriftDetector:
-    def __init__(self, threshold=0.05, window_size=10):
+    def __init__(self, threshold=0.002, window_size=100):
         # ADWIN for detecting changes in average values
+        # Lower delta = more sensitive to changes (0.002 is very sensitive)
         self.adwin = drift.ADWIN(delta=threshold)
         self.history = deque(maxlen=window_size)  # Store recent history for analysis
         self.drift_detected = False

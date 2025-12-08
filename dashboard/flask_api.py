@@ -76,9 +76,9 @@ def load_resources():
 
     print("[Flask API] Loading resources...")
 
-    # Initialize drift detector
-    drift_detector = DriftDetector(threshold=0.05, window_size=100)
-    print("[Flask API] Drift detector initialized")
+    # Initialize drift detector (lower threshold = more sensitive)
+    drift_detector = DriftDetector(threshold=0.002, window_size=100)
+    print("[Flask API] Drift detector initialized (sensitivity: 0.002)")
 
     # Load the trained model
     model = OneClassSVMModel()
