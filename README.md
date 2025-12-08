@@ -5,6 +5,10 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/francescacraievich/real-time-cyber-anomaly-detection/ci.yml?label=CI&logo=github&style=flat-square)](https://github.com/francescacraievich/real-time-cyber-anomaly-detection/actions/workflows/ci.yml)
 &nbsp;&nbsp;
 [![codecov](https://codecov.io/gh/francescacraievich/real-time-cyber-anomaly-detection/branch/main/graph/badge.svg)](https://codecov.io/gh/francescacraievich/real-time-cyber-anomaly-detection)
+&nbsp;&nbsp;
+[![Streamlit Dashboard](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?style=flat-square&logo=streamlit)](dashboard/streamlit_app.py)
+&nbsp;&nbsp;
+[![ML Monitoring](https://img.shields.io/badge/Streamlit-ML%20Monitoring-FF4B4B?style=flat-square&logo=streamlit)](dashboard/streamlit_monitoring.py)
 
 ## Overview
 
