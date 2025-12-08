@@ -1,7 +1,7 @@
 import time
 import numpy as np
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
-from drift_detector import DriftDetector
+from model.drift_detector import DriftDetector
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:

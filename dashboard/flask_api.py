@@ -436,6 +436,91 @@ def get_recent_alerts():
     })
 
 
+@app.route('/api/evaluate', methods=['POST'])
+@track_request_metrics
+def evaluate_model():
+    """
+    Run model evaluation on a sample of data to calculate F1, precision, recall.
+    This updates the Prometheus metrics for model performance.
+    """
+    from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix as sk_confusion_matrix
+
+    sample_size = request.args.get('sample_size', default=500, type=int)
+
+    if df_logs is None or df_logs.empty:
+        return jsonify({"error": "No data available"}), 500
+
+    if model is None or not model.model_exists():
+        return jsonify({"error": "Model not loaded"}), 500
+
+    try:
+        # Get a sample with labels
+        sample = df_logs.sample(n=min(sample_size, len(df_logs)), random_state=None).copy()
+
+        # Get true labels (1 = malicious/anomaly, 0 = benign/normal)
+        y_true = (sample['label'] == 'malicious').astype(int).values
+
+        # Make predictions
+        X_pred = sample.drop(columns=model.features_to_drop, errors='ignore')
+        predictions = model.predict(X_pred)
+
+        # Convert predictions to binary (RED/ORANGE = anomaly = 1, GREEN = normal = 0)
+        y_pred = [1 if p[0] in ['RED', 'ORANGE'] else 0 for p in predictions]
+
+        # Calculate metrics
+        precision = precision_score(y_true, y_pred, zero_division=0)
+        recall = recall_score(y_true, y_pred, zero_division=0)
+        f1 = f1_score(y_true, y_pred, zero_division=0)
+
+        # Confusion matrix
+        cm = sk_confusion_matrix(y_true, y_pred, labels=[0, 1])
+        tn, fp, fn, tp = cm.ravel() if cm.size == 4 else (0, 0, 0, 0)
+
+        # Detection rate and false alarm rate
+        det_rate = tp / (tp + fn) if (tp + fn) > 0 else 0
+        far = fp / (fp + tn) if (fp + tn) > 0 else 0
+
+        # Update Prometheus metrics
+        if METRICS_ENABLED:
+            from monitoring.metrics import (
+                model_precision, model_recall, model_f1_score,
+                detection_rate as dr_metric, false_alarm_rate as far_metric,
+                confusion_matrix as cm_metric
+            )
+            model_precision.set(precision)
+            model_recall.set(recall)
+            model_f1_score.set(f1)
+            dr_metric.set(det_rate)
+            far_metric.set(far)
+
+            # Update confusion matrix
+            cm_metric.labels(actual='normal', predicted='normal').set(tn)
+            cm_metric.labels(actual='normal', predicted='anomaly').set(fp)
+            cm_metric.labels(actual='anomaly', predicted='normal').set(fn)
+            cm_metric.labels(actual='anomaly', predicted='anomaly').set(tp)
+
+        return jsonify({
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1,
+            "detection_rate": det_rate,
+            "false_alarm_rate": far,
+            "confusion_matrix": {
+                "tn": int(tn), "fp": int(fp),
+                "fn": int(fn), "tp": int(tp)
+            },
+            "sample_size": len(sample),
+            "anomaly_count": sum(y_pred),
+            "malicious_count": sum(y_true)
+        })
+
+    except Exception as e:
+        print(f"[Flask API] Evaluation error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 # Initialize resources on startup
 load_resources()
 

@@ -4,8 +4,9 @@ Provides technical monitoring of the anomaly detection model with:
 - Prometheus metrics visualization
 - Embedded Grafana dashboards
 - Real-time model performance tracking
+- Background prediction loop for continuous metrics
 
-Automatically starts Flask API, Prometheus, and Grafana on launch.
+Automatically starts Flask API, Prometheus, Grafana, and prediction loop on launch.
 """
 
 import streamlit as st
@@ -17,7 +18,11 @@ import requests
 from pathlib import Path
 from datetime import datetime
 import plotly.graph_objects as go
-import plotly.express as px
+
+# Add project root to path
+project_root = Path(__file__).resolve().parents[1]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 # Configuration
 API_BASE_URL = "http://localhost:5000"
@@ -37,7 +42,6 @@ COLORS = {
     "text": "#DFE5EF",
     "muted": "#98A2B3",
 }
-
 
 def is_port_in_use(port):
     """Check if a port is already in use."""
@@ -130,6 +134,50 @@ def start_docker_monitoring():
         return False, str(e)
 
 
+def is_prediction_worker_running():
+    """Check if the prediction worker process is running."""
+    try:
+        import psutil
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                cmdline = proc.info.get('cmdline') or []
+                if any('prediction_worker.py' in str(c) for c in cmdline):
+                    return True
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+    except ImportError:
+        # psutil not available, check via subprocess
+        pass
+    return False
+
+
+def start_prediction_worker():
+    """Start the prediction worker as a separate process."""
+    dashboard_dir = Path(__file__).parent
+    worker_script = dashboard_dir / "prediction_worker.py"
+
+    if not worker_script.exists():
+        return False, "prediction_worker.py not found"
+
+    try:
+        if sys.platform == "win32":
+            # Start as a new process on Windows
+            subprocess.Popen(
+                [sys.executable, str(worker_script)],
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+                cwd=str(project_root)
+            )
+        else:
+            subprocess.Popen(
+                [sys.executable, str(worker_script)],
+                start_new_session=True,
+                cwd=str(project_root)
+            )
+        return True, "Started"
+    except Exception as e:
+        return False, str(e)
+
+
 def fetch_prometheus_metrics():
     """Fetch metrics from Flask /metrics endpoint and parse them."""
     try:
@@ -215,7 +263,7 @@ def create_gauge_chart(value, title, max_val=1.0, thresholds=None):
 
 def render_service_status():
     """Render service status indicators."""
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         flask_status = is_port_in_use(FLASK_PORT)
@@ -254,7 +302,25 @@ def render_service_status():
         """, unsafe_allow_html=True)
 
     with col4:
-        all_running = flask_status and prometheus_status and grafana_status
+        # Check if worker is running by looking at metrics activity
+        metrics = fetch_prometheus_metrics()
+        samples = metrics.get('anomaly_detection_samples_processed_total', 0)
+        pred_status = samples > 0
+        status_color = COLORS['success'] if pred_status else COLORS['danger']
+        status_text = "Active" if pred_status else "Inactive"
+        st.markdown(f"""
+        <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
+            <div style="color: {COLORS['muted']}; font-size: 12px;">Prediction Worker</div>
+            <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
+            <div style="color: {COLORS['muted']}; font-size: 11px;">{int(samples):,} samples</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col5:
+        flask_ok = is_port_in_use(FLASK_PORT)
+        prom_ok = is_port_in_use(PROMETHEUS_PORT)
+        graf_ok = is_port_in_use(GRAFANA_PORT)
+        all_running = flask_ok and prom_ok and graf_ok and pred_status
         status_color = COLORS['success'] if all_running else COLORS['warning']
         status_text = "All Systems Go" if all_running else "Partial"
         st.markdown(f"""
@@ -405,7 +471,7 @@ def render_grafana_embed():
         </div>
         """, unsafe_allow_html=True)
     else:
-        st.warning("Grafana is not running. Click 'Start Monitoring Stack' to launch.")
+        st.warning("Grafana is not running. Click 'Start All Services' to launch.")
 
 
 def main():
@@ -467,7 +533,15 @@ def main():
                 else:
                     st.error(f"Monitoring stack: {msg}")
 
-            time.sleep(2)
+                # Start prediction worker
+                time.sleep(2)  # Wait for Flask to be ready
+                pred_ok, pred_msg = start_prediction_worker()
+                if pred_ok:
+                    st.success(f"Prediction worker: {pred_msg}")
+                else:
+                    st.error(f"Prediction worker: {pred_msg}")
+
+            time.sleep(3)
             st.rerun()
 
     with col2:
@@ -493,7 +567,7 @@ def main():
             st.markdown("---")
             render_system_metrics(metrics)
         else:
-            st.info("No metrics available. Make sure Flask API is running and the model is processing data.")
+            st.info("No metrics available. Click 'Start All Services' to begin monitoring.")
 
             # Show placeholder gauges with zero values
             render_model_performance({})
@@ -524,7 +598,7 @@ def main():
 
     # Auto-refresh option
     st.sidebar.markdown("### Settings")
-    auto_refresh = st.sidebar.checkbox("Auto-refresh", value=False)
+    auto_refresh = st.sidebar.checkbox("Auto-refresh", value=True)
     refresh_interval = st.sidebar.slider("Refresh interval (sec)", 5, 60, 10)
 
     if auto_refresh:
