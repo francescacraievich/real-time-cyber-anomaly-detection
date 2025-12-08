@@ -14,13 +14,15 @@ except ImportError:
 
 
 class DriftDetector:
-    def __init__(self, threshold=0.002, window_size=100):
+    def __init__(self, threshold=0.002, window_size=100, change_threshold=0.08):
         # ADWIN for detecting changes in average values
-        # Lower delta = more sensitive to changes (0.002 is very sensitive)
         self.adwin = drift.ADWIN(delta=threshold)
-        self.history = deque(maxlen=window_size)  # Store recent history for analysis
+        self.history = deque(maxlen=window_size)  # Current window
         self.drift_detected = False
         self.processed_samples = 0
+        self.change_threshold = change_threshold  # 8% change triggers drift
+        self.last_reported_rate = None  # Track last rate when drift was reported/checked
+        self.check_interval = 50  # Check for drift every N samples
 
     def update(self, is_anomaly):
         # Convert boolean to integer (1 for Anomaly, 0 for Benign)
@@ -30,8 +32,7 @@ class DriftDetector:
         self.history.append(val)
         self.processed_samples += 1
 
-        # Feed the binary value to ADWIN.
-        # ADWIN will detect if the *probability* of getting a '1' changes significantly.
+        # Feed the binary value to ADWIN
         self.adwin.update(val)
 
         # Update metrics
@@ -39,15 +40,43 @@ class DriftDetector:
             anomaly_rate_gauge.set(self.get_current_anomaly_rate())
             samples_since_drift.set(self.processed_samples)
 
+        # Check for drift using multiple methods
+        drift_occurred = False
+
+        # Method 1: ADWIN detection
         if self.adwin.drift_detected:
+            drift_occurred = True
+            print(f"[DriftDetector] ADWIN detected drift at sample {self.processed_samples}")
+
+        # Method 2: Simple threshold-based detection (check every N samples after window is full)
+        if len(self.history) >= self.history.maxlen and self.processed_samples % self.check_interval == 0:
+            current_rate = self.get_current_anomaly_rate()
+
+            # Initialize last_reported_rate on first check
+            if self.last_reported_rate is None:
+                self.last_reported_rate = current_rate
+            else:
+                # Check if current rate differs significantly from last reported
+                rate_change = abs(current_rate - self.last_reported_rate)
+                if rate_change >= self.change_threshold:
+                    drift_occurred = True
+                    print(f"[DriftDetector] Rate change detected: {self.last_reported_rate:.2%} -> {current_rate:.2%} (delta: {rate_change:.2%})")
+                    self.last_reported_rate = current_rate
+
+        if drift_occurred:
             self.drift_detected = True
             if METRICS_ENABLED:
                 drift_detected_total.inc()
                 drift_detected_flag.set(1)
             return True
 
-        if METRICS_ENABLED:
-            drift_detected_flag.set(0)
+        # If we just did a check (every check_interval) and no drift was found, set to stable
+        if len(self.history) >= self.history.maxlen and self.processed_samples % self.check_interval == 0:
+            # We checked and found no drift - back to stable
+            self.drift_detected = False
+            if METRICS_ENABLED:
+                drift_detected_flag.set(0)
+
         return False
     
     def get_current_anomaly_rate(self):
@@ -61,6 +90,7 @@ class DriftDetector:
         self.adwin = drift.ADWIN(delta=self.adwin.delta)
         self.drift_detected = False
         self.history.clear()
+        self.last_reported_rate = None
         self.processed_samples = 0
 
         if METRICS_ENABLED:

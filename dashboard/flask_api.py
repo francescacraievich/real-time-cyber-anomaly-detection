@@ -28,7 +28,9 @@ try:
     from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
     from monitoring.metrics import (
         api_request_duration, api_requests_total,
-        model_loaded_gauge, dataset_size_gauge
+        model_loaded_gauge, dataset_size_gauge,
+        anomaly_rate_gauge, drift_detected_total, drift_detected_flag,
+        samples_since_drift
     )
     METRICS_ENABLED = True
 except ImportError:
@@ -178,6 +180,7 @@ def stream_logs():
             batch['anomaly_score'] = [p[2] for p in predictions]
 
             # Update drift detector with each prediction
+            # The drift detector handles all Prometheus metrics internally
             if drift_detector is not None:
                 for severity in batch['severity']:
                     is_anomaly = severity in ['RED', 'ORANGE']
@@ -210,10 +213,17 @@ def stream_logs():
 
 @app.route('/api/logs/reset', methods=['POST'])
 def reset_stream():
-    """Reset the log stream to the beginning."""
-    global current_index
+    """Reset the log stream and drift detector to the beginning."""
+    global current_index, drift_detector
     current_index = 0
-    return jsonify({"message": "Stream reset", "current_index": current_index})
+
+    # Also reset the drift detector for a fresh start
+    if drift_detector is not None:
+        drift_detector.reset()
+        print("[Flask API] Drift detector reset")
+
+    print(f"[Flask API] Stream reset to index {current_index}")
+    return jsonify({"message": "Stream reset", "current_index": current_index, "drift_reset": True})
 
 
 @app.route('/api/stats/summary', methods=['GET'])

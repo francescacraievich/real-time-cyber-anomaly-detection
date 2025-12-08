@@ -425,52 +425,22 @@ def render_drift_status(metrics):
 
 
 def render_system_metrics(metrics):
-    """Render system and buffer metrics."""
+    """Render system metrics."""
     st.subheader("System Metrics")
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
 
-    buffer_size = metrics.get('anomaly_detection_retrain_buffer_size', 0)
-    buffer_max = 5000
     retrains = metrics.get('anomaly_detection_model_retrain_total', 0)
     samples = metrics.get('anomaly_detection_samples_processed_total', 0)
     threshold = metrics.get('anomaly_detection_threshold_boundary', 0)
 
     with col1:
-        # Buffer usage gauge
-        buffer_pct = buffer_size / buffer_max if buffer_max > 0 else 0
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=buffer_size,
-            domain={'x': [0, 1], 'y': [0, 1]},
-            title={'text': "Retrain Buffer", 'font': {'size': 14, 'color': COLORS['text']}},
-            number={'font': {'size': 24, 'color': COLORS['text']}},
-            gauge={
-                'axis': {'range': [0, buffer_max]},
-                'bar': {'color': COLORS['warning'] if buffer_pct > 0.7 else COLORS['primary']},
-                'bgcolor': COLORS['surface'],
-                'steps': [
-                    {'range': [0, 3500], 'color': 'rgba(27,169,245,0.2)'},
-                    {'range': [3500, 4500], 'color': 'rgba(245,166,35,0.2)'},
-                    {'range': [4500, 5000], 'color': 'rgba(255,107,107,0.2)'},
-                ],
-            }
-        ))
-        fig.update_layout(
-            paper_bgcolor=COLORS['surface'],
-            font={'color': COLORS['text']},
-            height=200,
-            margin=dict(l=20, r=20, t=40, b=20)
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
         st.metric("Model Retrains", int(retrains))
 
-    with col3:
+    with col2:
         st.metric("Samples Processed", f"{int(samples):,}")
 
-    with col4:
+    with col3:
         st.metric("Decision Threshold", f"{threshold:.4f}")
 
 
@@ -541,8 +511,8 @@ def main():
     st.title("ML Model Monitoring Dashboard")
     st.markdown("---")
 
-    # Service control buttons
-    col1, col2, col3 = st.columns([1, 1, 4])
+    # Service control buttons (narrow columns to keep buttons close)
+    col1, col2, col3, _ = st.columns([1, 1, 1, 5])
 
     with col1:
         if st.button("Start All Services", type="primary"):
@@ -574,6 +544,22 @@ def main():
 
     with col2:
         if st.button("Refresh"):
+            st.rerun()
+
+    with col3:
+        if st.button("Reset Stream"):
+            # Reset the data stream to the beginning
+            try:
+                response = requests.post(f"{API_BASE_URL}/api/logs/reset", timeout=5)
+                if response.status_code == 200:
+                    st.success("Stream reset to beginning!")
+                else:
+                    st.error("Failed to reset stream")
+            except requests.exceptions.ConnectionError:
+                st.error("Flask API not running")
+            except Exception as e:
+                st.error(f"Error: {e}")
+            time.sleep(1)
             st.rerun()
 
     # Service status
@@ -641,27 +627,8 @@ def main():
                             st.metric(label=display_name, value=display_value)
                     st.markdown("---")
 
-            # Show any uncategorized metrics
-            categorized_keywords = [kw for keywords in categories.values() for kw in keywords]
-            other_metrics = {k: v for k, v in ad_metrics.items()
-                            if not any(kw in k for kw in categorized_keywords)}
-            if other_metrics:
-                st.markdown("**Other Metrics**")
-                for k, v in other_metrics.items():
-                    display_name = k.replace('anomaly_detection_', '').replace('_', ' ').title()
-                    st.text(f"{display_name}: {v}")
         else:
             st.info("No metrics available. Start the services to see metrics.")
-
-        # Direct links
-        st.markdown("### Quick Links")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.link_button("Flask /metrics", f"{API_BASE_URL}/metrics")
-        with col2:
-            st.link_button("Prometheus UI", f"http://localhost:{PROMETHEUS_PORT}")
-        with col3:
-            st.link_button("Grafana UI", GRAFANA_URL)
 
     # Auto-refresh option
     st.sidebar.markdown("### Settings")
