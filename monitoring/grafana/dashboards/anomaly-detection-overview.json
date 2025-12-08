@@ -1,0 +1,436 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.1.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "anomaly_detection_f1_score",
+          "refId": "A"
+        }
+      ],
+      "title": "F1-Score",
+      "type": "stat",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "green", "value": 0.7 }
+            ]
+          },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      }
+    },
+    {
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "id": 2,
+      "title": "Precision",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_precision", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.6 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "id": 3,
+      "title": "Recall",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_recall", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.6 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "id": 4,
+      "title": "Detection Rate",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_detection_rate", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.7 },
+              { "color": "green", "value": 0.8 }
+            ]
+          },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "id": 5,
+      "title": "False Alarm Rate",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_false_alarm_rate", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.05 },
+              { "color": "red", "value": 0.1 }
+            ]
+          },
+          "unit": "percentunit",
+          "max": 1,
+          "min": 0
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "id": 6,
+      "title": "Drift Status",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_drift_status", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "STABLE", "color": "green" } } },
+            { "type": "value", "options": { "1": { "text": "DRIFT!", "color": "red" } } }
+          ],
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 7,
+      "title": "Model Performance Over Time",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "anomaly_detection_f1_score", "legendFormat": "F1-Score", "refId": "A" },
+        { "expr": "anomaly_detection_precision", "legendFormat": "Precision", "refId": "B" },
+        { "expr": "anomaly_detection_recall", "legendFormat": "Recall", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 8,
+      "title": "Predictions by Severity",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "rate(anomaly_detection_predictions_total{severity=\"GREEN\"}[5m])", "legendFormat": "GREEN", "refId": "A" },
+        { "expr": "rate(anomaly_detection_predictions_total{severity=\"ORANGE\"}[5m])", "legendFormat": "ORANGE", "refId": "B" },
+        { "expr": "rate(anomaly_detection_predictions_total{severity=\"RED\"}[5m])", "legendFormat": "RED", "refId": "C" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": { "lineWidth": 2, "fillOpacity": 20, "stacking": { "mode": "normal" } }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "GREEN" }, "properties": [{ "id": "color", "value": { "fixedColor": "#73BF69", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "ORANGE" }, "properties": [{ "id": "color", "value": { "fixedColor": "#FF9830", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "RED" }, "properties": [{ "id": "color", "value": { "fixedColor": "#F2495C", "mode": "fixed" } }] }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+      "id": 9,
+      "title": "Anomaly Rate Trend",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "anomaly_detection_anomaly_rate", "legendFormat": "Anomaly Rate", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "orange", "mode": "fixed" },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": { "lineWidth": 2, "fillOpacity": 30 }
+        }
+      }
+    },
+    {
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
+      "id": 10,
+      "title": "Prediction Latency",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "histogram_quantile(0.95, rate(anomaly_detection_prediction_latency_seconds_bucket[5m]))", "legendFormat": "p95", "refId": "A" },
+        { "expr": "histogram_quantile(0.50, rate(anomaly_detection_prediction_latency_seconds_bucket[5m]))", "legendFormat": "p50", "refId": "B" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "lineWidth": 2 }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
+      "id": 11,
+      "title": "Samples Processed Rate",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "rate(anomaly_detection_samples_processed_total[5m])", "legendFormat": "Samples/sec", "refId": "A" }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "color": { "fixedColor": "blue", "mode": "fixed" },
+          "custom": { "lineWidth": 2, "fillOpacity": 20 }
+        }
+      }
+    },
+    {
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 20 },
+      "id": 12,
+      "title": "Retrain Buffer Usage",
+      "type": "gauge",
+      "targets": [{ "expr": "anomaly_detection_retrain_buffer_size", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "max": 5000,
+          "min": 0,
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3500 },
+              { "color": "red", "value": 4500 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 20 },
+      "id": 13,
+      "title": "Model Retraining Events (24h)",
+      "type": "stat",
+      "targets": [{ "expr": "increase(anomaly_detection_model_retrain_total[24h])", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 20 },
+      "id": 14,
+      "title": "Decision Threshold",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_threshold_boundary", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 4,
+          "color": { "mode": "thresholds" },
+          "thresholds": { "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 26 },
+      "id": 15,
+      "title": "Total Samples Processed",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_samples_processed_total", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "blue", "mode": "fixed" },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 26 },
+      "id": 16,
+      "title": "Total Anomalies Detected",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_anomalies_detected_total", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "red", "mode": "fixed" },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    },
+    {
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 26 },
+      "id": 17,
+      "title": "Drift Events Total",
+      "type": "stat",
+      "targets": [{ "expr": "anomaly_detection_drift_detected_total", "refId": "A" }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "orange", "mode": "fixed" },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["anomaly-detection", "ml-monitoring", "cyber-security"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Cyber Anomaly Detection - ML Model Monitoring",
+  "uid": "anomaly-detection-overview",
+  "version": 1,
+  "weekStart": ""
+}

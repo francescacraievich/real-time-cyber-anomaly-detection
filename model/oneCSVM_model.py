@@ -15,6 +15,18 @@ from sklearn.svm import OneClassSVM
 from collections import deque
 import pandas as pd
 
+# Prometheus metrics (optional - graceful fallback if not available)
+try:
+    from monitoring.metrics import (
+        threshold_boundary as threshold_boundary_metric,
+        retrain_buffer_size, model_retrain_total,
+        prediction_latency, predictions_total, anomalies_detected_total,
+        samples_processed_total, decision_score_histogram, model_info
+    )
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
+
 
 project_root = Path(__file__).resolve().parents[1]
 if str(project_root) not in sys.path:
@@ -60,6 +72,10 @@ class OneClassSVMModel:
         for _, row in df_chunk.iterrows():
             self.retrain_buffer.append(row)
 
+        # Update metrics
+        if METRICS_ENABLED:
+            retrain_buffer_size.set(len(self.retrain_buffer))
+
     def retrain(self):
         # Retraining model on buffered data
         if len(self.retrain_buffer) < 1000:
@@ -72,6 +88,11 @@ class OneClassSVMModel:
         df_recent = pd.DataFrame(self.retrain_buffer)
 
         self.fit(df_recent, max_train_samples=len(df_recent), contamination=0.1)
+
+        # Update metrics
+        if METRICS_ENABLED:
+            model_retrain_total.inc()
+            retrain_buffer_size.set(len(self.retrain_buffer))
 
         print("[Drift] Model retrained successfully.")
         return True
@@ -225,6 +246,10 @@ class OneClassSVMModel:
         self.threshold_boundary = np.percentile(scores, contamination * 100)
         print(f" -> Decision Boundary adjusted to: {self.threshold_boundary:.4f}")
 
+        # Update metrics
+        if METRICS_ENABLED:
+            threshold_boundary_metric.set(self.threshold_boundary)
+
         # 6. Save Model
         self.save_model()
     
@@ -234,7 +259,8 @@ class OneClassSVMModel:
 
     def predict(self, row_data):
         # Predicting distance scores and severity levels for new data
-        
+        start_time = time.time()
+
         try:
             X_processed = self.preprocessor.transform(row_data)
         except Exception as e:
@@ -245,17 +271,32 @@ class OneClassSVMModel:
         results = []
         for i in range(len(row_data)):
             score = scores[i]
-            
+
+            # Record decision score in histogram
+            if METRICS_ENABLED:
+                decision_score_histogram.observe(score)
+
             # Distance logic
             if score < self.threshold_boundary:
                 # Far outside the boundary -> High Severity
-                if score < (self.threshold_boundary - 0.5): 
+                if score < (self.threshold_boundary - 0.5):
                     results.append(("RED", "CRITICAL: Far outside normal boundary", score))
                 else:
                     results.append(("ORANGE", "SUSPICIOUS: Just outside boundary", score))
             else:
                 results.append(("GREEN", "Normal", score))
-                
+
+        # Update metrics
+        if METRICS_ENABLED:
+            duration = time.time() - start_time
+            prediction_latency.observe(duration)
+            samples_processed_total.inc(len(row_data))
+
+            for severity, _, _ in results:
+                predictions_total.labels(severity=severity).inc()
+                if severity != "GREEN":
+                    anomalies_detected_total.inc()
+
         return results
     
 

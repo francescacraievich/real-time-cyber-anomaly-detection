@@ -1,11 +1,14 @@
 """
 Flask API for serving network logs and anomaly predictions in real-time.
 Provides endpoints for the Streamlit dashboard to consume.
+Also exposes Prometheus metrics endpoint for Grafana monitoring.
 """
 
 import sys
+import time
+from functools import wraps
 from pathlib import Path
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
@@ -19,6 +22,17 @@ if str(project_root) not in sys.path:
 from model.oneCSVM_model import OneClassSVMModel
 from dashboard.geolocation_service import get_geo_service
 
+# Prometheus metrics (optional - graceful fallback if not available)
+try:
+    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+    from monitoring.metrics import (
+        api_request_duration, api_requests_total,
+        model_loaded_gauge, dataset_size_gauge
+    )
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
+
 app = Flask(__name__)
 CORS(app)
 
@@ -26,6 +40,32 @@ CORS(app)
 model = None
 df_logs = None
 current_index = 0  # Simulates real-time log streaming
+
+
+def track_request_metrics(f):
+    """Decorator to track API request metrics for Prometheus."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not METRICS_ENABLED:
+            return f(*args, **kwargs)
+
+        start_time = time.time()
+        endpoint = request.endpoint or 'unknown'
+        method = request.method
+
+        try:
+            response = f(*args, **kwargs)
+            status = 'success'
+            return response
+        except Exception as e:
+            status = 'error'
+            raise
+        finally:
+            duration = time.time() - start_time
+            api_request_duration.labels(endpoint=endpoint, method=method).observe(duration)
+            api_requests_total.labels(endpoint=endpoint, status=status).inc()
+
+    return decorated_function
 
 
 def load_resources():
@@ -39,8 +79,12 @@ def load_resources():
     if model.model_exists():
         model.load_model()
         print("[Flask API] Model loaded successfully")
+        if METRICS_ENABLED:
+            model_loaded_gauge.set(1)
     else:
         print("[Flask API] WARNING: No trained model found!")
+        if METRICS_ENABLED:
+            model_loaded_gauge.set(0)
 
     # Load the processed dataset
     data_path = project_root / "data" / "processed" / "combined_shuffled_dataset.csv"
@@ -49,12 +93,26 @@ def load_resources():
         # Shuffle for simulation variety
         df_logs = df_logs.sample(frac=1, random_state=42).reset_index(drop=True)
         print(f"[Flask API] Dataset loaded: {len(df_logs)} records")
+        if METRICS_ENABLED:
+            dataset_size_gauge.set(len(df_logs))
     else:
         print("[Flask API] WARNING: Dataset not found!")
         df_logs = pd.DataFrame()
+        if METRICS_ENABLED:
+            dataset_size_gauge.set(0)
+
+
+@app.route('/metrics', methods=['GET'])
+def prometheus_metrics():
+    """Prometheus metrics endpoint for Grafana monitoring."""
+    if METRICS_ENABLED:
+        return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+    else:
+        return Response("Metrics not available - prometheus_client not installed", status=503)
 
 
 @app.route('/api/health', methods=['GET'])
+@track_request_metrics
 def health_check():
     """Health check endpoint."""
     return jsonify({
@@ -66,6 +124,7 @@ def health_check():
 
 
 @app.route('/api/logs/stream', methods=['GET'])
+@track_request_metrics
 def stream_logs():
     """
     Simulate real-time log streaming.
@@ -320,6 +379,7 @@ def get_traffic_stats():
 
 
 @app.route('/api/alerts/recent', methods=['GET'])
+@track_request_metrics
 def get_recent_alerts():
     """Get recent alerts (predictions) from the last batch."""
     window_size = request.args.get('window_size', default=100, type=int)
