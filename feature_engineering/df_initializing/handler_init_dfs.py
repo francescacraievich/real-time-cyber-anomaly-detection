@@ -1,21 +1,13 @@
-import json
-import pandas as pd
-import gzip
-import os
-import sys
 
-sys.path.insert(0, os.path.dirname(__file__))
 
-from init_suricata_df import SuricataDataFrameInitializer as SuricataInit
-from init_normal_traffic_df import NormalTrafficDataFrameInitializer as NormalTrafficInit
+from .init_suricata_df import SuricataDataFrameInitializer as SuricataInit
+from .init_normal_traffic_df import NormalTrafficDataFrameInitializer as NormalTrafficInit
 
 # Read logs and initialize as DataFrames
 class DataFrameInitializer():
     """
     Initializes DataFrames from JSON log files for Cowrie, Dionaea, Suricata, and Tanner.
     Attributes:
-        cowrie_json_path (str): Path to Cowrie JSON log file.
-        dionea_json_path (str): Path to Dionaea JSON log file.
         suricata_json_path (str): Path to Suricata JSON log file.
         normal_traffic_json_path (str): Path to Normal Traffic JSON log file.
 

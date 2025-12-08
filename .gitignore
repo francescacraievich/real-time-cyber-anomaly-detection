@@ -11,3 +11,13 @@ info/
 node_modules/
 package-lock.json
 package
+data/ 
+normal_traffic/
+.tar.gz
+.jsonl
+.vscode
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
