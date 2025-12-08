@@ -47,7 +47,7 @@ def main():
     df_benign, df_combined = load_datasets()
     if df_benign is None:
         return
-
+    
     print("\n2. Initializing One-Class SVM System...")
     
     # Initialize core components
@@ -58,7 +58,7 @@ def main():
     print("\n3. Training with grid search optimization...")
     
     # Prepare test data for grid search
-    test_for_tuning = df_combined.sample(n=4000, random_state=42)
+    test_for_tuning = df_combined.sample(n=10000, random_state=42)
     
     # Train or load model with grid search
     grid_search.fit_or_load_with_grid_search(
@@ -67,20 +67,24 @@ def main():
         max_train_samples=8000,
         contamination=0.1,
         force_retrain=False,  # Set to True to force retraining
-        #quick_search=True     # Set to False for exhaustive search
+        #quick_search=True     
     )
 
     print("\n4. Evaluating model performance...")
     # Comprehensive evaluation
-    test_sample = df_combined.sample(n=10000, random_state=42)
+    test_sample = df_combined.sample(n=30000, random_state=88)
     performance_metrics = evaluator.evaluate_model_performance(test_sample)
 
-    print("\n5. Running real-time simulation...")
-    evaluator.run_simulation(df_combined, chunk_size=10)
-
-    print("\n6. Running detailed simulation...")
+    print("\n5. Running brief simulation with details...")
     simulation_results = evaluator.run_detailed_simulation(test_sample)
+
+    print("\n6. Running MAIN real-time simulation. of system..")
+    evaluator.run_simulation(df_combined, chunk_size=20)
+
     
+    
+    #test_drift_mechanism(svm_model, df_benign, df_combined)
+
     print("\n7. Final Assessment:")
     print(f" Best parameters found: {svm_model.best_params}")
     print(f" F1-Score: {performance_metrics['f1_score']:.3f}")
@@ -89,8 +93,20 @@ def main():
 
     # Quality assessment
     assess_model_quality(performance_metrics, simulation_results)
+    
 
+    """
+    baseline_model = OneClassSVMModel(nu=0.1, kernel='rbf', gamma='scale')
+    baseline_evaluator = SimulationEvaluator(baseline_model)    
+    baseline_model.fit(df_benign, max_train_samples=8000, contamination=0.1)
+    test_sample = df_combined.sample(n=10000, random_state=71)
+    test_drift_mechanism(baseline_model, df_benign)
+    #baseline_evaluator.run_simulation(df_combined, chunk_size=10)
 
+    #simulation_results = baseline_evaluator.run_detailed_simulation(test_sample)
+    #print(f" Detection Rate: {simulation_results['attack_detection_rate']:.3f}")
+    #print(f" False Alarm Rate: {simulation_results['false_alarm_rate']:.3f}")
+    """
 
 def assess_model_quality(performance_metrics, simulation_results):
     """Assess and display model quality"""
@@ -111,6 +127,60 @@ def assess_model_quality(performance_metrics, simulation_results):
     else:
         print(" Low Attack Detection Rate (<80%) - Missing too many attacks")
 
+
+"""
+def test_drift_mechanism(model, df_benign, df_combined):
+    
+    #Tests drift detection using REAL data shifts.
+    #Phase 1: Benign traffic (Model should be stable)
+    #Phase 2: Sudden burst of Malicious traffic (Model should drift)
+    
+    print("\n" + "="*60)
+    print(" REALISTIC DRIFT TEST (Benign -> Malicious Shift)")
+    print("="*60)
+
+    # 1. Phase 1: Stable Benign Traffic (50 samples)
+    # We take data we know is benign
+    phase_1 = df_benign.sample(n=50, random_state=42).copy()
+    
+    # 2. Phase 2: Real Attack Traffic (50 samples)
+    # We filter df_combined to find actual attacks
+    if 'label' in df_combined.columns:
+        attacks = df_combined[df_combined['label'] != 'benign']
+        if len(attacks) < 50:
+            print("Warning: Not enough attack samples, using duplicates.")
+            phase_2 = attacks.sample(n=50, replace=True, random_state=99).copy()
+        else:
+            phase_2 = attacks.sample(n=50, random_state=99).copy()
+    else:
+        # Fallback if labels aren't available (shouldn't happen based on your code)
+        print("Labels not found, reverting to synthetic corruption.")
+        phase_2 = df_benign.sample(n=50, random_state=99).copy()
+        numeric_cols = phase_2.select_dtypes(include=['number']).columns
+        for col in numeric_cols:
+            phase_2[col] = phase_2[col] * 100  
+
+    # 3. Combine
+    df_drift_test = pd.concat([phase_1, phase_2]).reset_index(drop=True)
+
+    print(f"Generated {len(df_drift_test)} samples.")
+    print(" - First 50: Real Benign Traffic")
+    print(" - Last 50:  Real Attack Traffic")
+
+    # 4. Setup Evaluator
+    evaluator = SimulationEvaluator(model)
+    
+    # Set high sensitivity for the test
+    evaluator.drift_detector.adwin.delta = 0.1 
+
+    # 5. Pre-fill buffer to allow retraining
+    print("Pre-filling model buffer with benign samples...")
+    dummy_history = df_benign.sample(n=1200, replace=True, random_state=1)
+    model.add_to_buffer(dummy_history)
+
+    print("\nRunning Simulation...")
+    evaluator.run_simulation(df_drift_test, chunk_size=25)
+"""
 
 if __name__ == "__main__":
     main()
