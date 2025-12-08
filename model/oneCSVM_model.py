@@ -12,7 +12,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.svm import OneClassSVM
-#from matplotlib import cm
+from collections import deque
+import pandas as pd
 
 
 project_root = Path(__file__).resolve().parents[1]
@@ -46,7 +47,40 @@ class OneClassSVMModel:
 
         # Best parameters from tuning
         self.best_params = None
+
+        # Add a buffer for retraining
+        self.retrain_buffer = deque(maxlen=5000)  # Store recent samples for potential retraining
+
+
+
+
     
+    def add_to_buffer(self, df_chunk):
+        # Storing recent data for potential retraining
+        for _, row in df_chunk.iterrows():
+            self.retrain_buffer.append(row)
+
+    def retrain(self):
+        # Retraining model on buffered data
+        if len(self.retrain_buffer) < 1000:
+            print("[System] Not enough data in buffer to retrain.")
+            return False
+
+        print(f"[Drift] Retraining model on {len(self.retrain_buffer)} recent samples...")
+
+        # Converting buffer back to DataFrame
+        df_recent = pd.DataFrame(self.retrain_buffer)
+
+        self.fit(df_recent, max_train_samples=len(df_recent), contamination=0.1)
+
+        print("[Drift] Model retrained successfully.")
+        return True
+
+
+
+
+
+
     def _configure_features(self, df):
         # Identify categorical and numerical features
         self.features_to_drop = ['source_ip', 'destination_ip', 'timestamp_start', 'label',
@@ -76,7 +110,8 @@ class OneClassSVMModel:
 
 
     def save_model(self):
-        """Save the trained model, preprocessor, and configuration"""
+        # Saving the model, preprocessor and configuration in suitable pickle files
+        
         try:
             print("[System] Saving model components...")
             
@@ -107,7 +142,7 @@ class OneClassSVMModel:
 
     
     def load_model(self):
-        """Load the trained model, preprocessor, and configuration"""
+        # Loading the model, preprocessor and configuration files
         try:
             print("[System] Loading existing model...")
             
@@ -146,7 +181,7 @@ class OneClassSVMModel:
 
     
     def model_exists(self):
-        """Check if all required model files exist"""
+        #Checking if all model components exist
         return (self.model_path.exists() and 
                 self.preprocessor_path.exists() and 
                 self.config_path.exists())
@@ -198,9 +233,8 @@ class OneClassSVMModel:
 
 
     def predict(self, row_data):
-        """
-        Returns: (severity_color, description, distance_score)
-        """
+        # Predicting distance scores and severity levels for new data
+        
         try:
             X_processed = self.preprocessor.transform(row_data)
         except Exception as e:
@@ -227,7 +261,7 @@ class OneClassSVMModel:
 
 
     def update_model_parameters(self, best_params):
-        """Update model with new parameters"""
+        # Update model with new parameters
         self.best_params = best_params
         self.model = OneClassSVM(**best_params)
         

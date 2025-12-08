@@ -14,5 +14,10 @@ package
 data/ 
 normal_traffic/
 .tar.gz
-.jsonl  
+.jsonl
 .vscode
+
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
