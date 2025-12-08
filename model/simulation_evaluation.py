@@ -1,7 +1,19 @@
 import time
 import numpy as np
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
-from drift_detector import DriftDetector
+from model.drift_detector import DriftDetector
+
+# Prometheus metrics (optional - graceful fallback if not available)
+try:
+    from monitoring.metrics import (
+        model_precision, model_recall, model_f1_score,
+        detection_rate as detection_rate_metric, false_alarm_rate as false_alarm_rate_metric,
+        confusion_matrix as confusion_matrix_metric,
+        attack_detection_rate_by_type, severity_distribution
+    )
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
 
 
 class SimulationEvaluator:
@@ -191,7 +203,7 @@ class SimulationEvaluator:
 
     def _calculate_final_metrics(self, stats, total_samples):
         """Calculate final performance metrics"""
-        return {
+        metrics = {
             'total_samples': total_samples,
             'benign_total': stats['benign_total'],
             'attack_total': stats['attack_total'],
@@ -201,6 +213,21 @@ class SimulationEvaluator:
             'severity_distribution': stats['severity_counts'],
             'attack_type_performance': stats['attack_types']
         }
+
+        # Update Prometheus metrics
+        if METRICS_ENABLED:
+            # Severity distribution
+            total_severity = sum(stats['severity_counts'].values())
+            for sev, count in stats['severity_counts'].items():
+                ratio = count / total_severity if total_severity > 0 else 0
+                severity_distribution.labels(severity=sev).set(ratio)
+
+            # Attack type detection rates
+            for attack_type, type_stats in stats['attack_types'].items():
+                rate = type_stats['detected'] / type_stats['total'] if type_stats['total'] > 0 else 0
+                attack_detection_rate_by_type.labels(attack_type=attack_type).set(rate)
+
+        return metrics
 
     def _display_simulation_results(self, metrics):
         """Display simulation results"""
@@ -260,21 +287,35 @@ class SimulationEvaluator:
         precision = precision_score(true_binary, predicted_labels, zero_division=0)
         recall = recall_score(true_binary, predicted_labels, zero_division=0)
         f1 = f1_score(true_binary, predicted_labels, zero_division=0)
-        
+
         cm = confusion_matrix(true_binary, predicted_labels)
         tn, fp, fn, tp = cm.ravel()
-        
+
         total_normal = tn + fp
         total_anomaly = fn + tp
-        false_alarm_rate = fp / total_normal if total_normal > 0 else 0
-        detection_rate = tp / total_anomaly if total_anomaly > 0 else 0
-        
+        far = fp / total_normal if total_normal > 0 else 0
+        dr = tp / total_anomaly if total_anomaly > 0 else 0
+
+        # Update Prometheus metrics
+        if METRICS_ENABLED:
+            model_precision.set(precision)
+            model_recall.set(recall)
+            model_f1_score.set(f1)
+            detection_rate_metric.set(dr)
+            false_alarm_rate_metric.set(far)
+
+            # Confusion matrix
+            confusion_matrix_metric.labels(actual='normal', predicted='normal').set(tn)
+            confusion_matrix_metric.labels(actual='normal', predicted='anomaly').set(fp)
+            confusion_matrix_metric.labels(actual='anomaly', predicted='normal').set(fn)
+            confusion_matrix_metric.labels(actual='anomaly', predicted='anomaly').set(tp)
+
         return {
             'precision': precision,
             'recall': recall,
             'f1_score': f1,
-            'detection_rate': detection_rate,
-            'false_alarm_rate': false_alarm_rate,
+            'detection_rate': dr,
+            'false_alarm_rate': far,
             'confusion_matrix': cm,
             'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp
         }

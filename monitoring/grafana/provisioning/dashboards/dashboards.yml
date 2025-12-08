@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: 'Anomaly Detection'
+    orgId: 1
+    folder: 'Cyber Anomaly Detection'
+    folderUid: 'anomaly-detection'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
