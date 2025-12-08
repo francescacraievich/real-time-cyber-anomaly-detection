@@ -606,23 +606,62 @@ def main():
         render_grafana_embed()
 
     with tab3:
-        st.subheader("Raw Prometheus Metrics")
+        st.subheader("Prometheus Metrics Overview")
         if metrics:
             # Filter to show only anomaly_detection metrics
             ad_metrics = {k: v for k, v in metrics.items() if k.startswith('anomaly_detection')}
-            st.json(ad_metrics)
+
+            # Group metrics by category
+            categories = {
+                "Model Performance": ["precision", "recall", "f1_score", "detection_rate", "false_alarm_rate"],
+                "Predictions": ["samples_processed", "predictions_red", "predictions_orange", "predictions_green"],
+                "Drift Detection": ["drift_status", "drift_detected_total", "samples_since_drift", "anomaly_rate"],
+                "System": ["model_loaded", "dataset_size"]
+            }
+
+            for category, keywords in categories.items():
+                category_metrics = {k: v for k, v in ad_metrics.items()
+                                   if any(kw in k for kw in keywords)}
+                if category_metrics:
+                    st.markdown(f"**{category}**")
+                    cols = st.columns(min(len(category_metrics), 4))
+                    for i, (metric_name, value) in enumerate(category_metrics.items()):
+                        with cols[i % 4]:
+                            # Clean up metric name for display
+                            display_name = metric_name.replace('anomaly_detection_', '').replace('_', ' ').title()
+                            # Format value
+                            if isinstance(value, float):
+                                if value < 1 and value > 0:
+                                    display_value = f"{value:.3f}"
+                                else:
+                                    display_value = f"{value:,.0f}"
+                            else:
+                                display_value = f"{value:,}" if isinstance(value, (int, float)) else str(value)
+
+                            st.metric(label=display_name, value=display_value)
+                    st.markdown("---")
+
+            # Show any uncategorized metrics
+            categorized_keywords = [kw for keywords in categories.values() for kw in keywords]
+            other_metrics = {k: v for k, v in ad_metrics.items()
+                            if not any(kw in k for kw in categorized_keywords)}
+            if other_metrics:
+                st.markdown("**Other Metrics**")
+                for k, v in other_metrics.items():
+                    display_name = k.replace('anomaly_detection_', '').replace('_', ' ').title()
+                    st.text(f"{display_name}: {v}")
         else:
-            st.info("No metrics available")
+            st.info("No metrics available. Start the services to see metrics.")
 
         # Direct links
-        st.markdown("### Direct Access")
+        st.markdown("### Quick Links")
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.markdown(f"[Flask Metrics]({API_BASE_URL}/metrics)")
+            st.link_button("Flask /metrics", f"{API_BASE_URL}/metrics")
         with col2:
-            st.markdown(f"[Prometheus UI](http://localhost:{PROMETHEUS_PORT})")
+            st.link_button("Prometheus UI", f"http://localhost:{PROMETHEUS_PORT}")
         with col3:
-            st.markdown(f"[Grafana UI]({GRAFANA_URL})")
+            st.link_button("Grafana UI", GRAFANA_URL)
 
     # Auto-refresh option
     st.sidebar.markdown("### Settings")

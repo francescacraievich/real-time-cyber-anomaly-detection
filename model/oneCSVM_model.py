@@ -186,9 +186,13 @@ class OneClassSVMModel:
             if 'best_params' in config:
                 self.best_params = config['best_params']
                 print(f"   -> Best parameters: {self.best_params}")
-            
+
             print(f" -> Model loaded from: {self.model_path}")
             print(f" -> Threshold boundary: {self.threshold_boundary:.4f}")
+
+            # Update Prometheus metric
+            if METRICS_ENABLED:
+                threshold_boundary_metric.set(self.threshold_boundary)
             print(f" -> Features configured: {len(self.num_features)} numeric, {len(self.cat_features)} categorical")
             
             return True
