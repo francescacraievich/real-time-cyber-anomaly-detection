@@ -1,12 +1,13 @@
 import time
 import numpy as np
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
+from drift_detector import DriftDetector
 
 
 class SimulationEvaluator:
     def __init__(self, model_instance):
         self.model = model_instance
-
+        self.drift_detector = DriftDetector(threshold=0.001)
 
 
             ###########      SIMULATION METHODS      ###########
@@ -17,50 +18,95 @@ class SimulationEvaluator:
         print("\n" + "="*50)
         print("STARTING ONE-CLASS SVM STREAM")
         print("="*50)
+        print("Press Ctrl+C to stop the simulation.")
 
         # Check for labels in the combined dataset
-        has_labels = 'label' in stream_df.columns
-        true_labels = stream_df['label'] if has_labels else None
+        #has_labels = 'label' in stream_df.columns
+        #true_labels = stream_df['label'] if has_labels else None
 
-        stream_input = stream_df.drop(columns=self.model.features_to_drop, errors='ignore')
+        #stream_input = stream_df.drop(columns=self.model.features_to_drop, errors='ignore')
 
         COLOR_RED = '\033[91m'
         COLOR_ORANGE = '\033[93m'
+        COLOR_GREEN = '\033[92m'
         COLOR_RESET = '\033[0m'
 
         anomaly_count = 0
         total_processed = 0
+        batch_counter = 0
 
-        for i in range(0, len(stream_input), chunk_size):
-            time.sleep(0.1)
-            chunk = stream_input.iloc[i : i+chunk_size]
-            if chunk.empty: 
-                break
-            
-            batch_results = self.model.predict(chunk)  # Fixed: use self.model.predict()
-            
-            print(f"\n--- Batch {i//chunk_size + 1} ---")
-            for idx, (severity, msg, score) in enumerate(batch_results):
-                global_idx = i + idx
-                total_processed += 1
+        current_stream = stream_df.copy()
+
+        try:
+            while True:
+                #print("STARTING STREAM WITH DRIFT DETECTION")
+                for i in range(0, len(current_stream), chunk_size):
+                #time.sleep(1)  # Simulate real-time delay
+                    chunk = current_stream.iloc[i : i+chunk_size]
+                    if chunk.empty: 
+                        break
                 
-                # Format "Actual" label if available
-                actual_text = ""
-                if has_labels:
-                    lbl = true_labels.iloc[global_idx]
-                    actual_text = f"| Actual: {lbl}"
-
-                # Apply colors based on severity
-                if severity != "GREEN":
-                    color = COLOR_RED if severity == "RED" else COLOR_ORANGE
-                    print(f"{color}[{severity}] [ROW {global_idx}] {msg} | Dist: {score:.3f} {actual_text}{COLOR_RESET}")
-                    anomaly_count += 1
+                    # Prepare input (drop labels for prediction)
+                    chunk_input = chunk.drop(columns=self.model.features_to_drop, errors='ignore')
+                    if 'label' in chunk_input.columns:
+                        chunk_input = chunk_input.drop(columns=['label'])
             
-            if i > 100: 
-                break
+                    # Add data to model buffer
+                    self.model.add_to_buffer(chunk_input)
+
+                    # Predict
+                    batch_results = self.model.predict(chunk_input)  
+            
+                    # Checking for drift
+                    drift_flag = False
+                    for severity, msg, score in batch_results:
+                        # Determine if this specific log is an anomaly
+                        is_anomaly = (severity != "GREEN")
+                        if self.drift_detector.update(is_anomaly):
+                            drift_flag = True
+            
+                    if drift_flag:
+                        current_rate = self.drift_detector.get_current_anomaly_rate()
+                        print(f" CONCEPT DRIFT DETECTED! Anomaly Rate shifted to {current_rate:.1%}")
+                        if self.model.retrain():
+                            self.drift_detector.reset()
+                            print(" Resuming stream with updated model...")
+                    batch_counter += 1
+
+                    print(f"\n--- Batch {batch_counter} ---")
+                    for idx, (severity, msg, score) in enumerate(batch_results):
+                        global_idx = total_processed + 1
+                        total_processed += 1
+                
+                        # Format "Actual" label if available
+                        actual_text = ""
+                        if 'label' in chunk.columns:
+                            lbl = chunk.iloc[idx]['label']
+                            actual_text = f"| Actual: {lbl}"
+
+                        # Apply colors based on severity
+                        if severity == "RED":
+                            color = COLOR_RED
+                            anomaly_count += 1
+                        elif severity == "ORANGE":
+                            color = COLOR_ORANGE
+                            anomaly_count += 1
+                        else:  # severity == "GREEN"
+                            color = COLOR_GREEN
+                    
+                        print(f"{color}[{severity}] {msg} | Dist: {score:.3f} {COLOR_RESET}")
+                        time.sleep(2) 
+
+                current_stream = stream_df.sample(frac=1).reset_index(drop=True)
+                time.sleep(1)
+
+        except KeyboardInterrupt:
+            print("\n\n[!] Simulation interrupted by user.")
 
         print(f"\n[Simulation stopped - Processed {total_processed} samples]")
         print(f"[Detection Summary: {anomaly_count} anomalies detected out of {total_processed} samples]")
+
+
 
 
     def run_detailed_simulation(self, stream_df, chunk_size=50):
