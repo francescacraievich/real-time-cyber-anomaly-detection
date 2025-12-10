@@ -1,15 +1,14 @@
-from river import drift
-import numpy as np
 from collections import deque
+
+import numpy as np
+from river import drift
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from src.monitoring.metrics import (
-        anomaly_rate_gauge,
-        drift_detected_total,
-        drift_detected_flag,
-        samples_since_drift,
-    )
+    from src.monitoring.metrics import (anomaly_rate_gauge,
+                                        drift_detected_flag,
+                                        drift_detected_total,
+                                        samples_since_drift)
 
     METRICS_ENABLED = True
 except ImportError:

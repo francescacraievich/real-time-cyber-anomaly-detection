@@ -9,16 +9,17 @@ Provides technical monitoring of the anomaly detection model with:
 Automatically starts Flask API, Prometheus, Grafana, and prediction loop on launch.
 """
 
-import streamlit as st
+import atexit
+import socket
 import subprocess
 import sys
-import socket
 import time
-import requests
-import atexit
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 import plotly.graph_objects as go
+import requests
+import streamlit as st
 
 # Add project root to path
 project_root = Path(__file__).resolve().parents[2]

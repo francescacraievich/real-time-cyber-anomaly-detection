@@ -1,11 +1,12 @@
 """Tests for geolocation service - IP lookup and caching."""
 
-import pytest
 import json
+import sys
 import tempfile
 from pathlib import Path
-import sys
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parents[2]))

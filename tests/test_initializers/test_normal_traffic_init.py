@@ -1,11 +1,12 @@
-import pytest
-import pandas as pd
 import json
 import os
 import tempfile
 from pathlib import Path
 
-from src.feature_engineering.df_initializing import NormalTrafficDataFrameInitializer
+import pandas as pd
+import pytest
+from src.feature_engineering.df_initializing import \
+    NormalTrafficDataFrameInitializer
 
 
 class TestNormalTrafficDataFrameInitializer:

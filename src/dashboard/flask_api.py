@@ -6,36 +6,35 @@ Also exposes Prometheus metrics endpoint for Grafana monitoring.
 
 import sys
 import time
+from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
-from flask import Flask, jsonify, request, Response
-from flask_cors import CORS
-import pandas as pd
+
 import numpy as np
-from datetime import datetime, timedelta
+import pandas as pd
+from flask import Flask, Response, jsonify, request
+from flask_cors import CORS
 
 # Add project root to path
 project_root = Path(__file__).resolve().parents[2]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from src.model.oneCSVM_model import OneClassSVMModel
-from src.model.drift_detector import DriftDetector
 from src.dashboard.geolocation_service import get_geo_service
+from src.model.drift_detector import DriftDetector
+from src.model.oneCSVM_model import OneClassSVMModel
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-    from src.monitoring.metrics import (
-        api_request_duration,
-        api_requests_total,
-        model_loaded_gauge,
-        dataset_size_gauge,
-        anomaly_rate_gauge,
-        drift_detected_total,
-        drift_detected_flag,
-        samples_since_drift,
-    )
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+    from src.monitoring.metrics import (anomaly_rate_gauge,
+                                        api_request_duration,
+                                        api_requests_total, dataset_size_gauge,
+                                        drift_detected_flag,
+                                        drift_detected_total,
+                                        model_loaded_gauge,
+                                        samples_since_drift)
 
     METRICS_ENABLED = True
 except ImportError:
@@ -531,12 +530,8 @@ def evaluate_model():
     Run model evaluation on a sample of data to calculate F1, precision, recall.
     This updates the Prometheus metrics for model performance.
     """
-    from sklearn.metrics import (
-        precision_score,
-        recall_score,
-        f1_score,
-        confusion_matrix as sk_confusion_matrix,
-    )
+    from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+    from sklearn.metrics import f1_score, precision_score, recall_score
 
     sample_size = request.args.get("sample_size", default=500, type=int)
 
@@ -577,14 +572,11 @@ def evaluate_model():
 
         # Update Prometheus metrics
         if METRICS_ENABLED:
-            from src.monitoring.metrics import (
-                model_precision,
-                model_recall,
-                model_f1_score,
-                detection_rate as dr_metric,
-                false_alarm_rate as far_metric,
-                confusion_matrix as cm_metric,
-            )
+            from src.monitoring.metrics import confusion_matrix as cm_metric
+            from src.monitoring.metrics import detection_rate as dr_metric
+            from src.monitoring.metrics import false_alarm_rate as far_metric
+            from src.monitoring.metrics import (model_f1_score,
+                                                model_precision, model_recall)
 
             model_precision.set(precision)
             model_recall.set(recall)

@@ -1,10 +1,11 @@
-import pytest
-import pandas as pd
 import json
 import os
 import tempfile
 
-from src.feature_engineering.df_initializing import SuricataDataFrameInitializer
+import pandas as pd
+import pytest
+from src.feature_engineering.df_initializing import \
+    SuricataDataFrameInitializer
 
 
 class TestSuricataDataFrameInitializer:

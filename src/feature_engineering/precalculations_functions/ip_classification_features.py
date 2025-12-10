@@ -1,6 +1,7 @@
-import pandas as pd
-import numpy as np
 import ipaddress
+
+import numpy as np
+import pandas as pd
 
 
 def is_private_ip(ip):

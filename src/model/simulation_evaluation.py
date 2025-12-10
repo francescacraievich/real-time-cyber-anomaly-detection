@@ -1,8 +1,10 @@
 import sys
-from pathlib import Path
 import time
+from pathlib import Path
+
 import numpy as np
-from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
+from sklearn.metrics import (confusion_matrix, f1_score, precision_score,
+                             recall_score)
 
 # Add project root to path
 project_root = Path(__file__).resolve().parents[2]
@@ -13,16 +15,14 @@ from src.model.drift_detector import DriftDetector
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from src.monitoring.metrics import (
-        model_precision,
-        model_recall,
-        model_f1_score,
-        detection_rate as detection_rate_metric,
-        false_alarm_rate as false_alarm_rate_metric,
-        confusion_matrix as confusion_matrix_metric,
-        attack_detection_rate_by_type,
-        severity_distribution,
-    )
+    from src.monitoring.metrics import attack_detection_rate_by_type
+    from src.monitoring.metrics import \
+        confusion_matrix as confusion_matrix_metric
+    from src.monitoring.metrics import detection_rate as detection_rate_metric
+    from src.monitoring.metrics import \
+        false_alarm_rate as false_alarm_rate_metric
+    from src.monitoring.metrics import (model_f1_score, model_precision,
+                                        model_recall, severity_distribution)
 
     METRICS_ENABLED = True
 except ImportError:

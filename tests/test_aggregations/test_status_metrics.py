@@ -1,15 +1,11 @@
-import pytest
-import pandas as pd
 import numpy as np
-
+import pandas as pd
+import pytest
 from src.feature_engineering.aggregation_functions import (
+    calculate_total_anomalous_events, calculate_total_events_for_dst_ports,
     calculate_total_events_processed,
-    calculate_total_anomalous_events,
-    calculate_total_unique_malicious_ips,
-    calculate_trend_percentage_change,
-    calculate_total_events_for_dst_ports,
     calculate_total_malicious_events_per_protocol,
-)
+    calculate_total_unique_malicious_ips, calculate_trend_percentage_change)
 
 
 class TestAggregateStatusMetrics:

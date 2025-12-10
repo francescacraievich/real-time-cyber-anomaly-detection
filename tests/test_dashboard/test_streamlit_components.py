@@ -1,11 +1,12 @@
 """Tests for Streamlit component helper functions (not UI rendering)."""
 
-import pytest
 import socket
-from pathlib import Path
 import sys
-from unittest.mock import Mock, patch, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
 import plotly.graph_objects as go
+import pytest
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parents[2]))

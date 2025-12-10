@@ -1,12 +1,10 @@
-import pytest
-import pandas as pd
-import sys
 import os
+import sys
 
-
-from src.feature_engineering.precalculations_functions import (
-    calculate_temporal_features,
-)
+import pandas as pd
+import pytest
+from src.feature_engineering.precalculations_functions import \
+    calculate_temporal_features
 
 
 class TestCalculateTemporalFeatures:

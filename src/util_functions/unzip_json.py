@@ -1,6 +1,6 @@
 import gzip
-import shutil
 import os
+import shutil
 
 
 def gunzip_json_file(gz_path, output_path=None):

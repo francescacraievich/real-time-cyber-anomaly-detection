@@ -1,12 +1,11 @@
-import pytest
-import pandas as pd
+from unittest.mock import MagicMock, patch
+
 import numpy as np
-from unittest.mock import patch, MagicMock
+import pandas as pd
+import pytest
 from src.feature_engineering.precalculations_functions.ip_geolocation_features import (
-    calculate_ip_info,
-    calculate_src_ip_geolocation_features,
-    calculate_dst_ip_geolocation_features,
-)
+    calculate_dst_ip_geolocation_features, calculate_ip_info,
+    calculate_src_ip_geolocation_features)
 
 
 class TestIPGeolocationFeatures:

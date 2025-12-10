@@ -3,12 +3,13 @@ Geolocation service using GeoLite2 database for offline IP geolocation.
 Falls back to ipwho.is API if database not available.
 """
 
-import os
-import json
-import requests
-from pathlib import Path
-from typing import Optional, Dict, Tuple
 import ipaddress
+import json
+import os
+from pathlib import Path
+from typing import Dict, Optional, Tuple
+
+import requests
 
 # Try to import geoip2, fallback to API if not available
 try:

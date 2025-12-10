@@ -1,7 +1,8 @@
-import numpy as np
-from sklearn.svm import OneClassSVM
-from sklearn.metrics import f1_score
 from itertools import product
+
+import numpy as np
+from sklearn.metrics import f1_score
+from sklearn.svm import OneClassSVM
 
 
 class GridSearchOptimizer:

@@ -6,18 +6,19 @@ Style inspired by Kibana/Elastic dashboards.
 Flask API is automatically started in background when the dashboard launches.
 """
 
-import streamlit as st
-import requests
+import random
+import socket
+import subprocess
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime
-import time
-import subprocess
-import sys
-import socket
-import random
-from pathlib import Path
+import requests
+import streamlit as st
 
 # Configuration
 API_BASE_URL = "http://localhost:5000/api"

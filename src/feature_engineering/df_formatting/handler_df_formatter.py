@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 import pandas as pd
 
 # Add project root to path
@@ -7,31 +8,20 @@ project_root = Path(__file__).resolve().parents[3]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from src.feature_engineering.df_formatting.format_normal_traffic_df import (
-    DataFrameFormatterNormalTraffic,
-)
-from src.feature_engineering.df_formatting.format_suricata_df import (
-    DataFrameFormatterSuricata,
-)
-
 from src.feature_engineering.aggregation_functions import (
+    calculate_total_anomalous_events, calculate_total_events_for_dst_ports,
     calculate_total_events_processed,
-    calculate_total_anomalous_events,
-    calculate_total_unique_malicious_ips,
-    calculate_trend_percentage_change,
-    calculate_total_events_for_dst_ports,
     calculate_total_malicious_events_per_protocol,
-)
-
+    calculate_total_unique_malicious_ips, calculate_trend_percentage_change)
+from src.feature_engineering.df_formatting.format_normal_traffic_df import \
+    DataFrameFormatterNormalTraffic
+from src.feature_engineering.df_formatting.format_suricata_df import \
+    DataFrameFormatterSuricata
 from src.feature_engineering.precalculations_functions import (
-    calculate_rate_features,
-    calculate_ratio_features,
-    calculate_temporal_features,
-    calculate_ip_classification_features,
-    calculate_port_categorization,
-    calculate_src_ip_geolocation_features,
     calculate_dst_ip_geolocation_features,
-)
+    calculate_ip_classification_features, calculate_port_categorization,
+    calculate_rate_features, calculate_ratio_features,
+    calculate_src_ip_geolocation_features, calculate_temporal_features)
 
 
 class DataFrameFormatter:

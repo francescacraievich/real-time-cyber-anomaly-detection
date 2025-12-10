@@ -1,9 +1,10 @@
 """Tests for prediction worker - background prediction loop and health checks."""
 
-import pytest
-from pathlib import Path
 import sys
-from unittest.mock import Mock, patch, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parents[2]))

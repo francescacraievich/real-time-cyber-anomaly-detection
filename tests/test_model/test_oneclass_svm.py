@@ -1,18 +1,18 @@
-import pytest
-import pandas as pd
-import numpy as np
 import os
-from pathlib import Path
-from sklearn.svm import OneClassSVM
-
 # Import your actual classes
 # Adjust the import path based on your project structure
 import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+from sklearn.svm import OneClassSVM
 
 sys.path.append(str(Path(__file__).parents[2]))  # Add project root to path
 
-from src.model.oneCSVM_model import OneClassSVMModel
 from src.model.drift_detector import DriftDetector
+from src.model.oneCSVM_model import OneClassSVMModel
 
 # --- Fixtures (Setup data for tests) ---
 

@@ -2,17 +2,17 @@ import os
 import sys
 from pathlib import Path
 
-
 project_root = Path(__file__).resolve().parents[2]
 # Add project root to Python path
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 
-from src.model.oneCSVM_model import OneClassSVMModel
-from src.model.grid_search import GridSearchOptimizer
-from src.model.simulation_evaluation import SimulationEvaluator
 import pandas as pd
+
+from src.model.grid_search import GridSearchOptimizer
+from src.model.oneCSVM_model import OneClassSVMModel
+from src.model.simulation_evaluation import SimulationEvaluator
 
 
 def load_datasets():

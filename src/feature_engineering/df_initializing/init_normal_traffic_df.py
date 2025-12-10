@@ -1,9 +1,10 @@
+import gzip
 import json
 import random
-import pandas as pd
-import ijson
 import re
-import gzip
+
+import ijson
+import pandas as pd
 
 
 class NormalTrafficDataFrameInitializer:

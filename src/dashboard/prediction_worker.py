@@ -6,8 +6,9 @@ Automatically stops when Flask API is no longer available.
 
 import sys
 import time
-import requests
 from pathlib import Path
+
+import requests
 
 API_BASE_URL = "http://localhost:5000"
 

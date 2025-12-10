@@ -1,32 +1,30 @@
 # from feature_engineering.df_initializing.handler_init_dfs import DataFrameInitializer
 # from feature_engineering.df_formatting.handler_df_formatter import DataFrameFormatter
 import os
-import sys
-from pathlib import Path
-import numpy as np
-import joblib
 import pickle
+import sys
 import time
+from collections import deque
+from pathlib import Path
+
+import joblib
+import numpy as np
+import pandas as pd
+from sklearn.compose import ColumnTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
-from sklearn.compose import ColumnTransformer
 from sklearn.svm import OneClassSVM
-from collections import deque
-import pandas as pd
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from src.monitoring.metrics import (
-        threshold_boundary as threshold_boundary_metric,
-        retrain_buffer_size,
-        model_retrain_total,
-        prediction_latency,
-        predictions_total,
-        anomalies_detected_total,
-        samples_processed_total,
-        decision_score_histogram,
-        model_info,
-    )
+    from src.monitoring.metrics import (anomalies_detected_total,
+                                        decision_score_histogram, model_info,
+                                        model_retrain_total,
+                                        prediction_latency, predictions_total,
+                                        retrain_buffer_size,
+                                        samples_processed_total)
+    from src.monitoring.metrics import \
+        threshold_boundary as threshold_boundary_metric
 
     METRICS_ENABLED = True
 except ImportError:

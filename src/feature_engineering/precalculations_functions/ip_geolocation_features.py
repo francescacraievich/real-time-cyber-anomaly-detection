@@ -1,7 +1,8 @@
-import requests
-import pandas as pd
-import numpy as np
 import time
+
+import numpy as np
+import pandas as pd
+import requests
 
 
 def calculate_ip_info(ip):
