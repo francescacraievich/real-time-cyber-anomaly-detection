@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from src.feature_engineering.aggregation_functions import (
     calculate_total_anomalous_events,
     calculate_total_events_for_dst_ports,

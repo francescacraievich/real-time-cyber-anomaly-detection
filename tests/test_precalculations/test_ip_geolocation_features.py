@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
+
 from src.feature_engineering.precalculations_functions.ip_geolocation_features import (
     calculate_dst_ip_geolocation_features,
     calculate_ip_info,

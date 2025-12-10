@@ -3,6 +3,7 @@ import sys
 
 import pandas as pd
 import pytest
+
 from src.feature_engineering.precalculations_functions import (
     calculate_temporal_features,
 )

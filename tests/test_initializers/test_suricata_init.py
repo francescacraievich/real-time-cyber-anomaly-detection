@@ -4,6 +4,7 @@ import tempfile
 
 import pandas as pd
 import pytest
+
 from src.feature_engineering.df_initializing import SuricataDataFrameInitializer
 
 

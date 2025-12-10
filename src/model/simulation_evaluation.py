@@ -14,7 +14,9 @@ from src.model.drift_detector import DriftDetector
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from src.monitoring.metrics import attack_detection_rate_by_type
+    from src.monitoring.metrics import (
+        attack_detection_rate_by_type,
+    )
     from src.monitoring.metrics import confusion_matrix as confusion_matrix_metric
     from src.monitoring.metrics import detection_rate as detection_rate_metric
     from src.monitoring.metrics import false_alarm_rate as false_alarm_rate_metric
