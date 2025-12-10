@@ -3,8 +3,7 @@ Prometheus metrics registry for Cyber Anomaly Detection system.
 Centralizes all metric definitions for ML model monitoring.
 """
 
-from prometheus_client import (REGISTRY, Counter, Gauge, Histogram, Info,
-                               generate_latest)
+from prometheus_client import REGISTRY, Counter, Gauge, Histogram, Info, generate_latest
 
 # Track which metrics have been created to avoid duplicates
 _metrics_cache = {}

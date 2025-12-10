@@ -28,13 +28,16 @@ from src.model.oneCSVM_model import OneClassSVMModel
 try:
     from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
-    from src.monitoring.metrics import (anomaly_rate_gauge,
-                                        api_request_duration,
-                                        api_requests_total, dataset_size_gauge,
-                                        drift_detected_flag,
-                                        drift_detected_total,
-                                        model_loaded_gauge,
-                                        samples_since_drift)
+    from src.monitoring.metrics import (
+        anomaly_rate_gauge,
+        api_request_duration,
+        api_requests_total,
+        dataset_size_gauge,
+        drift_detected_flag,
+        drift_detected_total,
+        model_loaded_gauge,
+        samples_since_drift,
+    )
 
     METRICS_ENABLED = True
 except ImportError:
@@ -575,8 +578,11 @@ def evaluate_model():
             from src.monitoring.metrics import confusion_matrix as cm_metric
             from src.monitoring.metrics import detection_rate as dr_metric
             from src.monitoring.metrics import false_alarm_rate as far_metric
-            from src.monitoring.metrics import (model_f1_score,
-                                                model_precision, model_recall)
+            from src.monitoring.metrics import (
+                model_f1_score,
+                model_precision,
+                model_recall,
+            )
 
             model_precision.set(precision)
             model_recall.set(recall)

@@ -17,14 +17,17 @@ from sklearn.svm import OneClassSVM
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from src.monitoring.metrics import (anomalies_detected_total,
-                                        decision_score_histogram, model_info,
-                                        model_retrain_total,
-                                        prediction_latency, predictions_total,
-                                        retrain_buffer_size,
-                                        samples_processed_total)
-    from src.monitoring.metrics import \
-        threshold_boundary as threshold_boundary_metric
+    from src.monitoring.metrics import (
+        anomalies_detected_total,
+        decision_score_histogram,
+        model_info,
+        model_retrain_total,
+        prediction_latency,
+        predictions_total,
+        retrain_buffer_size,
+        samples_processed_total,
+    )
+    from src.monitoring.metrics import threshold_boundary as threshold_boundary_metric
 
     METRICS_ENABLED = True
 except ImportError:
