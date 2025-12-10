@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from unittest.mock import patch, MagicMock
-from feature_engineering.precalculations_functions.ip_geolocation_features import (
+from src.feature_engineering.precalculations_functions.ip_geolocation_features import (
     calculate_ip_info,
     calculate_src_ip_geolocation_features,
     calculate_dst_ip_geolocation_features
@@ -67,7 +67,7 @@ class TestIPGeolocationFeatures:
         def mock_calculate_ip_info(ip):
             return {"success": False}
         
-        with patch('feature_engineering.precalculations_functions.ip_geolocation_features.calculate_ip_info', side_effect=mock_calculate_ip_info):
+        with patch('src.feature_engineering.precalculations_functions.ip_geolocation_features.calculate_ip_info', side_effect=mock_calculate_ip_info):
             result = calculate_src_ip_geolocation_features(df, rate_limit_delay=0)
             
             # All values should be 'unknown'
@@ -127,7 +127,7 @@ class TestIPGeolocationFeatures:
         def mock_calculate_ip_info(ip):
             return {"success": False}
         
-        with patch('feature_engineering.precalculations_functions.ip_geolocation_features.calculate_ip_info', side_effect=mock_calculate_ip_info):
+        with patch('src.feature_engineering.precalculations_functions.ip_geolocation_features.calculate_ip_info', side_effect=mock_calculate_ip_info):
             result = calculate_dst_ip_geolocation_features(df, rate_limit_delay=0)
             
             # All values should be 'unknown'

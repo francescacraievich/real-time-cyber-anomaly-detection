@@ -15,18 +15,18 @@ import numpy as np
 from datetime import datetime, timedelta
 
 # Add project root to path
-project_root = Path(__file__).resolve().parents[1]
+project_root = Path(__file__).resolve().parents[2]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from model.oneCSVM_model import OneClassSVMModel
-from model.drift_detector import DriftDetector
-from dashboard.geolocation_service import get_geo_service
+from src.model.oneCSVM_model import OneClassSVMModel
+from src.model.drift_detector import DriftDetector
+from src.dashboard.geolocation_service import get_geo_service
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
     from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-    from monitoring.metrics import (
+    from src.monitoring.metrics import (
         api_request_duration, api_requests_total,
         model_loaded_gauge, dataset_size_gauge,
         anomaly_rate_gauge, drift_detected_total, drift_detected_flag,
@@ -76,21 +76,16 @@ def load_resources():
     """Load the ML model and dataset on startup."""
     global model, df_logs, drift_detector
 
-    print("[Flask API] Loading resources...")
-
     # Initialize drift detector (lower threshold = more sensitive)
     drift_detector = DriftDetector(threshold=0.002, window_size=100)
-    print("[Flask API] Drift detector initialized (sensitivity: 0.002)")
 
     # Load the trained model
     model = OneClassSVMModel()
     if model.model_exists():
         model.load_model()
-        print("[Flask API] Model loaded successfully")
         if METRICS_ENABLED:
             model_loaded_gauge.set(1)
     else:
-        print("[Flask API] WARNING: No trained model found!")
         if METRICS_ENABLED:
             model_loaded_gauge.set(0)
 
@@ -100,11 +95,9 @@ def load_resources():
         df_logs = pd.read_csv(data_path)
         # Shuffle for simulation variety
         df_logs = df_logs.sample(frac=1, random_state=42).reset_index(drop=True)
-        print(f"[Flask API] Dataset loaded: {len(df_logs)} records")
         if METRICS_ENABLED:
             dataset_size_gauge.set(len(df_logs))
     else:
-        print("[Flask API] WARNING: Dataset not found!")
         df_logs = pd.DataFrame()
         if METRICS_ENABLED:
             dataset_size_gauge.set(0)
@@ -185,8 +178,7 @@ def stream_logs():
                 for severity in batch['severity']:
                     is_anomaly = severity in ['RED', 'ORANGE']
                     drift_detector.update(is_anomaly)
-        except Exception as e:
-            print(f"[Flask API] Prediction error: {e}")
+        except Exception:
             batch['severity'] = 'UNKNOWN'
             batch['description'] = 'Prediction failed'
             batch['anomaly_score'] = 0.0
@@ -220,9 +212,7 @@ def reset_stream():
     # Also reset the drift detector for a fresh start
     if drift_detector is not None:
         drift_detector.reset()
-        print("[Flask API] Drift detector reset")
 
-    print(f"[Flask API] Stream reset to index {current_index}")
     return jsonify({"message": "Stream reset", "current_index": current_index, "drift_reset": True})
 
 
@@ -450,8 +440,8 @@ def get_recent_alerts():
                     "packets_sent": int(row.get('pkts_sent', 0)),
                     "country": row.get('src_country', 'Unknown')
                 })
-        except Exception as e:
-            print(f"[Flask API] Alert generation error: {e}")
+        except Exception:
+            pass
 
     # Sort by severity (RED first)
     severity_order = {'RED': 0, 'ORANGE': 1, 'GREEN': 2, 'UNKNOWN': 3}
@@ -512,7 +502,7 @@ def evaluate_model():
 
         # Update Prometheus metrics
         if METRICS_ENABLED:
-            from monitoring.metrics import (
+            from src.monitoring.metrics import (
                 model_precision, model_recall, model_f1_score,
                 detection_rate as dr_metric, false_alarm_rate as far_metric,
                 confusion_matrix as cm_metric
@@ -545,9 +535,6 @@ def evaluate_model():
         })
 
     except Exception as e:
-        print(f"[Flask API] Evaluation error: {e}")
-        import traceback
-        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -556,4 +543,4 @@ load_resources()
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)

@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from feature_engineering.aggregation_functions import (
+from src.feature_engineering.aggregation_functions import (
     calculate_total_events_processed,
     calculate_total_anomalous_events,
     calculate_total_unique_malicious_ips,

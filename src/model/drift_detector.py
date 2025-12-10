@@ -4,7 +4,7 @@ from collections import deque
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from monitoring.metrics import (
+    from src.monitoring.metrics import (
         anomaly_rate_gauge, drift_detected_total, drift_detected_flag,
         samples_since_drift
     )

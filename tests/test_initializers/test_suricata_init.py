@@ -4,7 +4,7 @@ import json
 import os
 import tempfile
 
-from feature_engineering.df_initializing import (
+from src.feature_engineering.df_initializing import (
     SuricataDataFrameInitializer
 )
 

@@ -5,21 +5,21 @@ from pathlib import Path
 
 
 
-project_root = Path(__file__).resolve().parents[1]
-# Add feature_engineering to Python path
+project_root = Path(__file__).resolve().parents[2]
+# Add project root to Python path
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
-    
 
-from oneCSVM_model import OneClassSVMModel
-from grid_search import GridSearchOptimizer  
-from simulation_evaluation import SimulationEvaluator
+
+from src.model.oneCSVM_model import OneClassSVMModel
+from src.model.grid_search import GridSearchOptimizer
+from src.model.simulation_evaluation import SimulationEvaluator
 import pandas as pd
 
 
 def load_datasets():
     """Load and prepare datasets"""
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = Path(__file__).resolve().parents[2]
     data_path = project_root / "data" / "processed"
     
     print("1. Loading Datasets...")
@@ -62,12 +62,12 @@ def main():
     
     # Train or load model with grid search
     grid_search.fit_or_load_with_grid_search(
-        df_benign, 
+        df_benign,
         df_test=test_for_tuning,
         max_train_samples=8000,
         contamination=0.1,
         force_retrain=False,  # Set to True to force retraining
-        #quick_search=True     
+        #quick_search=True
     )
 
     print("\n4. Evaluating model performance...")

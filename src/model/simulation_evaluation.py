@@ -1,11 +1,19 @@
+import sys
+from pathlib import Path
 import time
 import numpy as np
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
-from model.drift_detector import DriftDetector
+
+# Add project root to path
+project_root = Path(__file__).resolve().parents[2]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from src.model.drift_detector import DriftDetector
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from monitoring.metrics import (
+    from src.monitoring.metrics import (
         model_precision, model_recall, model_f1_score,
         detection_rate as detection_rate_metric, false_alarm_rate as false_alarm_rate_metric,
         confusion_matrix as confusion_matrix_metric,

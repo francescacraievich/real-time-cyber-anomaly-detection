@@ -21,3 +21,6 @@ normal_traffic/
 .coverage
 coverage.xml
 htmlcov/
+
+# Log files
+*.log

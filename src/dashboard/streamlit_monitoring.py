@@ -16,13 +16,12 @@ import socket
 import time
 import requests
 import atexit
-import signal
 from pathlib import Path
 from datetime import datetime
 import plotly.graph_objects as go
 
 # Add project root to path
-project_root = Path(__file__).resolve().parents[1]
+project_root = Path(__file__).resolve().parents[2]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
@@ -65,12 +64,9 @@ def stop_prediction_workers():
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
         if killed > 0:
-            print(f"[Streamlit] Stopped {killed} prediction worker(s)")
-    except ImportError:
-        # psutil not available - workers will stop on their own when Flask dies
+            print(f"[Prediction Worker] Stopped {killed} worker(s)")
+    except (ImportError, Exception):
         pass
-    except Exception as e:
-        print(f"[Streamlit] Error stopping workers: {e}")
 
 
 # Register cleanup function to run on exit
@@ -115,11 +111,12 @@ def start_flask_server():
 
 def start_docker_monitoring():
     """Start Prometheus and Grafana via Docker Compose."""
-    monitoring_dir = Path(__file__).parent.parent / "monitoring"
-    compose_file = monitoring_dir / "docker-compose.yml"
+    project_root = Path(__file__).resolve().parent.parent.parent
+    compose_file = (project_root / "docker-compose.yml").resolve()
+    monitoring_dir = (project_root / "src" / "monitoring").resolve()
 
     if not compose_file.exists():
-        return False, "docker-compose.yml not found"
+        return False, f"docker-compose.yml not found at {compose_file}"
 
     # Check if already running
     if is_port_in_use(PROMETHEUS_PORT) and is_port_in_use(GRAFANA_PORT):
@@ -128,7 +125,7 @@ def start_docker_monitoring():
     try:
         result = subprocess.run(
             ["docker-compose", "up", "-d"],
-            cwd=str(monitoring_dir),
+            cwd=str(project_root),
             capture_output=True,
             text=True,
             timeout=60
@@ -138,7 +135,7 @@ def start_docker_monitoring():
             # Try docker compose (newer syntax)
             result = subprocess.run(
                 ["docker", "compose", "up", "-d"],
-                cwd=str(monitoring_dir),
+                cwd=str(project_root),
                 capture_output=True,
                 text=True,
                 timeout=60
@@ -169,39 +166,50 @@ def is_prediction_worker_running():
         for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
             try:
                 cmdline = proc.info.get('cmdline') or []
-                if any('prediction_worker.py' in str(c) for c in cmdline):
+                cmdline_str = ' '.join(str(c) for c in cmdline)
+                if 'python' in cmdline_str.lower() and 'prediction_worker.py' in cmdline_str:
                     return True
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
     except ImportError:
-        # psutil not available, check via subprocess
         pass
     return False
 
 
 def start_prediction_worker():
     """Start the prediction worker as a separate process."""
-    dashboard_dir = Path(__file__).parent
-    worker_script = dashboard_dir / "prediction_worker.py"
+    dashboard_dir = Path(__file__).resolve().parent
+    worker_script = (dashboard_dir / "prediction_worker.py").resolve()
+    project_root = dashboard_dir.parent.parent
 
     if not worker_script.exists():
-        return False, "prediction_worker.py not found"
+        return False, f"prediction_worker.py not found at {worker_script}"
 
     try:
         if sys.platform == "win32":
-            # Start as a new process on Windows
             subprocess.Popen(
                 [sys.executable, str(worker_script)],
-                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS,
                 cwd=str(project_root)
             )
         else:
             subprocess.Popen(
                 [sys.executable, str(worker_script)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 start_new_session=True,
                 cwd=str(project_root)
             )
-        return True, "Started"
+
+        time.sleep(3)
+
+        if is_prediction_worker_running():
+            return True, "Started"
+        else:
+            return False, "Failed to start"
+
     except Exception as e:
         return False, str(e)
 

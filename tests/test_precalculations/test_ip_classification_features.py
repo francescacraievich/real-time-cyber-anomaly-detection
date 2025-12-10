@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import os
 
-from feature_engineering.precalculations_functions import (
+from src.feature_engineering.precalculations_functions import (
     is_private_ip,
     calculate_ip_classification_features
 )

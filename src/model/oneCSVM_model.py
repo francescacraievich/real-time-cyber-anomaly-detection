@@ -17,7 +17,7 @@ import pandas as pd
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
-    from monitoring.metrics import (
+    from src.monitoring.metrics import (
         threshold_boundary as threshold_boundary_metric,
         retrain_buffer_size, model_retrain_total,
         prediction_latency, predictions_total, anomalies_detected_total,
@@ -28,7 +28,7 @@ except ImportError:
     METRICS_ENABLED = False
 
 
-project_root = Path(__file__).resolve().parents[1]
+project_root = Path(__file__).resolve().parents[2]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 

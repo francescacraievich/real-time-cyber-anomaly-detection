@@ -10,8 +10,8 @@ from sklearn.svm import OneClassSVM
 import sys
 sys.path.append(str(Path(__file__).parents[2])) # Add project root to path
 
-from model.oneCSVM_model import OneClassSVMModel
-from model.drift_detector import DriftDetector
+from src.model.oneCSVM_model import OneClassSVMModel
+from src.model.drift_detector import DriftDetector
 
 # --- Fixtures (Setup data for tests) ---
 

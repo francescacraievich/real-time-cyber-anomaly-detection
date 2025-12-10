@@ -4,7 +4,7 @@ import sys
 import os
 
 
-from feature_engineering.precalculations_functions import (
+from src.feature_engineering.precalculations_functions import (
     calculate_temporal_features
     )
 

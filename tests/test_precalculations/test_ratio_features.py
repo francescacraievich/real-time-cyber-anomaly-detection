@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 
-from feature_engineering.precalculations_functions import (
+from src.feature_engineering.precalculations_functions import (
     calculate_ratio_features,
 )
 

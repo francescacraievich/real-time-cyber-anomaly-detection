@@ -36,7 +36,6 @@ class GeolocationService:
     def _init_geoip_database(self):
         """Initialize GeoIP2 database reader."""
         if not GEOIP2_AVAILABLE:
-            print("[GeoService] geoip2 not installed, using API fallback")
             return
 
         # Common paths for GeoLite2 database
@@ -51,13 +50,9 @@ class GeolocationService:
             if db_path.exists():
                 try:
                     self.geoip_reader = geoip2.database.Reader(str(db_path))
-                    print(f"[GeoService] Loaded GeoLite2 database from: {db_path}")
                     return
-                except Exception as e:
-                    print(f"[GeoService] Failed to load database {db_path}: {e}")
-
-        print("[GeoService] GeoLite2 database not found, using API fallback")
-        print("[GeoService] Download from: https://dev.maxmind.com/geoip/geolite2-free-geolocation-data")
+                except Exception:
+                    pass
 
     def _load_cache(self):
         """Load cached geolocation data."""
@@ -65,9 +60,7 @@ class GeolocationService:
             try:
                 with open(self.cache_file, 'r') as f:
                     self.cache = json.load(f)
-                print(f"[GeoService] Loaded {len(self.cache)} cached IPs")
-            except Exception as e:
-                print(f"[GeoService] Failed to load cache: {e}")
+            except Exception:
                 self.cache = {}
 
     def _save_cache(self):
@@ -75,8 +68,8 @@ class GeolocationService:
         try:
             with open(self.cache_file, 'w') as f:
                 json.dump(self.cache, f)
-        except Exception as e:
-            print(f"[GeoService] Failed to save cache: {e}")
+        except Exception:
+            pass
 
     def _is_private_ip(self, ip: str) -> bool:
         """Check if IP is private/internal."""
@@ -104,8 +97,7 @@ class GeolocationService:
             }
         except geoip2.errors.AddressNotFoundError:
             return None
-        except Exception as e:
-            print(f"[GeoService] GeoIP2 lookup error for {ip}: {e}")
+        except Exception:
             return None
 
     def _lookup_api(self, ip: str) -> Optional[Dict]:
@@ -124,8 +116,8 @@ class GeolocationService:
                         "longitude": data.get("longitude"),
                         "source": "api"
                     }
-        except Exception as e:
-            print(f"[GeoService] API lookup error for {ip}: {e}")
+        except Exception:
+            pass
         return None
 
     def get_location(self, ip: str) -> Optional[Dict]:
