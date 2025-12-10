@@ -6,13 +6,13 @@ import re
 import gzip
 
 
-class NormalTrafficDataFrameInitializer():
+class NormalTrafficDataFrameInitializer:
     """
     Initializes a DataFrame from benign_traffic JSON log file.
     Attributes:
         benign_traffic_json_path (str): Path to benign_traffic JSON log file.
     """
-    
+
     def __init__(self, benign_traffic_json_path):
         self.benign_traffic_json_path = benign_traffic_json_path
 
@@ -26,8 +26,10 @@ class NormalTrafficDataFrameInitializer():
         result = []
 
         # Check if file is gzipped
-        if self.benign_traffic_json_path.endswith('.gz'):
-            f = gzip.open(self.benign_traffic_json_path, "rb")  # ✅ Changed "rt" to "rb"
+        if self.benign_traffic_json_path.endswith(".gz"):
+            f = gzip.open(
+                self.benign_traffic_json_path, "rb"
+            )  # ✅ Changed "rt" to "rb"
         else:
             f = open(self.benign_traffic_json_path, "rb")  # ✅ Changed "r" to "rb"
 
@@ -41,13 +43,14 @@ class NormalTrafficDataFrameInitializer():
             f.close()
 
         return result
-    
+
     def preprocess_json_replace_invalid_numbers(self, output_path):
-        with open(self.benign_traffic_json_path, "rb", encoding="utf-8") as f_in, \
-            open(output_path, "w", encoding="utf-8") as f_out:
+        with open(self.benign_traffic_json_path, "rb", encoding="utf-8") as f_in, open(
+            output_path, "w", encoding="utf-8"
+        ) as f_out:
             for line in f_in:
                 # replace NaN, Infinity, -Infinity with null
-                line_fixed = re.sub(r'\bNaN\b|\bInfinity\b|\b-Infinity\b', 'null', line)
+                line_fixed = re.sub(r"\bNaN\b|\bInfinity\b|\b-Infinity\b", "null", line)
                 f_out.write(line_fixed)
         self.benign_traffic_json_path = output_path
 
@@ -57,6 +60,6 @@ if __name__ == "__main__":
         benign_traffic_json_path="data/normal_traffic/benign_traffic_fixed.json"
     )
     df_benign_traffic = df_initializer.initialize_benign_traffic(sample_size=1000)
-    print("Benign Traffic DataFrame:" , df_benign_traffic.head())
+    print("Benign Traffic DataFrame:", df_benign_traffic.head())
     print("DataFrame shape:", df_benign_traffic.shape)
     print("Columns:", df_benign_traffic.columns.tolist())

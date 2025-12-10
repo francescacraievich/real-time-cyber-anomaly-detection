@@ -14,6 +14,7 @@ import ipaddress
 try:
     import geoip2.database
     import geoip2.errors
+
     GEOIP2_AVAILABLE = True
 except ImportError:
     GEOIP2_AVAILABLE = False
@@ -58,7 +59,7 @@ class GeolocationService:
         """Load cached geolocation data."""
         if self.cache_file.exists():
             try:
-                with open(self.cache_file, 'r') as f:
+                with open(self.cache_file, "r") as f:
                     self.cache = json.load(f)
             except Exception:
                 self.cache = {}
@@ -66,7 +67,7 @@ class GeolocationService:
     def _save_cache(self):
         """Save geolocation cache to disk."""
         try:
-            with open(self.cache_file, 'w') as f:
+            with open(self.cache_file, "w") as f:
                 json.dump(self.cache, f)
         except Exception:
             pass
@@ -93,7 +94,7 @@ class GeolocationService:
                 "city": response.city.name or "Unknown",
                 "latitude": response.location.latitude,
                 "longitude": response.location.longitude,
-                "source": "geoip2"
+                "source": "geoip2",
             }
         except geoip2.errors.AddressNotFoundError:
             return None
@@ -114,7 +115,7 @@ class GeolocationService:
                         "city": data.get("city", "Unknown"),
                         "latitude": data.get("latitude"),
                         "longitude": data.get("longitude"),
-                        "source": "api"
+                        "source": "api",
                     }
         except Exception:
             pass
@@ -135,7 +136,7 @@ class GeolocationService:
                 "city": "Internal",
                 "latitude": None,
                 "longitude": None,
-                "source": "private"
+                "source": "private",
             }
             self.cache[ip] = result
             return result

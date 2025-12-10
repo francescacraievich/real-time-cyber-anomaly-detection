@@ -46,7 +46,9 @@ def run_prediction_loop():
 
     # Run initial evaluation
     try:
-        response = requests.post(f"{API_BASE_URL}/api/evaluate", params={"sample_size": 1000}, timeout=60)
+        response = requests.post(
+            f"{API_BASE_URL}/api/evaluate", params={"sample_size": 1000}, timeout=60
+        )
     except Exception:
         pass
 
@@ -67,7 +69,7 @@ def run_prediction_loop():
             response = requests.get(
                 f"{API_BASE_URL}/api/logs/stream",
                 params={"window_size": 50},
-                timeout=30
+                timeout=30,
             )
 
             if response.status_code == 200:
@@ -79,7 +81,7 @@ def run_prediction_loop():
                     requests.post(
                         f"{API_BASE_URL}/api/evaluate",
                         params={"sample_size": 500},
-                        timeout=60
+                        timeout=60,
                     )
                 except Exception:
                     pass

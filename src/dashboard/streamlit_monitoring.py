@@ -44,21 +44,23 @@ COLORS = {
     "muted": "#98A2B3",
 }
 
+
 def is_port_in_use(port):
     """Check if a port is already in use."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
+        return s.connect_ex(("localhost", port)) == 0
 
 
 def stop_prediction_workers():
     """Stop all running prediction worker processes."""
     try:
         import psutil
+
         killed = 0
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
             try:
-                cmdline = proc.info.get('cmdline') or []
-                if any('prediction_worker.py' in str(c) for c in cmdline):
+                cmdline = proc.info.get("cmdline") or []
+                if any("prediction_worker.py" in str(c) for c in cmdline):
                     proc.terminate()
                     killed += 1
             except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -90,14 +92,14 @@ def start_flask_server():
                 [sys.executable, str(flask_script)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             )
         else:
             subprocess.Popen(
                 [sys.executable, str(flask_script)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                start_new_session=True
+                start_new_session=True,
             )
 
         for _ in range(10):
@@ -128,7 +130,7 @@ def start_docker_monitoring():
             cwd=str(project_root),
             capture_output=True,
             text=True,
-            timeout=60
+            timeout=60,
         )
 
         if result.returncode != 0:
@@ -138,7 +140,7 @@ def start_docker_monitoring():
                 cwd=str(project_root),
                 capture_output=True,
                 text=True,
-                timeout=60
+                timeout=60,
             )
 
         if result.returncode == 0:
@@ -163,11 +165,15 @@ def is_prediction_worker_running():
     """Check if the prediction worker process is running."""
     try:
         import psutil
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
             try:
-                cmdline = proc.info.get('cmdline') or []
-                cmdline_str = ' '.join(str(c) for c in cmdline)
-                if 'python' in cmdline_str.lower() and 'prediction_worker.py' in cmdline_str:
+                cmdline = proc.info.get("cmdline") or []
+                cmdline_str = " ".join(str(c) for c in cmdline)
+                if (
+                    "python" in cmdline_str.lower()
+                    and "prediction_worker.py" in cmdline_str
+                ):
                     return True
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
@@ -191,8 +197,9 @@ def start_prediction_worker():
                 [sys.executable, str(worker_script)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS,
-                cwd=str(project_root)
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                | subprocess.DETACHED_PROCESS,
+                cwd=str(project_root),
             )
         else:
             subprocess.Popen(
@@ -200,7 +207,7 @@ def start_prediction_worker():
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 start_new_session=True,
-                cwd=str(project_root)
+                cwd=str(project_root),
             )
 
         time.sleep(3)
@@ -228,19 +235,18 @@ def fetch_prometheus_metrics():
 def parse_prometheus_metrics(text):
     """Parse Prometheus text format into a dictionary."""
     metrics = {}
-    for line in text.split('\n'):
-        if line and not line.startswith('#'):
+    for line in text.split("\n"):
+        if line and not line.startswith("#"):
             try:
                 # Handle metrics with labels
-                if '{' in line:
-                    name = line.split('{')[0]
+                if "{" in line:
+                    name = line.split("{")[0]
                     value = float(line.split()[-1])
                     if name not in metrics:
                         metrics[name] = []
-                    metrics[name].append({
-                        'labels': line.split('{')[1].split('}')[0],
-                        'value': value
-                    })
+                    metrics[name].append(
+                        {"labels": line.split("{")[1].split("}")[0], "value": value}
+                    )
                 else:
                     parts = line.split()
                     if len(parts) >= 2:
@@ -257,41 +263,55 @@ def create_gauge_chart(value, title, max_val=1.0, thresholds=None):
     if thresholds is None:
         thresholds = [0.5, 0.7]
 
-    color = COLORS['danger']
+    color = COLORS["danger"]
     if value >= thresholds[1]:
-        color = COLORS['success']
+        color = COLORS["success"]
     elif value >= thresholds[0]:
-        color = COLORS['warning']
+        color = COLORS["warning"]
 
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=value,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': title, 'font': {'size': 14, 'color': COLORS['text']}},
-        number={'font': {'size': 28, 'color': COLORS['text']}, 'suffix': '' if max_val == 1 else ''},
-        gauge={
-            'axis': {'range': [0, max_val], 'tickcolor': COLORS['muted']},
-            'bar': {'color': color},
-            'bgcolor': COLORS['surface'],
-            'borderwidth': 0,
-            'steps': [
-                {'range': [0, thresholds[0] * max_val], 'color': 'rgba(255,107,107,0.2)'},
-                {'range': [thresholds[0] * max_val, thresholds[1] * max_val], 'color': 'rgba(245,166,35,0.2)'},
-                {'range': [thresholds[1] * max_val, max_val], 'color': 'rgba(125,226,209,0.2)'},
-            ],
-            'threshold': {
-                'line': {'color': COLORS['text'], 'width': 2},
-                'thickness': 0.75,
-                'value': value
-            }
-        }
-    ))
+    fig = go.Figure(
+        go.Indicator(
+            mode="gauge+number",
+            value=value,
+            domain={"x": [0, 1], "y": [0, 1]},
+            title={"text": title, "font": {"size": 14, "color": COLORS["text"]}},
+            number={
+                "font": {"size": 28, "color": COLORS["text"]},
+                "suffix": "" if max_val == 1 else "",
+            },
+            gauge={
+                "axis": {"range": [0, max_val], "tickcolor": COLORS["muted"]},
+                "bar": {"color": color},
+                "bgcolor": COLORS["surface"],
+                "borderwidth": 0,
+                "steps": [
+                    {
+                        "range": [0, thresholds[0] * max_val],
+                        "color": "rgba(255,107,107,0.2)",
+                    },
+                    {
+                        "range": [thresholds[0] * max_val, thresholds[1] * max_val],
+                        "color": "rgba(245,166,35,0.2)",
+                    },
+                    {
+                        "range": [thresholds[1] * max_val, max_val],
+                        "color": "rgba(125,226,209,0.2)",
+                    },
+                ],
+                "threshold": {
+                    "line": {"color": COLORS["text"], "width": 2},
+                    "thickness": 0.75,
+                    "value": value,
+                },
+            },
+        )
+    )
 
     fig.update_layout(
-        paper_bgcolor=COLORS['surface'],
-        font={'color': COLORS['text']},
+        paper_bgcolor=COLORS["surface"],
+        font={"color": COLORS["text"]},
         height=200,
-        margin=dict(l=20, r=20, t=40, b=20)
+        margin=dict(l=20, r=20, t=40, b=20),
     )
 
     return fig
@@ -303,69 +323,84 @@ def render_service_status():
 
     with col1:
         flask_status = is_port_in_use(FLASK_PORT)
-        status_color = COLORS['success'] if flask_status else COLORS['danger']
+        status_color = COLORS["success"] if flask_status else COLORS["danger"]
         status_text = "Running" if flask_status else "Stopped"
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
             <div style="color: {COLORS['muted']}; font-size: 12px;">Flask API</div>
             <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
             <div style="color: {COLORS['muted']}; font-size: 11px;">Port {FLASK_PORT}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col2:
         prometheus_status = is_port_in_use(PROMETHEUS_PORT)
-        status_color = COLORS['success'] if prometheus_status else COLORS['danger']
+        status_color = COLORS["success"] if prometheus_status else COLORS["danger"]
         status_text = "Running" if prometheus_status else "Stopped"
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
             <div style="color: {COLORS['muted']}; font-size: 12px;">Prometheus</div>
             <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
             <div style="color: {COLORS['muted']}; font-size: 11px;">Port {PROMETHEUS_PORT}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col3:
         grafana_status = is_port_in_use(GRAFANA_PORT)
-        status_color = COLORS['success'] if grafana_status else COLORS['danger']
+        status_color = COLORS["success"] if grafana_status else COLORS["danger"]
         status_text = "Running" if grafana_status else "Stopped"
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
             <div style="color: {COLORS['muted']}; font-size: 12px;">Grafana</div>
             <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
             <div style="color: {COLORS['muted']}; font-size: 11px;">Port {GRAFANA_PORT}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col4:
         # Check if worker is running by looking at metrics activity
         metrics = fetch_prometheus_metrics()
-        samples = metrics.get('anomaly_detection_samples_processed_total', 0)
+        samples = metrics.get("anomaly_detection_samples_processed_total", 0)
         pred_status = samples > 0
-        status_color = COLORS['success'] if pred_status else COLORS['danger']
+        status_color = COLORS["success"] if pred_status else COLORS["danger"]
         status_text = "Active" if pred_status else "Inactive"
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
             <div style="color: {COLORS['muted']}; font-size: 12px;">Prediction Worker</div>
             <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
             <div style="color: {COLORS['muted']}; font-size: 11px;">{int(samples):,} samples</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col5:
         flask_ok = is_port_in_use(FLASK_PORT)
         prom_ok = is_port_in_use(PROMETHEUS_PORT)
         graf_ok = is_port_in_use(GRAFANA_PORT)
         all_running = flask_ok and prom_ok and graf_ok and pred_status
-        status_color = COLORS['success'] if all_running else COLORS['warning']
+        status_color = COLORS["success"] if all_running else COLORS["warning"]
         status_text = "All Systems Go" if all_running else "Partial"
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
             <div style="color: {COLORS['muted']}; font-size: 12px;">Overall Status</div>
             <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
             <div style="color: {COLORS['muted']}; font-size: 11px;">&nbsp;</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
 
 def render_model_performance(metrics):
@@ -375,27 +410,27 @@ def render_model_performance(metrics):
     col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
-        f1 = metrics.get('anomaly_detection_f1_score', 0)
+        f1 = metrics.get("anomaly_detection_f1_score", 0)
         fig = create_gauge_chart(f1, "F1-Score", thresholds=[0.5, 0.7])
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        precision = metrics.get('anomaly_detection_precision', 0)
+        precision = metrics.get("anomaly_detection_precision", 0)
         fig = create_gauge_chart(precision, "Precision", thresholds=[0.6, 0.8])
         st.plotly_chart(fig, use_container_width=True)
 
     with col3:
-        recall = metrics.get('anomaly_detection_recall', 0)
+        recall = metrics.get("anomaly_detection_recall", 0)
         fig = create_gauge_chart(recall, "Recall", thresholds=[0.6, 0.8])
         st.plotly_chart(fig, use_container_width=True)
 
     with col4:
-        det_rate = metrics.get('anomaly_detection_detection_rate', 0)
+        det_rate = metrics.get("anomaly_detection_detection_rate", 0)
         fig = create_gauge_chart(det_rate, "Detection Rate", thresholds=[0.7, 0.8])
         st.plotly_chart(fig, use_container_width=True)
 
     with col5:
-        far = metrics.get('anomaly_detection_false_alarm_rate', 0)
+        far = metrics.get("anomaly_detection_false_alarm_rate", 0)
         # Invert thresholds for false alarm (lower is better)
         fig = create_gauge_chart(far, "False Alarm Rate", thresholds=[0.1, 0.05])
         st.plotly_chart(fig, use_container_width=True)
@@ -407,20 +442,23 @@ def render_drift_status(metrics):
 
     col1, col2, col3, col4 = st.columns(4)
 
-    drift_detected = metrics.get('anomaly_detection_drift_status', 0)
-    anomaly_rate = metrics.get('anomaly_detection_anomaly_rate', 0)
-    drift_total = metrics.get('anomaly_detection_drift_detected_total', 0)
-    samples_since = metrics.get('anomaly_detection_samples_since_drift', 0)
+    drift_detected = metrics.get("anomaly_detection_drift_status", 0)
+    anomaly_rate = metrics.get("anomaly_detection_anomaly_rate", 0)
+    drift_total = metrics.get("anomaly_detection_drift_detected_total", 0)
+    samples_since = metrics.get("anomaly_detection_samples_since_drift", 0)
 
     with col1:
-        status_color = COLORS['danger'] if drift_detected else COLORS['success']
+        status_color = COLORS["danger"] if drift_detected else COLORS["success"]
         status_text = "DRIFT DETECTED!" if drift_detected else "STABLE"
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background-color: {status_color}; padding: 30px; border-radius: 8px; text-align: center;">
             <div style="color: white; font-size: 14px; opacity: 0.9;">Drift Status</div>
             <div style="color: white; font-size: 28px; font-weight: bold;">{status_text}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col2:
         st.metric("Anomaly Rate", f"{anomaly_rate:.1%}")
@@ -438,9 +476,9 @@ def render_system_metrics(metrics):
 
     col1, col2, col3 = st.columns(3)
 
-    retrains = metrics.get('anomaly_detection_model_retrain_total', 0)
-    samples = metrics.get('anomaly_detection_samples_processed_total', 0)
-    threshold = metrics.get('anomaly_detection_threshold_boundary', 0)
+    retrains = metrics.get("anomaly_detection_model_retrain_total", 0)
+    samples = metrics.get("anomaly_detection_samples_processed_total", 0)
+    threshold = metrics.get("anomaly_detection_threshold_boundary", 0)
 
     with col1:
         st.metric("Model Retrains", int(retrains))
@@ -460,22 +498,28 @@ def render_grafana_embed():
         # Grafana embed URL with anonymous access
         dashboard_url = f"{GRAFANA_URL}/d/anomaly-detection-overview/cyber-anomaly-detection-ml-model-monitoring?orgId=1&refresh=10s&kiosk"
 
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <iframe src="{dashboard_url}"
                 width="100%"
                 height="800"
                 frameborder="0"
                 style="border-radius: 8px; background-color: {COLORS['surface']};">
         </iframe>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="text-align: center; margin-top: 10px;">
             <a href="{GRAFANA_URL}" target="_blank" style="color: {COLORS['primary']};">
                 Open Grafana in new tab (admin/admin)
             </a>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
     else:
         st.warning("Grafana is not running. Click 'Start All Services' to launch.")
 
@@ -486,11 +530,12 @@ def main():
         page_title="ML Model Monitoring",
         page_icon=None,
         layout="wide",
-        initial_sidebar_state="collapsed"
+        initial_sidebar_state="collapsed",
     )
 
     # Dark theme CSS
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <style>
         .stApp {{
             background-color: {COLORS['background']};
@@ -514,7 +559,9 @@ def main():
             border: none;
         }}
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     st.title("ML Model Monitoring Dashboard")
     st.markdown("---")
@@ -589,7 +636,9 @@ def main():
             st.markdown("---")
             render_system_metrics(metrics)
         else:
-            st.info("No metrics available. Click 'Start All Services' to begin monitoring.")
+            st.info(
+                "No metrics available. Click 'Start All Services' to begin monitoring."
+            )
 
             # Show placeholder gauges with zero values
             render_model_performance({})
@@ -603,26 +652,51 @@ def main():
         st.subheader("Prometheus Metrics Overview")
         if metrics:
             # Filter to show only anomaly_detection metrics
-            ad_metrics = {k: v for k, v in metrics.items() if k.startswith('anomaly_detection')}
+            ad_metrics = {
+                k: v for k, v in metrics.items() if k.startswith("anomaly_detection")
+            }
 
             # Group metrics by category
             categories = {
-                "Model Performance": ["precision", "recall", "f1_score", "detection_rate", "false_alarm_rate"],
-                "Predictions": ["samples_processed", "predictions_red", "predictions_orange", "predictions_green"],
-                "Drift Detection": ["drift_status", "drift_detected_total", "samples_since_drift", "anomaly_rate"],
-                "System": ["model_loaded", "dataset_size"]
+                "Model Performance": [
+                    "precision",
+                    "recall",
+                    "f1_score",
+                    "detection_rate",
+                    "false_alarm_rate",
+                ],
+                "Predictions": [
+                    "samples_processed",
+                    "predictions_red",
+                    "predictions_orange",
+                    "predictions_green",
+                ],
+                "Drift Detection": [
+                    "drift_status",
+                    "drift_detected_total",
+                    "samples_since_drift",
+                    "anomaly_rate",
+                ],
+                "System": ["model_loaded", "dataset_size"],
             }
 
             for category, keywords in categories.items():
-                category_metrics = {k: v for k, v in ad_metrics.items()
-                                   if any(kw in k for kw in keywords)}
+                category_metrics = {
+                    k: v
+                    for k, v in ad_metrics.items()
+                    if any(kw in k for kw in keywords)
+                }
                 if category_metrics:
                     st.markdown(f"**{category}**")
                     cols = st.columns(min(len(category_metrics), 4))
                     for i, (metric_name, value) in enumerate(category_metrics.items()):
                         with cols[i % 4]:
                             # Clean up metric name for display
-                            display_name = metric_name.replace('anomaly_detection_', '').replace('_', ' ').title()
+                            display_name = (
+                                metric_name.replace("anomaly_detection_", "")
+                                .replace("_", " ")
+                                .title()
+                            )
                             # Format value
                             if isinstance(value, float):
                                 if value < 1 and value > 0:
@@ -630,7 +704,11 @@ def main():
                                 else:
                                     display_value = f"{value:,.0f}"
                             else:
-                                display_value = f"{value:,}" if isinstance(value, (int, float)) else str(value)
+                                display_value = (
+                                    f"{value:,}"
+                                    if isinstance(value, (int, float))
+                                    else str(value)
+                                )
 
                             st.metric(label=display_name, value=display_value)
                     st.markdown("---")
@@ -653,7 +731,7 @@ def main():
         f"<div style='text-align: center; color: {COLORS['muted']};'>"
         f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         f"</div>",
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 

@@ -26,7 +26,7 @@ class TestStreamlitMonitoringHelpers:
         """Test port checking with a bound port."""
         # Create a socket to bind a port temporarily
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind(('localhost', 0))  # Bind to random free port
+            s.bind(("localhost", 0))  # Bind to random free port
             port = s.getsockname()[1]
             s.listen(1)  # Start listening on the port
 
@@ -49,8 +49,8 @@ another_metric{label="value"} 100
         assert "test_metric" in metrics_text
         assert "42.5" in metrics_text
 
-    @patch('src.dashboard.streamlit_monitoring.subprocess.Popen')
-    @patch('src.dashboard.streamlit_monitoring.is_port_in_use')
+    @patch("src.dashboard.streamlit_monitoring.subprocess.Popen")
+    @patch("src.dashboard.streamlit_monitoring.is_port_in_use")
     def test_start_flask_server_already_running(self, mock_is_port_in_use, mock_popen):
         """Test Flask server start when already running."""
         mock_is_port_in_use.return_value = True
@@ -60,10 +60,12 @@ another_metric{label="value"} 100
         assert result is True
         mock_popen.assert_not_called()  # Should not start new process
 
-    @patch('src.dashboard.streamlit_monitoring.subprocess.Popen')
-    @patch('src.dashboard.streamlit_monitoring.is_port_in_use')
-    @patch('src.dashboard.streamlit_monitoring.time.sleep')
-    def test_start_flask_server_success(self, mock_sleep, mock_is_port_in_use, mock_popen):
+    @patch("src.dashboard.streamlit_monitoring.subprocess.Popen")
+    @patch("src.dashboard.streamlit_monitoring.is_port_in_use")
+    @patch("src.dashboard.streamlit_monitoring.time.sleep")
+    def test_start_flask_server_success(
+        self, mock_sleep, mock_is_port_in_use, mock_popen
+    ):
         """Test successful Flask server start."""
         # First call: not running, subsequent calls: running
         mock_is_port_in_use.side_effect = [False, False, True]
@@ -74,21 +76,23 @@ another_metric{label="value"} 100
         assert result is True
         mock_popen.assert_called_once()
 
-    @patch('src.dashboard.streamlit_monitoring.subprocess.Popen')
-    @patch('src.dashboard.streamlit_monitoring.is_port_in_use')
+    @patch("src.dashboard.streamlit_monitoring.subprocess.Popen")
+    @patch("src.dashboard.streamlit_monitoring.is_port_in_use")
     def test_start_flask_server_script_not_found(self, mock_is_port_in_use, mock_popen):
         """Test Flask server start when script doesn't exist."""
         mock_is_port_in_use.return_value = False
 
         # Mock Path.exists to return False
-        with patch.object(Path, 'exists', return_value=False):
+        with patch.object(Path, "exists", return_value=False):
             result = streamlit_monitoring.start_flask_server()
 
         assert result is False
 
-    @patch('src.dashboard.streamlit_monitoring.subprocess.run')
-    @patch('src.dashboard.streamlit_monitoring.is_port_in_use')
-    def test_start_docker_monitoring_already_running(self, mock_is_port_in_use, mock_run):
+    @patch("src.dashboard.streamlit_monitoring.subprocess.run")
+    @patch("src.dashboard.streamlit_monitoring.is_port_in_use")
+    def test_start_docker_monitoring_already_running(
+        self, mock_is_port_in_use, mock_run
+    ):
         """Test Docker monitoring when already running."""
         # Both Prometheus and Grafana ports are in use
         mock_is_port_in_use.return_value = True
@@ -99,13 +103,20 @@ another_metric{label="value"} 100
         assert "Already running" in message
         mock_run.assert_not_called()
 
-    @patch('src.dashboard.streamlit_monitoring.subprocess.run')
-    @patch('src.dashboard.streamlit_monitoring.is_port_in_use')
-    @patch('src.dashboard.streamlit_monitoring.time.sleep')
-    def test_start_docker_monitoring_success(self, mock_sleep, mock_is_port_in_use, mock_run):
+    @patch("src.dashboard.streamlit_monitoring.subprocess.run")
+    @patch("src.dashboard.streamlit_monitoring.is_port_in_use")
+    @patch("src.dashboard.streamlit_monitoring.time.sleep")
+    def test_start_docker_monitoring_success(
+        self, mock_sleep, mock_is_port_in_use, mock_run
+    ):
         """Test successful Docker monitoring start."""
         # Ports not in use initially, then in use after docker starts
-        mock_is_port_in_use.side_effect = [False, False, True, True]  # Initial check, then after start
+        mock_is_port_in_use.side_effect = [
+            False,
+            False,
+            True,
+            True,
+        ]  # Initial check, then after start
 
         # Mock successful docker-compose command
         mock_result = Mock()
@@ -117,14 +128,16 @@ another_metric{label="value"} 100
         assert success is True
         mock_run.assert_called()
 
-    @patch('src.dashboard.streamlit_monitoring.subprocess.run')
-    @patch('src.dashboard.streamlit_monitoring.is_port_in_use')
-    def test_start_docker_monitoring_compose_file_not_found(self, mock_is_port_in_use, mock_run):
+    @patch("src.dashboard.streamlit_monitoring.subprocess.run")
+    @patch("src.dashboard.streamlit_monitoring.is_port_in_use")
+    def test_start_docker_monitoring_compose_file_not_found(
+        self, mock_is_port_in_use, mock_run
+    ):
         """Test Docker monitoring when compose file doesn't exist."""
         mock_is_port_in_use.return_value = False
 
         # Mock compose file not existing
-        with patch.object(Path, 'exists', return_value=False):
+        with patch.object(Path, "exists", return_value=False):
             success, message = streamlit_monitoring.start_docker_monitoring()
 
         assert success is False
@@ -135,6 +148,7 @@ another_metric{label="value"} 100
         # This test only runs if psutil is installed
         try:
             import psutil
+
             # If psutil is available, test is simple - function should not crash
             try:
                 streamlit_monitoring.stop_prediction_workers()
@@ -148,12 +162,13 @@ another_metric{label="value"} 100
         """Test stop_prediction_workers when psutil is not available."""
         # Mock the ImportError scenario by temporarily removing psutil from sys.modules
         import sys
-        psutil_backup = sys.modules.get('psutil')
+
+        psutil_backup = sys.modules.get("psutil")
 
         try:
             # Temporarily remove psutil
-            if 'psutil' in sys.modules:
-                del sys.modules['psutil']
+            if "psutil" in sys.modules:
+                del sys.modules["psutil"]
 
             # Should not raise exception even when psutil is missing
             try:
@@ -163,7 +178,7 @@ another_metric{label="value"} 100
         finally:
             # Restore psutil if it was there
             if psutil_backup is not None:
-                sys.modules['psutil'] = psutil_backup
+                sys.modules["psutil"] = psutil_backup
 
 
 class TestPlotlyGaugeCharts:
@@ -172,40 +187,44 @@ class TestPlotlyGaugeCharts:
     def test_create_gauge_chart_structure(self):
         """Test that gauge charts can be created with valid structure."""
         # Create a simple gauge chart (this tests Plotly integration)
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=0.75,
-            title={'text': "Test Metric"},
-            gauge={'axis': {'range': [0, 1]}}
-        ))
+        fig = go.Figure(
+            go.Indicator(
+                mode="gauge+number",
+                value=0.75,
+                title={"text": "Test Metric"},
+                gauge={"axis": {"range": [0, 1]}},
+            )
+        )
 
         # Verify it's a valid Plotly figure
-        assert hasattr(fig, 'data')
-        assert hasattr(fig, 'layout')
+        assert hasattr(fig, "data")
+        assert hasattr(fig, "layout")
         assert len(fig.data) > 0
         assert fig.data[0].value == 0.75
 
     def test_gauge_chart_with_thresholds(self):
         """Test gauge chart with colored threshold zones."""
-        fig = go.Figure(go.Indicator(
-            mode="gauge+number",
-            value=0.85,
-            title={'text': "Model Performance"},
-            gauge={
-                'axis': {'range': [0, 1]},
-                'bar': {'color': "darkblue"},
-                'steps': [
-                    {'range': [0, 0.5], 'color': "red"},
-                    {'range': [0.5, 0.8], 'color': "yellow"},
-                    {'range': [0.8, 1], 'color': "green"}
-                ],
-                'threshold': {
-                    'line': {'color': "black", 'width': 4},
-                    'thickness': 0.75,
-                    'value': 0.8
-                }
-            }
-        ))
+        fig = go.Figure(
+            go.Indicator(
+                mode="gauge+number",
+                value=0.85,
+                title={"text": "Model Performance"},
+                gauge={
+                    "axis": {"range": [0, 1]},
+                    "bar": {"color": "darkblue"},
+                    "steps": [
+                        {"range": [0, 0.5], "color": "red"},
+                        {"range": [0.5, 0.8], "color": "yellow"},
+                        {"range": [0.8, 1], "color": "green"},
+                    ],
+                    "threshold": {
+                        "line": {"color": "black", "width": 4},
+                        "thickness": 0.75,
+                        "value": 0.8,
+                    },
+                },
+            )
+        )
 
         assert fig.data[0].value == 0.85
         assert len(fig.data[0].gauge.steps) == 3

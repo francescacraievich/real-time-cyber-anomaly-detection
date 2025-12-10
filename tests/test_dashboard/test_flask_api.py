@@ -20,40 +20,43 @@ class TestFlaskAPIHelpers:
     @pytest.fixture
     def sample_dataframe(self):
         """Create a sample DataFrame for testing."""
-        return pd.DataFrame({
-            'source_ip': ['192.168.1.1', '10.0.0.2', '8.8.8.8', '1.1.1.1'],
-            'destination_ip': ['8.8.8.8', '1.1.1.1', '192.168.1.1', '10.0.0.2'],
-            'destination_port': [80, 443, 22, 3389],
-            'transport_protocol': ['TCP', 'TCP', 'SSH', 'RDP'],
-            'label': ['benign', 'benign', 'malicious', 'malicious'],
-            'bytes_sent': [1000, 2000, 500, 3000],
-            'pkts_sent': [10, 20, 5, 30],
-            'bytes_received': [500, 1000, 200, 1500],
-            'pkts_received': [5, 10, 2, 15],
-        })
+        return pd.DataFrame(
+            {
+                "source_ip": ["192.168.1.1", "10.0.0.2", "8.8.8.8", "1.1.1.1"],
+                "destination_ip": ["8.8.8.8", "1.1.1.1", "192.168.1.1", "10.0.0.2"],
+                "destination_port": [80, 443, 22, 3389],
+                "transport_protocol": ["TCP", "TCP", "SSH", "RDP"],
+                "label": ["benign", "benign", "malicious", "malicious"],
+                "bytes_sent": [1000, 2000, 500, 3000],
+                "pkts_sent": [10, 20, 5, 30],
+                "bytes_received": [500, 1000, 200, 1500],
+                "pkts_received": [5, 10, 2, 15],
+            }
+        )
 
     @pytest.fixture
     def mock_model(self):
         """Create a mock One-Class SVM model."""
         model = Mock()
         model.model_exists.return_value = True
-        model.features_to_drop = ['label']
+        model.features_to_drop = ["label"]
         model.predict.return_value = [
-            ('GREEN', 'Normal traffic', 0.1),
-            ('GREEN', 'Normal traffic', 0.15),
-            ('RED', 'High anomaly score', 0.85),
-            ('ORANGE', 'Suspicious activity', 0.55)
+            ("GREEN", "Normal traffic", 0.1),
+            ("GREEN", "Normal traffic", 0.15),
+            ("RED", "High anomaly score", 0.85),
+            ("ORANGE", "Suspicious activity", 0.55),
         ]
         return model
 
     def test_track_request_metrics_decorator_structure(self):
         """Test that track_request_metrics decorator is properly defined."""
-        assert hasattr(flask_api, 'track_request_metrics')
+        assert hasattr(flask_api, "track_request_metrics")
         assert callable(flask_api.track_request_metrics)
 
-    @patch('src.dashboard.flask_api.METRICS_ENABLED', False)
+    @patch("src.dashboard.flask_api.METRICS_ENABLED", False)
     def test_track_request_metrics_when_disabled(self):
         """Test metrics tracking when Prometheus is not available."""
+
         @flask_api.track_request_metrics
         def test_function():
             return "success"
@@ -63,10 +66,13 @@ class TestFlaskAPIHelpers:
 
     def test_load_resources_initializes_globals(self):
         """Test that load_resources initializes global variables."""
-        with patch('src.dashboard.flask_api.OneClassSVMModel') as MockModel, \
-             patch('src.dashboard.flask_api.DriftDetector') as MockDrift, \
-             patch('src.dashboard.flask_api.pd.read_csv') as mock_read_csv, \
-             patch.object(Path, 'exists', return_value=True):
+        with patch("src.dashboard.flask_api.OneClassSVMModel") as MockModel, patch(
+            "src.dashboard.flask_api.DriftDetector"
+        ) as MockDrift, patch(
+            "src.dashboard.flask_api.pd.read_csv"
+        ) as mock_read_csv, patch.object(
+            Path, "exists", return_value=True
+        ):
 
             # Mock model
             mock_model_instance = Mock()
@@ -78,7 +84,7 @@ class TestFlaskAPIHelpers:
             MockDrift.return_value = mock_drift_instance
 
             # Mock dataset
-            sample_df = pd.DataFrame({'col1': [1, 2, 3]})
+            sample_df = pd.DataFrame({"col1": [1, 2, 3]})
             mock_read_csv.return_value = sample_df
 
             # Call load_resources
@@ -107,10 +113,9 @@ class TestFlaskAPIHelpers:
         # Second batch (wrap around)
         end_index = current_index + window_size
         if end_index > len(df):
-            batch = pd.concat([
-                df.iloc[current_index:],
-                df.iloc[:end_index - len(df)]
-            ]).copy()
+            batch = pd.concat(
+                [df.iloc[current_index:], df.iloc[: end_index - len(df)]]
+            ).copy()
 
         assert len(batch) == 3  # Should still get 3 records (1 + 2)
 
@@ -119,7 +124,7 @@ class TestFlaskAPIHelpers:
         batch = sample_dataframe.copy()
 
         # Drop label column as model would do
-        X_pred = batch.drop(columns=['label'], errors='ignore')
+        X_pred = batch.drop(columns=["label"], errors="ignore")
 
         # Make predictions
         predictions = mock_model.predict(X_pred)
@@ -130,22 +135,22 @@ class TestFlaskAPIHelpers:
         scores = [p[2] for p in predictions]
 
         assert len(severities) == 4
-        assert 'RED' in severities
-        assert 'ORANGE' in severities
-        assert 'GREEN' in severities
+        assert "RED" in severities
+        assert "ORANGE" in severities
+        assert "GREEN" in severities
         assert all(isinstance(score, float) for score in scores)
 
     def test_nan_replacement_for_json(self, sample_dataframe):
         """Test NaN replacement for JSON serialization."""
         df = sample_dataframe.copy()
-        df.loc[0, 'bytes_sent'] = np.nan
+        df.loc[0, "bytes_sent"] = np.nan
 
         # Replace NaN with None (JSON-serializable)
         df_clean = df.replace({np.nan: None})
 
-        assert df_clean.loc[0, 'bytes_sent'] is None
+        assert df_clean.loc[0, "bytes_sent"] is None
         # Should be JSON-serializable now
-        records = df_clean.to_dict(orient='records')
+        records = df_clean.to_dict(orient="records")
         assert isinstance(records, list)
 
     def test_drift_info_structure(self):
@@ -158,7 +163,7 @@ class TestFlaskAPIHelpers:
         drift_info = {
             "detected": mock_drift_detector.drift_detected,
             "anomaly_rate": mock_drift_detector.get_current_anomaly_rate(),
-            "samples_processed": mock_drift_detector.processed_samples
+            "samples_processed": mock_drift_detector.processed_samples,
         }
 
         assert drift_info["detected"] is True
@@ -171,22 +176,22 @@ class TestFlaskAPIHelpers:
 
         stats = {
             "total_records": len(df),
-            "malicious_count": int((df['label'] == 'malicious').sum()),
-            "benign_count": int((df['label'] == 'benign').sum()),
-            "protocols": df['transport_protocol'].value_counts().to_dict(),
+            "malicious_count": int((df["label"] == "malicious").sum()),
+            "benign_count": int((df["label"] == "benign").sum()),
+            "protocols": df["transport_protocol"].value_counts().to_dict(),
         }
 
         assert stats["total_records"] == 4
         assert stats["malicious_count"] == 2
         assert stats["benign_count"] == 2
-        assert 'TCP' in stats["protocols"]
+        assert "TCP" in stats["protocols"]
 
     def test_top_n_aggregation(self, sample_dataframe):
         """Test top N aggregation for IPs and ports."""
         df = sample_dataframe
 
-        top_ips = df['source_ip'].value_counts().head(10).to_dict()
-        top_ports = df['destination_port'].value_counts().head(10).to_dict()
+        top_ips = df["source_ip"].value_counts().head(10).to_dict()
+        top_ports = df["destination_port"].value_counts().head(10).to_dict()
 
         assert isinstance(top_ips, dict)
         assert isinstance(top_ports, dict)
@@ -209,7 +214,7 @@ class TestFlaskAPIEndpointLogic:
             "status": "healthy",
             "model_loaded": True,
             "dataset_size": 1000,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         assert "status" in response_data
@@ -222,16 +227,8 @@ class TestFlaskAPIEndpointLogic:
     def test_stream_logs_response_structure(self):
         """Test stream logs response structure."""
         logs_data = [
-            {
-                'source_ip': '192.168.1.1',
-                'severity': 'GREEN',
-                'anomaly_score': 0.1
-            },
-            {
-                'source_ip': '10.0.0.2',
-                'severity': 'RED',
-                'anomaly_score': 0.9
-            }
+            {"source_ip": "192.168.1.1", "severity": "GREEN", "anomaly_score": 0.1},
+            {"source_ip": "10.0.0.2", "severity": "RED", "anomaly_score": 0.9},
         ]
 
         response = {
@@ -243,8 +240,8 @@ class TestFlaskAPIEndpointLogic:
             "drift": {
                 "detected": False,
                 "anomaly_rate": 0.05,
-                "samples_processed": 500
-            }
+                "samples_processed": 500,
+            },
         }
 
         assert "logs" in response
@@ -266,23 +263,23 @@ class TestFlaskAPIEndpointLogic:
 class TestMetricsIntegration:
     """Test Prometheus metrics integration (when available)."""
 
-    @patch('src.dashboard.flask_api.METRICS_ENABLED', True)
+    @patch("src.dashboard.flask_api.METRICS_ENABLED", True)
     def test_metrics_enabled_flag(self):
         """Test metrics enabled flag."""
         assert flask_api.METRICS_ENABLED is True
 
-    @patch('src.dashboard.flask_api.METRICS_ENABLED', False)
+    @patch("src.dashboard.flask_api.METRICS_ENABLED", False)
     def test_metrics_disabled_flag(self):
         """Test metrics disabled flag."""
         assert flask_api.METRICS_ENABLED is False
 
     def test_metrics_endpoint_response_when_disabled(self):
         """Test metrics endpoint when Prometheus not available."""
-        with patch('src.dashboard.flask_api.METRICS_ENABLED', False):
+        with patch("src.dashboard.flask_api.METRICS_ENABLED", False):
             with flask_api.app.test_client() as client:
-                response = client.get('/metrics')
+                response = client.get("/metrics")
                 assert response.status_code == 503
-                assert b'not available' in response.data
+                assert b"not available" in response.data
 
 
 class TestDataProcessing:
@@ -306,10 +303,10 @@ class TestDataProcessing:
 
     def test_anomaly_detection_logic(self):
         """Test anomaly detection based on severity."""
-        severities = ['GREEN', 'GREEN', 'ORANGE', 'RED', 'GREEN']
+        severities = ["GREEN", "GREEN", "ORANGE", "RED", "GREEN"]
 
-        anomaly_count = sum(1 for s in severities if s in ['RED', 'ORANGE'])
-        normal_count = sum(1 for s in severities if s == 'GREEN')
+        anomaly_count = sum(1 for s in severities if s in ["RED", "ORANGE"])
+        normal_count = sum(1 for s in severities if s == "GREEN")
 
         assert anomaly_count == 2
         assert normal_count == 3
@@ -323,12 +320,12 @@ class TestDataProcessing:
         except Exception as e:
             error_message = str(e)
             # Fallback values
-            severity = 'UNKNOWN'
-            description = 'Prediction failed'
+            severity = "UNKNOWN"
+            description = "Prediction failed"
             score = 0.0
 
-        assert severity == 'UNKNOWN'
-        assert description == 'Prediction failed'
+        assert severity == "UNKNOWN"
+        assert description == "Prediction failed"
         assert score == 0.0
         assert "failed" in error_message.lower()
 
@@ -339,7 +336,7 @@ class TestCORSConfiguration:
     def test_cors_enabled(self):
         """Test that CORS is enabled on the Flask app."""
         # CORS should be initialized
-        assert hasattr(flask_api, 'app')
+        assert hasattr(flask_api, "app")
         # The app should have CORS configured (via flask_cors import)
         # We can verify this by checking if the extension was applied
         # (Note: This is a smoke test - actual CORS headers tested in integration)
@@ -347,4 +344,4 @@ class TestCORSConfiguration:
     def test_app_initialization(self):
         """Test Flask app is properly initialized."""
         assert flask_api.app is not None
-        assert flask_api.app.name == 'src.dashboard.flask_api'
+        assert flask_api.app.name == "src.dashboard.flask_api"

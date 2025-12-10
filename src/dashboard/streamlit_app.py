@@ -25,15 +25,15 @@ FLASK_PORT = 5000
 
 # Kibana-style color palette
 COLORS = {
-    "primary": "#1BA9F5",      # Bright blue
-    "success": "#7DE2D1",      # Teal/cyan
-    "warning": "#F5A623",      # Orange
-    "danger": "#FF6B6B",       # Red
-    "info": "#9B59B6",         # Purple
-    "background": "#1D1E24",   # Dark background
-    "surface": "#25262E",      # Card background
-    "text": "#DFE5EF",         # Light text
-    "muted": "#98A2B3",        # Muted text
+    "primary": "#1BA9F5",  # Bright blue
+    "success": "#7DE2D1",  # Teal/cyan
+    "warning": "#F5A623",  # Orange
+    "danger": "#FF6B6B",  # Red
+    "info": "#9B59B6",  # Purple
+    "background": "#1D1E24",  # Dark background
+    "surface": "#25262E",  # Card background
+    "text": "#DFE5EF",  # Light text
+    "muted": "#98A2B3",  # Muted text
 }
 
 # Chart color sequence (Kibana-style)
@@ -54,7 +54,7 @@ CHART_COLORS = [
 def is_port_in_use(port):
     """Check if a port is already in use."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
+        return s.connect_ex(("localhost", port)) == 0
 
 
 def start_flask_server():
@@ -75,14 +75,14 @@ def start_flask_server():
                 [sys.executable, str(flask_script)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             )
         else:
             subprocess.Popen(
                 [sys.executable, str(flask_script)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                start_new_session=True
+                start_new_session=True,
             )
 
         for _ in range(10):
@@ -97,7 +97,7 @@ def start_flask_server():
 
 
 # Start Flask server automatically
-if 'flask_started' not in st.session_state:
+if "flask_started" not in st.session_state:
     with st.spinner("Starting API server..."):
         st.session_state.flask_started = start_flask_server()
         if st.session_state.flask_started:
@@ -109,11 +109,12 @@ st.set_page_config(
     page_title="Cyber Anomaly Detection Dashboard",
     page_icon=None,
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 # Kibana-style dark theme CSS
-st.markdown(f"""
+st.markdown(
+    f"""
 <style>
     /* Main background */
     .stApp {{
@@ -223,7 +224,9 @@ st.markdown(f"""
         background-color: #FF00FF !important;
     }}
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 def fetch_api(endpoint, params=None):
@@ -240,10 +243,10 @@ def create_plotly_layout(title="", height=400):
     """Create consistent Plotly layout with dark theme."""
     return {
         "template": "plotly_dark",
-        "paper_bgcolor": COLORS['surface'],
-        "plot_bgcolor": COLORS['surface'],
-        "font": {"color": COLORS['text'], "family": "Inter, sans-serif"},
-        "title": {"text": title, "font": {"size": 16, "color": COLORS['text']}},
+        "paper_bgcolor": COLORS["surface"],
+        "plot_bgcolor": COLORS["surface"],
+        "font": {"color": COLORS["text"], "family": "Inter, sans-serif"},
+        "title": {"text": title, "font": {"size": 16, "color": COLORS["text"]}},
         "height": height,
         "margin": {"l": 60, "r": 30, "t": 50, "b": 50},
         "xaxis": {"gridcolor": "#2D2E36", "zerolinecolor": "#2D2E36"},
@@ -264,9 +267,7 @@ def render_sidebar():
     st.sidebar.markdown("---")
     st.sidebar.markdown("**Filters**")
     severity_filter = st.sidebar.multiselect(
-        "Severity",
-        ["RED", "ORANGE", "GREEN"],
-        default=["RED", "ORANGE", "GREEN"]
+        "Severity", ["RED", "ORANGE", "GREEN"], default=["RED", "ORANGE", "GREEN"]
     )
 
     st.sidebar.markdown("---")
@@ -290,10 +291,10 @@ def render_health_status():
     if health:
         col1, col2, col3 = st.columns(3)
         with col1:
-            status = "HEALTHY" if health['status'] == 'healthy' else "ERROR"
+            status = "HEALTHY" if health["status"] == "healthy" else "ERROR"
             st.metric("API Status", status)
         with col2:
-            model_status = "Loaded" if health['model_loaded'] else "Not Loaded"
+            model_status = "Loaded" if health["model_loaded"] else "Not Loaded"
             st.metric("ML Model", model_status)
         with col3:
             st.metric("Dataset Size", f"{health['dataset_size']:,}")
@@ -307,50 +308,62 @@ def render_alert_summary(alerts_data):
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background: linear-gradient(135deg, #FF6B6B 0%, #ee5a5a 100%);
                     padding: 20px; border-radius: 8px; text-align: center;">
             <div style="color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase;">Critical Alerts</div>
             <div style="color: white; font-size: 36px; font-weight: bold;">{alerts_data.get('red_count', 0)}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col2:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background: linear-gradient(135deg, #F5A623 0%, #e09000 100%);
                     padding: 20px; border-radius: 8px; text-align: center;">
             <div style="color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase;">Suspicious</div>
             <div style="color: white; font-size: 36px; font-weight: bold;">{alerts_data.get('orange_count', 0)}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col3:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background: linear-gradient(135deg, #7DE2D1 0%, #54B399 100%);
                     padding: 20px; border-radius: 8px; text-align: center;">
             <div style="color: rgba(0,0,0,0.7); font-size: 12px; text-transform: uppercase;">Normal</div>
             <div style="color: rgba(0,0,0,0.9); font-size: 36px; font-weight: bold;">{alerts_data.get('green_count', 0)}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     with col4:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div style="background: linear-gradient(135deg, #1BA9F5 0%, #0d8bd9 100%);
                     padding: 20px; border-radius: 8px; text-align: center;">
             <div style="color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase;">Total Analyzed</div>
             <div style="color: white; font-size: 36px; font-weight: bold;">{alerts_data.get('total_count', 0)}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
 
 def render_alerts_table(alerts_data, severity_filter):
     """Render the alerts table with colored severity column."""
-    if not alerts_data or 'alerts' not in alerts_data:
+    if not alerts_data or "alerts" not in alerts_data:
         st.info("No alerts data available")
         return
 
-    alerts = alerts_data['alerts']
-    filtered_alerts = [a for a in alerts if a['severity'] in severity_filter]
+    alerts = alerts_data["alerts"]
+    filtered_alerts = [a for a in alerts if a["severity"] in severity_filter]
 
     if not filtered_alerts:
         st.info("No alerts matching the selected filters")
@@ -358,23 +371,29 @@ def render_alerts_table(alerts_data, severity_filter):
 
     df_alerts = pd.DataFrame(filtered_alerts)
 
-    display_cols = ['severity', 'source_ip', 'destination_ip', 'destination_port',
-                    'protocol', 'description', 'anomaly_score']
+    display_cols = [
+        "severity",
+        "source_ip",
+        "destination_ip",
+        "destination_port",
+        "protocol",
+        "description",
+        "anomaly_score",
+    ]
     available_cols = [c for c in display_cols if c in df_alerts.columns]
 
     # Style function for severity colors
     def style_severity(val):
         colors = {
-            'RED': 'background-color: #FF6B6B; color: white; font-weight: bold; text-align: center;',
-            'ORANGE': 'background-color: #F5A623; color: black; font-weight: bold; text-align: center;',
-            'GREEN': 'background-color: #7DE2D1; color: black; font-weight: bold; text-align: center;',
+            "RED": "background-color: #FF6B6B; color: white; font-weight: bold; text-align: center;",
+            "ORANGE": "background-color: #F5A623; color: black; font-weight: bold; text-align: center;",
+            "GREEN": "background-color: #7DE2D1; color: black; font-weight: bold; text-align: center;",
         }
-        return colors.get(val, '')
+        return colors.get(val, "")
 
     # Apply styling to severity column
     styled_df = df_alerts[available_cols].style.applymap(
-        style_severity,
-        subset=['severity']
+        style_severity, subset=["severity"]
     )
 
     st.dataframe(
@@ -384,17 +403,17 @@ def render_alerts_table(alerts_data, severity_filter):
         column_config={
             "severity": st.column_config.TextColumn("Severity", width="small"),
             "anomaly_score": st.column_config.NumberColumn("Score", format="%.3f"),
-        }
+        },
     )
 
 
 def render_geolocation_map(geo_data):
     """Render attack map similar to Kibana."""
-    if not geo_data or 'geo_points' not in geo_data:
+    if not geo_data or "geo_points" not in geo_data:
         st.info("Loading geolocation data... (this may take a moment on first load)")
         return
 
-    points = geo_data['geo_points']
+    points = geo_data["geo_points"]
     if not points:
         st.info("No geolocation points available")
         return
@@ -403,12 +422,12 @@ def render_geolocation_map(geo_data):
 
     fig = px.scatter_geo(
         df_geo,
-        lat='lat',
-        lon='lon',
-        hover_name='ip',
-        hover_data=['country', 'city', 'label'],
-        color='label',
-        color_discrete_map={'malicious': '#FF6B6B', 'benign': '#7DE2D1'},
+        lat="lat",
+        lon="lon",
+        hover_name="ip",
+        hover_data=["country", "city", "label"],
+        color="label",
+        color_discrete_map={"malicious": "#FF6B6B", "benign": "#7DE2D1"},
         projection="natural earth",
         size_max=15,
     )
@@ -416,17 +435,17 @@ def render_geolocation_map(geo_data):
     fig.update_layout(
         **create_plotly_layout("Attack Map - Dynamic", height=500),
         geo=dict(
-            bgcolor=COLORS['surface'],
-            lakecolor=COLORS['surface'],
-            landcolor='#2D2E36',
-            subunitcolor='#3D3E46',
-            countrycolor='#3D3E46',
+            bgcolor=COLORS["surface"],
+            lakecolor=COLORS["surface"],
+            landcolor="#2D2E36",
+            subunitcolor="#3D3E46",
+            countrycolor="#3D3E46",
             showocean=True,
-            oceancolor=COLORS['background'],
+            oceancolor=COLORS["background"],
             showlakes=True,
             showcountries=True,
             showsubunits=True,
-        )
+        ),
     )
 
     fig.update_traces(marker=dict(size=10, opacity=0.8))
@@ -435,28 +454,29 @@ def render_geolocation_map(geo_data):
 
 def render_country_chart(geo_data):
     """Render attacks by country histogram."""
-    if not geo_data or 'country_stats' not in geo_data:
+    if not geo_data or "country_stats" not in geo_data:
         return
 
-    country_stats = geo_data['country_stats']
+    country_stats = geo_data["country_stats"]
     if not country_stats:
         return
 
-    df_countries = pd.DataFrame([
-        {'country': k, 'count': v}
-        for k, v in list(country_stats.items())[:10]
-    ]).sort_values('count', ascending=True)
+    df_countries = pd.DataFrame(
+        [{"country": k, "count": v} for k, v in list(country_stats.items())[:10]]
+    ).sort_values("count", ascending=True)
 
-    fig = go.Figure(data=[
-        go.Bar(
-            x=df_countries['count'],
-            y=df_countries['country'],
-            orientation='h',
-            marker_color=CHART_COLORS[0],
-            text=df_countries['count'],
-            textposition='auto',
-        )
-    ])
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                x=df_countries["count"],
+                y=df_countries["country"],
+                orientation="h",
+                marker_color=CHART_COLORS[0],
+                text=df_countries["count"],
+                textposition="auto",
+            )
+        ]
+    )
 
     fig.update_layout(**create_plotly_layout("Attacks by Country", height=400))
     st.plotly_chart(fig, use_container_width=True)
@@ -476,8 +496,8 @@ def render_temporal_charts(temporal_data):
     st.markdown("#### Today's Live Activity")
 
     # Generate simulated attacks for today based on REAL data distribution
-    if 'by_hour' in temporal_data and temporal_data['by_hour']:
-        historical_counts = temporal_data['by_hour']
+    if "by_hour" in temporal_data and temporal_data["by_hour"]:
+        historical_counts = temporal_data["by_hour"]
 
         # Calculate total from real data and scale to a realistic daily amount
         # The dataset has aggregated data over many days, so we normalize to ~1000-2000 events/day
@@ -511,28 +531,34 @@ def render_temporal_charts(temporal_data):
 
                     # Color based on recency - current slot is fuchsia
                     if slot_index == current_slot_index:
-                        slot_colors.append('#FF00FF')  # Fuchsia for NOW
+                        slot_colors.append("#FF00FF")  # Fuchsia for NOW
                     elif slot_index >= current_slot_index - 4:
-                        slot_colors.append('#FF6B6B')  # Red for last hour
+                        slot_colors.append("#FF6B6B")  # Red for last hour
                     else:
                         slot_colors.append(CHART_COLORS[1])  # Default color
                 else:
                     # Future time - no data yet
                     attack_counts.append(0)
-                    slot_colors.append('#2D2E36')  # Dark for future
+                    slot_colors.append("#2D2E36")  # Dark for future
 
-        fig = go.Figure(data=[
-            go.Bar(
-                x=time_slots,
-                y=attack_counts,
-                marker_color=slot_colors,
-                hovertemplate='%{x}<br>Events: %{y}<extra></extra>'
-            )
-        ])
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    x=time_slots,
+                    y=attack_counts,
+                    marker_color=slot_colors,
+                    hovertemplate="%{x}<br>Events: %{y}<extra></extra>",
+                )
+            ]
+        )
 
         current_slot_label = f"{current_hour:02d}:{(current_minute // 15) * 15:02d}"
 
-        fig.update_layout(**create_plotly_layout(f"Detected Events Today ({now.strftime('%Y-%m-%d')})", height=300))
+        fig.update_layout(
+            **create_plotly_layout(
+                f"Detected Events Today ({now.strftime('%Y-%m-%d')})", height=300
+            )
+        )
         fig.update_xaxes(
             title_text="Time",
             tickangle=45,
@@ -541,24 +567,30 @@ def render_temporal_charts(temporal_data):
         fig.update_yaxes(title_text="Events")
 
         # Add annotation for current time - point to actual current slot value
-        current_slot_value = attack_counts[current_slot_index] if current_slot_index < len(attack_counts) else 10
+        current_slot_value = (
+            attack_counts[current_slot_index]
+            if current_slot_index < len(attack_counts)
+            else 10
+        )
         fig.add_annotation(
             x=current_slot_label,
             y=current_slot_value + 3,
             text="NOW",
             showarrow=True,
             arrowhead=2,
-            arrowcolor='#FF00FF',
-            font=dict(color='#FF00FF', size=12),
+            arrowcolor="#FF00FF",
+            font=dict(color="#FF00FF", size=12),
             arrowsize=1,
         )
 
         st.plotly_chart(fig, use_container_width=True)
 
         # Real-time stats - only count up to current slot
-        total_today = sum(attack_counts[:current_slot_index + 1])
+        total_today = sum(attack_counts[: current_slot_index + 1])
         last_hour_start = max(0, current_slot_index - 3)
-        current_hour_attacks = sum(attack_counts[last_hour_start:current_slot_index + 1])
+        current_hour_attacks = sum(
+            attack_counts[last_hour_start : current_slot_index + 1]
+        )
 
         col_stats1, col_stats2, col_stats3 = st.columns(3)
         with col_stats1:
@@ -574,22 +606,26 @@ def render_temporal_charts(temporal_data):
     st.markdown("#### Historical Patterns")
 
     # Only show Historical Distribution by Hour (removed by Day)
-    if 'by_hour' in temporal_data and temporal_data['by_hour']:
+    if "by_hour" in temporal_data and temporal_data["by_hour"]:
         hours = list(range(24))
-        counts = [temporal_data['by_hour'].get(str(h), 0) for h in hours]
+        counts = [temporal_data["by_hour"].get(str(h), 0) for h in hours]
 
         # Highlight current hour
-        colors = [('#FF00FF' if h == current_hour else CHART_COLORS[1]) for h in hours]
+        colors = [("#FF00FF" if h == current_hour else CHART_COLORS[1]) for h in hours]
 
-        fig = go.Figure(data=[
-            go.Bar(
-                x=hours,
-                y=counts,
-                marker_color=colors,
-            )
-        ])
+        fig = go.Figure(
+            data=[
+                go.Bar(
+                    x=hours,
+                    y=counts,
+                    marker_color=colors,
+                )
+            ]
+        )
 
-        fig.update_layout(**create_plotly_layout("Historical Distribution by Hour", height=350))
+        fig.update_layout(
+            **create_plotly_layout("Historical Distribution by Hour", height=350)
+        )
         fig.update_xaxes(title_text="Hour of Day", dtick=2)
         fig.update_yaxes(title_text="Events")
         st.plotly_chart(fig, use_container_width=True)
@@ -604,13 +640,17 @@ def render_traffic_metrics(traffic_data, summary_data):
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.metric("Avg Bytes/sec", f"{traffic_data.get('avg_bytes_per_second', 0):,.0f}")
+        st.metric(
+            "Avg Bytes/sec", f"{traffic_data.get('avg_bytes_per_second', 0):,.0f}"
+        )
     with col2:
-        st.metric("Avg Packets/sec", f"{traffic_data.get('avg_packets_per_second', 0):,.2f}")
+        st.metric(
+            "Avg Packets/sec", f"{traffic_data.get('avg_packets_per_second', 0):,.2f}"
+        )
     with col3:
         st.metric("Avg Duration", f"{traffic_data.get('avg_duration', 0):,.2f}s")
     with col4:
-        internal_pct = traffic_data.get('internal_traffic_ratio', 0) * 100
+        internal_pct = traffic_data.get("internal_traffic_ratio", 0) * 100
         st.metric("Internal Traffic", f"{internal_pct:.1f}%")
 
     st.markdown("---")
@@ -619,30 +659,34 @@ def render_traffic_metrics(traffic_data, summary_data):
     col1, col2 = st.columns(2)
 
     with col1:
-        if summary_data and 'protocols' in summary_data:
-            protocols = summary_data['protocols']
+        if summary_data and "protocols" in summary_data:
+            protocols = summary_data["protocols"]
             if protocols:
                 # Calculate total for percentage threshold
                 total = sum(protocols.values())
 
                 # Filter to only show protocols >= 1%
-                filtered_protocols = {k: v for k, v in protocols.items() if v/total >= 0.01}
+                filtered_protocols = {
+                    k: v for k, v in protocols.items() if v / total >= 0.01
+                }
 
                 # Create labels with percentage for outside display
                 labels = list(filtered_protocols.keys())
                 values = list(filtered_protocols.values())
 
-                fig = go.Figure(data=[
-                    go.Pie(
-                        labels=labels,
-                        values=values,
-                        hole=0.4,
-                        marker_colors=CHART_COLORS[:len(labels)],
-                        textinfo='label+percent',
-                        textposition='outside',
-                        showlegend=True,
-                    )
-                ])
+                fig = go.Figure(
+                    data=[
+                        go.Pie(
+                            labels=labels,
+                            values=values,
+                            hole=0.4,
+                            marker_colors=CHART_COLORS[: len(labels)],
+                            textinfo="label+percent",
+                            textposition="outside",
+                            showlegend=True,
+                        )
+                    ]
+                )
 
                 fig.update_layout(
                     **create_plotly_layout("Traffic by Protocol", height=400),
@@ -660,48 +704,55 @@ def render_traffic_metrics(traffic_data, summary_data):
                 st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        if summary_data and 'top_destination_ports' in summary_data:
-            ports = summary_data['top_destination_ports']
+        if summary_data and "top_destination_ports" in summary_data:
+            ports = summary_data["top_destination_ports"]
             if ports:
                 port_items = list(ports.items())[:10]
-                df_ports = pd.DataFrame(port_items, columns=['port', 'count'])
-                df_ports = df_ports.sort_values('count', ascending=True)
+                df_ports = pd.DataFrame(port_items, columns=["port", "count"])
+                df_ports = df_ports.sort_values("count", ascending=True)
 
-                fig = go.Figure(data=[
-                    go.Bar(
-                        x=df_ports['count'],
-                        y=df_ports['port'].astype(str),
-                        orientation='h',
-                        marker_color=CHART_COLORS[3],
-                    )
-                ])
+                fig = go.Figure(
+                    data=[
+                        go.Bar(
+                            x=df_ports["count"],
+                            y=df_ports["port"].astype(str),
+                            orientation="h",
+                            marker_color=CHART_COLORS[3],
+                        )
+                    ]
+                )
 
-                fig.update_layout(**create_plotly_layout("Top Destination Ports", height=350))
+                fig.update_layout(
+                    **create_plotly_layout("Top Destination Ports", height=350)
+                )
                 st.plotly_chart(fig, use_container_width=True)
 
 
 def render_anomaly_score_distribution(alerts_data):
     """Render anomaly score distribution histogram."""
-    if not alerts_data or 'alerts' not in alerts_data:
+    if not alerts_data or "alerts" not in alerts_data:
         return
 
-    alerts = alerts_data['alerts']
+    alerts = alerts_data["alerts"]
     if not alerts:
         return
 
-    df_scores = pd.DataFrame([
-        {'score': a['anomaly_score'], 'severity': a['severity']}
-        for a in alerts if 'anomaly_score' in a
-    ])
+    df_scores = pd.DataFrame(
+        [
+            {"score": a["anomaly_score"], "severity": a["severity"]}
+            for a in alerts
+            if "anomaly_score" in a
+        ]
+    )
 
     fig = px.histogram(
         df_scores,
-        x='score',
-        color='severity',
-        color_discrete_map={'RED': '#FF6B6B', 'ORANGE': '#F5A623', 'GREEN': '#7DE2D1'},
+        x="score",
+        color="severity",
+        color_discrete_map={"RED": "#FF6B6B", "ORANGE": "#F5A623", "GREEN": "#7DE2D1"},
         nbins=30,
-        barmode='overlay',
-        opacity=0.7
+        barmode="overlay",
+        opacity=0.7,
     )
 
     fig.update_layout(**create_plotly_layout("Anomaly Score Distribution", height=350))
@@ -713,7 +764,8 @@ def render_anomaly_score_distribution(alerts_data):
 def show_loading_screen():
     """Display a fuchsia loading screen with progress."""
     # CSS for the loading animation
-    st.markdown("""
+    st.markdown(
+        """
     <style>
         .loading-container {
             display: flex;
@@ -747,7 +799,9 @@ def show_loading_screen():
             margin-top: 10px;
         }
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 def main():
@@ -767,7 +821,8 @@ def main():
 
     # Fetch all data with progress
     with loading_placeholder.container():
-        st.markdown("""
+        st.markdown(
+            """
         <div class="loading-container">
             <div class="loading-spinner"></div>
             <div class="loading-text">Loading Dashboard Data...</div>
@@ -799,34 +854,54 @@ def main():
                 margin-top: 20px;
             }
         </style>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
         # Progress bar in fuchsia
         progress_bar = st.progress(0)
         progress_text = st.empty()
 
         # Fetch data with progress updates
-        progress_text.markdown("<p style='text-align: center; color: #FF00FF; font-size: 18px;'>0%</p>", unsafe_allow_html=True)
+        progress_text.markdown(
+            "<p style='text-align: center; color: #FF00FF; font-size: 18px;'>0%</p>",
+            unsafe_allow_html=True,
+        )
 
         alerts_data = fetch_api("/alerts/recent", {"window_size": window_size})
         progress_bar.progress(20)
-        progress_text.markdown("<p style='text-align: center; color: #FF00FF; font-size: 18px;'>20%</p>", unsafe_allow_html=True)
+        progress_text.markdown(
+            "<p style='text-align: center; color: #FF00FF; font-size: 18px;'>20%</p>",
+            unsafe_allow_html=True,
+        )
 
         geo_data = fetch_api("/stats/geolocation")
         progress_bar.progress(50)
-        progress_text.markdown("<p style='text-align: center; color: #FF00FF; font-size: 18px;'>50%</p>", unsafe_allow_html=True)
+        progress_text.markdown(
+            "<p style='text-align: center; color: #FF00FF; font-size: 18px;'>50%</p>",
+            unsafe_allow_html=True,
+        )
 
         temporal_data = fetch_api("/stats/temporal")
         progress_bar.progress(70)
-        progress_text.markdown("<p style='text-align: center; color: #FF00FF; font-size: 18px;'>70%</p>", unsafe_allow_html=True)
+        progress_text.markdown(
+            "<p style='text-align: center; color: #FF00FF; font-size: 18px;'>70%</p>",
+            unsafe_allow_html=True,
+        )
 
         traffic_data = fetch_api("/stats/traffic")
         progress_bar.progress(85)
-        progress_text.markdown("<p style='text-align: center; color: #FF00FF; font-size: 18px;'>85%</p>", unsafe_allow_html=True)
+        progress_text.markdown(
+            "<p style='text-align: center; color: #FF00FF; font-size: 18px;'>85%</p>",
+            unsafe_allow_html=True,
+        )
 
         summary_data = fetch_api("/stats/summary")
         progress_bar.progress(100)
-        progress_text.markdown("<p style='text-align: center; color: #FF00FF; font-size: 18px;'>100%</p>", unsafe_allow_html=True)
+        progress_text.markdown(
+            "<p style='text-align: center; color: #FF00FF; font-size: 18px;'>100%</p>",
+            unsafe_allow_html=True,
+        )
 
         time.sleep(0.3)  # Brief pause to show 100%
 
@@ -839,12 +914,9 @@ def main():
     st.markdown("---")
 
     # Main content tabs
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "Live Alerts",
-        "Attack Map",
-        "Traffic Analysis",
-        "Temporal Patterns"
-    ])
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["Live Alerts", "Attack Map", "Traffic Analysis", "Temporal Patterns"]
+    )
 
     with tab1:
         col1, col2 = st.columns([2, 1])
@@ -869,7 +941,7 @@ def main():
 
         if temporal_data:
             st.markdown("---")
-            bh_ratio = temporal_data.get('business_hours_ratio', 0) * 100
+            bh_ratio = temporal_data.get("business_hours_ratio", 0) * 100
             st.metric("Business Hours Traffic", f"{bh_ratio:.1f}%")
 
     # Auto-refresh
@@ -884,7 +956,7 @@ def main():
         f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | "
         f"Powered by One-Class SVM Anomaly Detection"
         f"</div>",
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
 

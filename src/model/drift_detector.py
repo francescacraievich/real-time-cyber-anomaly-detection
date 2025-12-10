@@ -5,9 +5,12 @@ from collections import deque
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
     from src.monitoring.metrics import (
-        anomaly_rate_gauge, drift_detected_total, drift_detected_flag,
-        samples_since_drift
+        anomaly_rate_gauge,
+        drift_detected_total,
+        drift_detected_flag,
+        samples_since_drift,
     )
+
     METRICS_ENABLED = True
 except ImportError:
     METRICS_ENABLED = False
@@ -21,10 +24,14 @@ class DriftDetector:
         self.drift_detected = False
         self.processed_samples = 0
         self.change_threshold = change_threshold  # 8% change triggers drift
-        self.last_reported_rate = None  # Track last rate when drift was reported/checked
+        self.last_reported_rate = (
+            None  # Track last rate when drift was reported/checked
+        )
         self.check_interval = 50  # Check for drift every N samples
         self.last_drift_sample = None  # Track when last drift occurred
-        self.min_unstable_duration = 100  # Stay UNSTABLE for at least N samples (~4 sec)
+        self.min_unstable_duration = (
+            100  # Stay UNSTABLE for at least N samples (~4 sec)
+        )
 
     def update(self, is_anomaly):
         # Convert boolean to integer (1 for Anomaly, 0 for Benign)
@@ -48,10 +55,15 @@ class DriftDetector:
         # Method 1: ADWIN detection
         if self.adwin.drift_detected:
             drift_occurred = True
-            print(f"[DriftDetector] ADWIN detected drift at sample {self.processed_samples}")
+            print(
+                f"[DriftDetector] ADWIN detected drift at sample {self.processed_samples}"
+            )
 
         # Method 2: Simple threshold-based detection (check every N samples after window is full)
-        if len(self.history) >= self.history.maxlen and self.processed_samples % self.check_interval == 0:
+        if (
+            len(self.history) >= self.history.maxlen
+            and self.processed_samples % self.check_interval == 0
+        ):
             current_rate = self.get_current_anomaly_rate()
 
             # Initialize last_reported_rate on first check
@@ -62,7 +74,9 @@ class DriftDetector:
                 rate_change = abs(current_rate - self.last_reported_rate)
                 if rate_change >= self.change_threshold:
                     drift_occurred = True
-                    print(f"[DriftDetector] Rate change detected: {self.last_reported_rate:.2%} -> {current_rate:.2%} (delta: {rate_change:.2%})")
+                    print(
+                        f"[DriftDetector] Rate change detected: {self.last_reported_rate:.2%} -> {current_rate:.2%} (delta: {rate_change:.2%})"
+                    )
                     self.last_reported_rate = current_rate
 
         if drift_occurred:
@@ -74,7 +88,10 @@ class DriftDetector:
             return True
 
         # If we just did a check (every check_interval) and no drift was found
-        if len(self.history) >= self.history.maxlen and self.processed_samples % self.check_interval == 0:
+        if (
+            len(self.history) >= self.history.maxlen
+            and self.processed_samples % self.check_interval == 0
+        ):
             # Only go back to stable if enough time has passed since last drift
             if self.last_drift_sample is None:
                 # No drift ever detected, stay stable
@@ -91,13 +108,13 @@ class DriftDetector:
                 # else: stay UNSTABLE until min_unstable_duration passes
 
         return False
-    
+
     def get_current_anomaly_rate(self):
         # Percentage of anomalies in the current window
         if not self.history:
             return 0.0
         return sum(self.history) / len(self.history)
-    
+
     def reset(self):
         # Reset the detector after retraining
         self.adwin = drift.ADWIN(delta=self.adwin.delta)
