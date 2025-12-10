@@ -46,9 +46,10 @@ class NormalTrafficDataFrameInitializer:
         return result
 
     def preprocess_json_replace_invalid_numbers(self, output_path):
-        with open(self.benign_traffic_json_path, "rb", encoding="utf-8") as f_in, open(
-            output_path, "w", encoding="utf-8"
-        ) as f_out:
+        with (
+            open(self.benign_traffic_json_path, "rb", encoding="utf-8") as f_in,
+            open(output_path, "w", encoding="utf-8") as f_out,
+        ):
             for line in f_in:
                 # replace NaN, Infinity, -Infinity with null
                 line_fixed = re.sub(r"\bNaN\b|\bInfinity\b|\b-Infinity\b", "null", line)
