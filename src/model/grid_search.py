@@ -1,5 +1,3 @@
-from itertools import product
-
 import numpy as np
 from sklearn.metrics import f1_score
 from sklearn.svm import OneClassSVM
@@ -207,9 +205,7 @@ class GridSearchOptimizer:
             if self.model.load_model():
                 print("[System] Successfully loaded existing model.")
                 if self.model.best_params:
-                    print(
-                        f"[System] Loaded model was trained with: {self.model.best_params}"
-                    )
+                    print(f"[System] Loaded params: {self.model.best_params}")
                 return True
             else:
                 print("[System] Failed to load existing model. Training new one...")

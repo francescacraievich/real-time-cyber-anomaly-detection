@@ -5,9 +5,8 @@ Falls back to ipwho.is API if database not available.
 
 import ipaddress
 import json
-import os
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import requests
 

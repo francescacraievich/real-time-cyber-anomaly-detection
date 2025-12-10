@@ -94,8 +94,8 @@ class TestSuricataDataFrameInitializer:
                     "src_port": 36113,
                     "dest_port": 53,
                 },
-                "payload": "a1yBgAABAAUAAAAAB2xvZ2dpbmcKZ29vZ2xlYXBpcwNjb20AAAEAAcAMAAUAAQAAASgADgtsb2dnaW5nLWFsdsAUwDQAAQABAAABKAAE2O8irsA0AAEAAQAAASgABNjvJq7ANAABAAEAAAEoAATY7yCuwDQAAQABAAABKAAE2O8krg==",
-                "payload_printable": 'k\\...........logging\ngoogleapis.com..............(...logging-alv...4.......(...."..4.......(....&..4.......(.... ..4.......(.....$.',
+                "payload": "a1yBgAABAAUAAAAAB2xvZ2dpbmcKZ29vZ2xlYXBpcw==",
+                "payload_printable": "k\\...logging.googleapis...",
                 "stream": 0,
             },
         ]

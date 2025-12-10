@@ -1,4 +1,3 @@
-import os
 import sys
 from pathlib import Path
 
@@ -24,9 +23,7 @@ def load_datasets():
     try:
         df_benign = pd.read_csv(data_path / "normal_traffic_formatted.csv")
         df_combined = pd.read_csv(data_path / "combined_shuffled_dataset.csv")
-        print(
-            f" -> Loaded {len(df_benign)} benign logs and {len(df_combined)} combined logs."
-        )
+        print(f" -> Loaded {len(df_benign)} benign, {len(df_combined)} combined")
 
         # Ensure benign label column exists
         if "label" not in df_benign.columns:

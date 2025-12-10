@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-import pytest
 
 from src.feature_engineering.aggregation_functions import (
     calculate_total_anomalous_events,
@@ -129,7 +127,7 @@ class TestAggregateStatusMetrics:
         assert "label" in result.columns
         assert "source_ip" in result.columns
 
-        # First 3 events are in the 10:00-11:00 window and 2 unique ips of malicious traffic
+        # First 3 events in 10:00-11:00 window, 2 unique malicious IPs
         assert result["unique_malicious_ips"].iloc[0] == 1
         assert result["unique_malicious_ips"].iloc[1] == 1
         assert result["unique_malicious_ips"].iloc[2] == 1

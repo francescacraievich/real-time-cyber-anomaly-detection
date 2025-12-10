@@ -2,7 +2,6 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
 from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score
 
 # Add project root to path
@@ -50,7 +49,7 @@ class SimulationEvaluator:
         # has_labels = 'label' in stream_df.columns
         # true_labels = stream_df['label'] if has_labels else None
 
-        # stream_input = stream_df.drop(columns=self.model.features_to_drop, errors='ignore')
+        # stream_input = stream_df.drop(columns=model.features_to_drop)
 
         COLOR_RED = "\033[91m"
         COLOR_ORANGE = "\033[93m"
@@ -94,10 +93,8 @@ class SimulationEvaluator:
                             drift_flag = True
 
                     if drift_flag:
-                        current_rate = self.drift_detector.get_current_anomaly_rate()
-                        print(
-                            f" CONCEPT DRIFT DETECTED! Anomaly Rate shifted to {current_rate:.1%}"
-                        )
+                        rate = self.drift_detector.get_current_anomaly_rate()
+                        print(f" DRIFT DETECTED! Rate: {rate:.1%}")
                         if self.model.retrain():
                             self.drift_detector.reset()
                             print(" Resuming stream with updated model...")
@@ -124,9 +121,8 @@ class SimulationEvaluator:
                         else:  # severity == "GREEN"
                             color = COLOR_GREEN
 
-                        print(
-                            f"{color}[{severity}] {msg} | Dist: {score:.3f} {COLOR_RESET}"
-                        )
+                        out = f"{color}[{severity}] {msg} | {score:.3f}{COLOR_RESET}"
+                        print(out)
                         time.sleep(2)
 
                 current_stream = stream_df.sample(frac=1).reset_index(drop=True)
@@ -136,9 +132,7 @@ class SimulationEvaluator:
             print("\n\n[!] Simulation interrupted by user.")
 
         print(f"\n[Simulation stopped - Processed {total_processed} samples]")
-        print(
-            f"[Detection Summary: {anomaly_count} anomalies detected out of {total_processed} samples]"
-        )
+        print(f"[Detection Summary: {anomaly_count}/{total_processed} anomalies]")
 
     def run_detailed_simulation(self, stream_df, chunk_size=50):
         """Run detailed simulation with performance tracking"""
@@ -287,12 +281,12 @@ class SimulationEvaluator:
         if metrics["attack_type_performance"]:
             print(f"\n PERFORMANCE BY ATTACK TYPE:")
             for attack_type, stats in metrics["attack_type_performance"].items():
-                detection_rate = stats["detected"] / stats["total"]
-                print(
-                    f" • {attack_type}: {stats['detected']}/{stats['total']} ({detection_rate:.3f})"
-                )
+                det_rate = stats["detected"] / stats["total"]
+                det = stats["detected"]
+                tot = stats["total"]
+                print(f" • {attack_type}: {det}/{tot} ({det_rate:.3f})")
 
-            ############      EVALUATION METHODS      ###########
+            # EVALUATION METHODS
 
     def evaluate_model_performance(self, test_df):
         """Comprehensive model performance evaluation"""
@@ -384,9 +378,7 @@ class SimulationEvaluator:
         print(f" • True Positives (Detected Attacks):   {metrics['tp']:4d}")
 
         print(f"\n KEY RATES:")
-        print(
-            f" • Detection Rate:    {metrics['detection_rate']:.3f} ({metrics['detection_rate']*100:.1f}%)"
-        )
-        print(
-            f" • False Alarm Rate:  {metrics['false_alarm_rate']:.3f} ({metrics['false_alarm_rate']*100:.1f}%)"
-        )
+        dr = metrics["detection_rate"]
+        far = metrics["false_alarm_rate"]
+        print(f" • Detection Rate:    {dr:.3f} ({dr*100:.1f}%)")
+        print(f" • False Alarm Rate:  {far:.3f} ({far*100:.1f}%)")

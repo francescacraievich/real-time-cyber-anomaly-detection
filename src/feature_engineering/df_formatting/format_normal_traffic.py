@@ -29,8 +29,8 @@ class DataFrameFormatterNormalTraffic:
                     5
                 ],  # transport_protocol
                 "appName": self.list_of_features_to_rename[6],  # application_protocol
-                # duration is already created                                    # duration [7]
-                "totalSourceBytes": self.list_of_features_to_rename[8],  # bytes_sent
+                # duration is already created  # duration [7]
+                "totalSourceBytes": self.list_of_features_to_rename[8],
                 "totalDestinationBytes": self.list_of_features_to_rename[
                     9
                 ],  # bytes_received
@@ -146,6 +146,8 @@ class DataFrameFormatterNormalTraffic:
         ].astype(
             int
         )  # pkts_received
-        # df[self.list_of_features_to_rename[13]] = df[self.list_of_features_to_rename[13]].astype(int) # label
+        # df[self.list_of_features_to_rename[13]] = df[
+        #     self.list_of_features_to_rename[13]
+        # ].astype(int)  # label
 
         return df

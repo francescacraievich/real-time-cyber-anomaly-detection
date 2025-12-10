@@ -1,6 +1,3 @@
-# from feature_engineering.df_initializing.handler_init_dfs import DataFrameInitializer
-# from feature_engineering.df_formatting.handler_df_formatter import DataFrameFormatter
-import os
 import pickle
 import sys
 import time
@@ -20,7 +17,6 @@ try:
     from src.monitoring.metrics import (
         anomalies_detected_total,
         decision_score_histogram,
-        model_info,
         model_retrain_total,
         prediction_latency,
         predictions_total,
@@ -209,9 +205,9 @@ class OneClassSVMModel:
             # Update Prometheus metric
             if METRICS_ENABLED:
                 threshold_boundary_metric.set(self.threshold_boundary)
-            print(
-                f" -> Features configured: {len(self.num_features)} numeric, {len(self.cat_features)} categorical"
-            )
+            num_cnt = len(self.num_features)
+            cat_cnt = len(self.cat_features)
+            print(f" -> Features: {num_cnt} numeric, {cat_cnt} categorical")
 
             return True
 

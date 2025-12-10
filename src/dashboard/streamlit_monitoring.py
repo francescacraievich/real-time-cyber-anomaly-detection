@@ -328,10 +328,15 @@ def render_service_status():
         status_text = "Running" if flask_status else "Stopped"
         st.markdown(
             f"""
-        <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
-            <div style="color: {COLORS['muted']}; font-size: 12px;">Flask API</div>
-            <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
-            <div style="color: {COLORS['muted']}; font-size: 11px;">Port {FLASK_PORT}</div>
+        <div style="background-color: {COLORS['surface']}; padding: 15px; """
+            f"""border-radius: 8px; text-align: center; """
+            f"""border-left: 4px solid {status_color};">
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 12px;">Flask API</div>
+            <div style="color: {status_color}; font-size: 18px; """
+            f"""font-weight: bold;">{status_text}</div>
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 11px;">Port {FLASK_PORT}</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -343,10 +348,15 @@ def render_service_status():
         status_text = "Running" if prometheus_status else "Stopped"
         st.markdown(
             f"""
-        <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
-            <div style="color: {COLORS['muted']}; font-size: 12px;">Prometheus</div>
-            <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
-            <div style="color: {COLORS['muted']}; font-size: 11px;">Port {PROMETHEUS_PORT}</div>
+        <div style="background-color: {COLORS['surface']}; padding: 15px; """
+            f"""border-radius: 8px; text-align: center; """
+            f"""border-left: 4px solid {status_color};">
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 12px;">Prometheus</div>
+            <div style="color: {status_color}; font-size: 18px; """
+            f"""font-weight: bold;">{status_text}</div>
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 11px;">Port {PROMETHEUS_PORT}</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -358,10 +368,15 @@ def render_service_status():
         status_text = "Running" if grafana_status else "Stopped"
         st.markdown(
             f"""
-        <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
-            <div style="color: {COLORS['muted']}; font-size: 12px;">Grafana</div>
-            <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
-            <div style="color: {COLORS['muted']}; font-size: 11px;">Port {GRAFANA_PORT}</div>
+        <div style="background-color: {COLORS['surface']}; padding: 15px; """
+            f"""border-radius: 8px; text-align: center; """
+            f"""border-left: 4px solid {status_color};">
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 12px;">Grafana</div>
+            <div style="color: {status_color}; font-size: 18px; """
+            f"""font-weight: bold;">{status_text}</div>
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 11px;">Port {GRAFANA_PORT}</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -376,10 +391,15 @@ def render_service_status():
         status_text = "Active" if pred_status else "Inactive"
         st.markdown(
             f"""
-        <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
-            <div style="color: {COLORS['muted']}; font-size: 12px;">Prediction Worker</div>
-            <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
-            <div style="color: {COLORS['muted']}; font-size: 11px;">{int(samples):,} samples</div>
+        <div style="background-color: {COLORS['surface']}; padding: 15px; """
+            f"""border-radius: 8px; text-align: center; """
+            f"""border-left: 4px solid {status_color};">
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 12px;">Prediction Worker</div>
+            <div style="color: {status_color}; font-size: 18px; """
+            f"""font-weight: bold;">{status_text}</div>
+            <div style="color: {COLORS['muted']}; font-size: 11px;">"""
+            f"""{int(samples):,} samples</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -394,10 +414,15 @@ def render_service_status():
         status_text = "All Systems Go" if all_running else "Partial"
         st.markdown(
             f"""
-        <div style="background-color: {COLORS['surface']}; padding: 15px; border-radius: 8px; text-align: center; border-left: 4px solid {status_color};">
-            <div style="color: {COLORS['muted']}; font-size: 12px;">Overall Status</div>
-            <div style="color: {status_color}; font-size: 18px; font-weight: bold;">{status_text}</div>
-            <div style="color: {COLORS['muted']}; font-size: 11px;">&nbsp;</div>
+        <div style="background-color: {COLORS['surface']}; padding: 15px; """
+            f"""border-radius: 8px; text-align: center; """
+            f"""border-left: 4px solid {status_color};">
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 12px;">Overall Status</div>
+            <div style="color: {status_color}; font-size: 18px; """
+            f"""font-weight: bold;">{status_text}</div>
+            <div style="color: {COLORS['muted']}; """
+            f"""font-size: 11px;">&nbsp;</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -453,9 +478,12 @@ def render_drift_status(metrics):
         status_text = "DRIFT DETECTED!" if drift_detected else "STABLE"
         st.markdown(
             f"""
-        <div style="background-color: {status_color}; padding: 30px; border-radius: 8px; text-align: center;">
-            <div style="color: white; font-size: 14px; opacity: 0.9;">Drift Status</div>
-            <div style="color: white; font-size: 28px; font-weight: bold;">{status_text}</div>
+        <div style="background-color: {status_color}; padding: 30px; """
+            f"""border-radius: 8px; text-align: center;">
+            <div style="color: white; font-size: 14px; """
+            f"""opacity: 0.9;">Drift Status</div>
+            <div style="color: white; font-size: 28px; """
+            f"""font-weight: bold;">{status_text}</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -497,7 +525,11 @@ def render_grafana_embed():
 
     if is_port_in_use(GRAFANA_PORT):
         # Grafana embed URL with anonymous access
-        dashboard_url = f"{GRAFANA_URL}/d/anomaly-detection-overview/cyber-anomaly-detection-ml-model-monitoring?orgId=1&refresh=10s&kiosk"
+        dashboard_url = (
+            f"{GRAFANA_URL}/d/anomaly-detection-overview/"
+            f"cyber-anomaly-detection-ml-model-monitoring?"
+            f"orgId=1&refresh=10s&kiosk"
+        )
 
         st.markdown(
             f"""

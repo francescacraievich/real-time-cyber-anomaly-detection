@@ -20,23 +20,19 @@ project_root = Path(__file__).resolve().parents[2]
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
-from src.dashboard.geolocation_service import get_geo_service
-from src.model.drift_detector import DriftDetector
-from src.model.oneCSVM_model import OneClassSVMModel
+from src.dashboard.geolocation_service import get_geo_service  # noqa: E402
+from src.model.drift_detector import DriftDetector  # noqa: E402
+from src.model.oneCSVM_model import OneClassSVMModel  # noqa: E402
 
 # Prometheus metrics (optional - graceful fallback if not available)
 try:
     from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
     from src.monitoring.metrics import (
-        anomaly_rate_gauge,
         api_request_duration,
         api_requests_total,
         dataset_size_gauge,
-        drift_detected_flag,
-        drift_detected_total,
         model_loaded_gauge,
-        samples_since_drift,
     )
 
     METRICS_ENABLED = True
@@ -222,7 +218,7 @@ def stream_logs():
 @app.route("/api/logs/reset", methods=["POST"])
 def reset_stream():
     """Reset the log stream and drift detector to the beginning."""
-    global current_index, drift_detector
+    global current_index
     current_index = 0
 
     # Also reset the drift detector for a fresh start

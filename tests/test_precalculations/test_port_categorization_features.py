@@ -3,7 +3,6 @@ import sys
 
 import numpy as np
 import pandas as pd
-import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
@@ -17,27 +16,27 @@ class TestIsPortCommon:
 
     def test_is_port_common_http(self):
         """Test HTTP port"""
-        assert is_port_common(80) == True
+        assert is_port_common(80) is True
 
     def test_is_port_common_https(self):
         """Test HTTPS port"""
-        assert is_port_common(443) == True
+        assert is_port_common(443) is True
 
     def test_is_port_common_ssh(self):
         """Test SSH port"""
-        assert is_port_common(22) == True
+        assert is_port_common(22) is True
 
     def test_is_port_common_all(self):
         """Test all common ports"""
         common_ports = [80, 443, 22, 21, 25, 53, 3389]
         for port in common_ports:
-            assert is_port_common(port) == True
+            assert is_port_common(port) is True
 
     def test_is_port_common_uncommon(self):
         """Test uncommon ports"""
-        assert is_port_common(8080) == False
-        assert is_port_common(12345) == False
-        assert is_port_common(50000) == False
+        assert is_port_common(8080) is False
+        assert is_port_common(12345) is False
+        assert is_port_common(50000) is False
 
 
 class TestCalculatePortCategorization:

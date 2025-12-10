@@ -1,9 +1,5 @@
-import os
-import sys
-
 import numpy as np
 import pandas as pd
-import pytest
 
 from src.feature_engineering.precalculations_functions import (
     calculate_ip_classification_features,
@@ -15,33 +11,33 @@ class TestIsPrivateIp:
 
     def test_is_private_ip_class_a(self):
         """Test Class A private IPs (10.0.0.0/8)"""
-        assert is_private_ip("10.0.0.1") == True
-        assert is_private_ip("10.255.255.255") == True
+        assert is_private_ip("10.0.0.1") is True
+        assert is_private_ip("10.255.255.255") is True
 
     def test_is_private_ip_class_b(self):
         """Test Class B private IPs (172.16.0.0/12)"""
-        assert is_private_ip("172.16.0.1") == True
-        assert is_private_ip("172.31.255.255") == True
-        assert is_private_ip("172.15.0.1") == False  # Outside range
-        assert is_private_ip("172.32.0.1") == False  # Outside range
+        assert is_private_ip("172.16.0.1") is True
+        assert is_private_ip("172.31.255.255") is True
+        assert is_private_ip("172.15.0.1") is False  # Outside range
+        assert is_private_ip("172.32.0.1") is False  # Outside range
 
     def test_is_private_ip_class_c(self):
         """Test Class C private IPs (192.168.0.0/16)"""
-        assert is_private_ip("192.168.0.1") == True
-        assert is_private_ip("192.168.255.255") == True
+        assert is_private_ip("192.168.0.1") is True
+        assert is_private_ip("192.168.255.255") is True
 
     def test_is_private_ip_public(self):
         """Test public IPs"""
-        assert is_private_ip("8.8.8.8") == False  # Google DNS
-        assert is_private_ip("1.1.1.1") == False  # Cloudflare DNS
-        assert is_private_ip("161.185.160.93") == False
+        assert is_private_ip("8.8.8.8") is False  # Google DNS
+        assert is_private_ip("1.1.1.1") is False  # Cloudflare DNS
+        assert is_private_ip("161.185.160.93") is False
 
     def test_is_private_ip_invalid(self):
         """Test invalid IPs"""
-        assert is_private_ip("invalid") == False
-        assert is_private_ip("") == False
-        assert is_private_ip(None) == False
-        assert is_private_ip(np.nan) == False
+        assert is_private_ip("invalid") is False
+        assert is_private_ip("") is False
+        assert is_private_ip(None) is False
+        assert is_private_ip(float("nan")) is False
 
 
 class TestCalculateIpClassificationFeatures:

@@ -4,9 +4,7 @@ This populates the Prometheus metrics exposed by Flask.
 Automatically stops when Flask API is no longer available.
 """
 
-import sys
 import time
-from pathlib import Path
 
 import requests
 
@@ -21,7 +19,7 @@ def check_flask_alive():
     try:
         response = requests.get(f"{API_BASE_URL}/api/health", timeout=3)
         return response.status_code == 200
-    except:
+    except Exception:
         return False
 
 

@@ -1,6 +1,5 @@
 from collections import deque
 
-import numpy as np
 from river import drift
 
 # Prometheus metrics (optional - graceful fallback if not available)
@@ -56,11 +55,8 @@ class DriftDetector:
         # Method 1: ADWIN detection
         if self.adwin.drift_detected:
             drift_occurred = True
-            print(
-                f"[DriftDetector] ADWIN detected drift at sample {self.processed_samples}"
-            )
 
-        # Method 2: Simple threshold-based detection (check every N samples after window is full)
+        # Method 2: Threshold-based detection (check every N samples)
         if (
             len(self.history) >= self.history.maxlen
             and self.processed_samples % self.check_interval == 0
@@ -71,13 +67,10 @@ class DriftDetector:
             if self.last_reported_rate is None:
                 self.last_reported_rate = current_rate
             else:
-                # Check if current rate differs significantly from last reported
+                # Check if current rate differs significantly
                 rate_change = abs(current_rate - self.last_reported_rate)
                 if rate_change >= self.change_threshold:
                     drift_occurred = True
-                    print(
-                        f"[DriftDetector] Rate change detected: {self.last_reported_rate:.2%} -> {current_rate:.2%} (delta: {rate_change:.2%})"
-                    )
                     self.last_reported_rate = current_rate
 
         if drift_occurred:

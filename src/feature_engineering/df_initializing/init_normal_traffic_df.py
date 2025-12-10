@@ -1,6 +1,4 @@
 import gzip
-import json
-import random
 import re
 
 import ijson

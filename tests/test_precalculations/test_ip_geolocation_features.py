@@ -1,8 +1,6 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import numpy as np
 import pandas as pd
-import pytest
 
 from src.feature_engineering.precalculations_functions.ip_geolocation_features import (
     calculate_dst_ip_geolocation_features,
@@ -20,7 +18,7 @@ class TestIPGeolocationFeatures:
         with patch("requests.get", side_effect=Exception("Network error")):
             result = calculate_ip_info("8.8.8.8")
 
-            assert result["success"] == False
+            assert result["success"] is False
 
     def test_calculate_src_ip_geolocation_features_basic(self):
         """Test basic source IP geolocation feature calculation"""
@@ -66,17 +64,18 @@ class TestIPGeolocationFeatures:
         def mock_calculate_ip_info(ip):
             return {"success": False}
 
-        with patch(
-            "src.feature_engineering.precalculations_functions.ip_geolocation_features.calculate_ip_info",
-            side_effect=mock_calculate_ip_info,
-        ):
+        patch_target = (
+            "src.feature_engineering.precalculations_functions"
+            ".ip_geolocation_features.calculate_ip_info"
+        )
+        with patch(patch_target, side_effect=mock_calculate_ip_info):
             result = calculate_src_ip_geolocation_features(df, rate_limit_delay=0)
 
             # All values should be 'unknown'
-            assert result["src_ip_type"].iloc[0] is "unknown"
-            assert result["src_country"].iloc[0] is "unknown"
-            assert result["src_latitude"].iloc[0] is "unknown"
-            assert result["src_isp"].iloc[0] is "unknown"
+            assert result["src_ip_type"].iloc[0] == "unknown"
+            assert result["src_country"].iloc[0] == "unknown"
+            assert result["src_latitude"].iloc[0] == "unknown"
+            assert result["src_isp"].iloc[0] == "unknown"
 
             # Check that original dataframe length is preserved
             assert len(result) == len(df)
@@ -131,10 +130,11 @@ class TestIPGeolocationFeatures:
         def mock_calculate_ip_info(ip):
             return {"success": False}
 
-        with patch(
-            "src.feature_engineering.precalculations_functions.ip_geolocation_features.calculate_ip_info",
-            side_effect=mock_calculate_ip_info,
-        ):
+        patch_target = (
+            "src.feature_engineering.precalculations_functions"
+            ".ip_geolocation_features.calculate_ip_info"
+        )
+        with patch(patch_target, side_effect=mock_calculate_ip_info):
             result = calculate_dst_ip_geolocation_features(df, rate_limit_delay=0)
 
             # All values should be 'unknown'

@@ -280,7 +280,7 @@ def render_sidebar():
         if st.button("Reset"):
             try:
                 requests.post(f"{API_BASE_URL}/logs/reset", timeout=5)
-            except:
+            except Exception:
                 pass
 
     return auto_refresh, refresh_interval, window_size, severity_filter
@@ -311,10 +311,13 @@ def render_alert_summary(alerts_data):
     with col1:
         st.markdown(
             f"""
-        <div style="background: linear-gradient(135deg, #FF6B6B 0%, #ee5a5a 100%);
+        <div style="background: linear-gradient(135deg, #FF6B6B 0%, """
+            f"""#ee5a5a 100%);
                     padding: 20px; border-radius: 8px; text-align: center;">
-            <div style="color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase;">Critical Alerts</div>
-            <div style="color: white; font-size: 36px; font-weight: bold;">{alerts_data.get('red_count', 0)}</div>
+            <div style="color: rgba(255,255,255,0.8); font-size: 12px; """
+            f"""text-transform: uppercase;">Critical Alerts</div>
+            <div style="color: white; font-size: 36px; font-weight: bold;">"""
+            f"""{alerts_data.get('red_count', 0)}</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -323,10 +326,13 @@ def render_alert_summary(alerts_data):
     with col2:
         st.markdown(
             f"""
-        <div style="background: linear-gradient(135deg, #F5A623 0%, #e09000 100%);
+        <div style="background: linear-gradient(135deg, #F5A623 0%, """
+            f"""#e09000 100%);
                     padding: 20px; border-radius: 8px; text-align: center;">
-            <div style="color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase;">Suspicious</div>
-            <div style="color: white; font-size: 36px; font-weight: bold;">{alerts_data.get('orange_count', 0)}</div>
+            <div style="color: rgba(255,255,255,0.8); font-size: 12px; """
+            f"""text-transform: uppercase;">Suspicious</div>
+            <div style="color: white; font-size: 36px; font-weight: bold;">"""
+            f"""{alerts_data.get('orange_count', 0)}</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -335,10 +341,13 @@ def render_alert_summary(alerts_data):
     with col3:
         st.markdown(
             f"""
-        <div style="background: linear-gradient(135deg, #7DE2D1 0%, #54B399 100%);
+        <div style="background: linear-gradient(135deg, #7DE2D1 0%, """
+            f"""#54B399 100%);
                     padding: 20px; border-radius: 8px; text-align: center;">
-            <div style="color: rgba(0,0,0,0.7); font-size: 12px; text-transform: uppercase;">Normal</div>
-            <div style="color: rgba(0,0,0,0.9); font-size: 36px; font-weight: bold;">{alerts_data.get('green_count', 0)}</div>
+            <div style="color: rgba(0,0,0,0.7); font-size: 12px; """
+            f"""text-transform: uppercase;">Normal</div>
+            <div style="color: rgba(0,0,0,0.9); font-size: 36px; """
+            f"""font-weight: bold;">{alerts_data.get('green_count', 0)}</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -347,10 +356,13 @@ def render_alert_summary(alerts_data):
     with col4:
         st.markdown(
             f"""
-        <div style="background: linear-gradient(135deg, #1BA9F5 0%, #0d8bd9 100%);
+        <div style="background: linear-gradient(135deg, #1BA9F5 0%, """
+            f"""#0d8bd9 100%);
                     padding: 20px; border-radius: 8px; text-align: center;">
-            <div style="color: rgba(255,255,255,0.8); font-size: 12px; text-transform: uppercase;">Total Analyzed</div>
-            <div style="color: white; font-size: 36px; font-weight: bold;">{alerts_data.get('total_count', 0)}</div>
+            <div style="color: rgba(255,255,255,0.8); font-size: 12px; """
+            f"""text-transform: uppercase;">Total Analyzed</div>
+            <div style="color: white; font-size: 36px; font-weight: bold;">"""
+            f"""{alerts_data.get('total_count', 0)}</div>
         </div>
         """,
             unsafe_allow_html=True,
@@ -386,9 +398,18 @@ def render_alerts_table(alerts_data, severity_filter):
     # Style function for severity colors
     def style_severity(val):
         colors = {
-            "RED": "background-color: #FF6B6B; color: white; font-weight: bold; text-align: center;",
-            "ORANGE": "background-color: #F5A623; color: black; font-weight: bold; text-align: center;",
-            "GREEN": "background-color: #7DE2D1; color: black; font-weight: bold; text-align: center;",
+            "RED": (
+                "background-color: #FF6B6B; color: white; "
+                "font-weight: bold; text-align: center;"
+            ),
+            "ORANGE": (
+                "background-color: #F5A623; color: black; "
+                "font-weight: bold; text-align: center;"
+            ),
+            "GREEN": (
+                "background-color: #7DE2D1; color: black; "
+                "font-weight: bold; text-align: center;"
+            ),
         }
         return colors.get(val, "")
 
@@ -500,8 +521,9 @@ def render_temporal_charts(temporal_data):
     if "by_hour" in temporal_data and temporal_data["by_hour"]:
         historical_counts = temporal_data["by_hour"]
 
-        # Calculate total from real data and scale to a realistic daily amount
-        # The dataset has aggregated data over many days, so we normalize to ~1000-2000 events/day
+        # Calculate total from real data and scale to a realistic daily
+        # amount. The dataset has aggregated data over many days, so we
+        # normalize to ~1000-2000 events/day
         total_historical = sum(int(v) for v in historical_counts.values())
         target_daily_events = 1200  # Realistic daily target
         scale_factor = target_daily_events / max(total_historical, 1)

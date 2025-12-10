@@ -3,7 +3,7 @@
 import socket
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import plotly.graph_objects as go
 import pytest
@@ -148,7 +148,7 @@ another_metric{label="value"} 100
         """Test stopping prediction workers when psutil is available."""
         # This test only runs if psutil is installed
         try:
-            import psutil
+            import psutil  # noqa: F401
 
             # If psutil is available, test is simple - function should not crash
             try:

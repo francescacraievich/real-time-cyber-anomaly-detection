@@ -24,7 +24,7 @@ class DataFrameFormatterSuricata:
                 "timestamp": self.list_of_features_to_rename[4],  # timestamp_start
                 "proto": self.list_of_features_to_rename[5],  # transport_protocol
                 "app_proto": self.list_of_features_to_rename[6],  # application_protocol
-                # duration, bytes_sent, bytes_received, pkts_sent, pkts_received are already created
+                # duration, bytes, pkts cols already created
                 "direction": self.list_of_features_to_rename[12],  # direction
             }
         )
@@ -125,8 +125,7 @@ class DataFrameFormatterSuricata:
                 pkts_toserver = flow_data.get("pkts_toserver", 0)
                 pkts_toclient = flow_data.get("pkts_toclient", 0)
 
-                # Assign based on direction or use a default mapping
-                # Typically: toserver = sent (from client), toclient = received (from server)
+                # toserver = sent (from client), toclient = received
                 df.at[idx, "bytes_sent"] = bytes_toserver
                 df.at[idx, "bytes_received"] = bytes_toclient
                 df.at[idx, "pkts_sent"] = pkts_toserver

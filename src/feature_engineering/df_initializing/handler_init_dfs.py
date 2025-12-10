@@ -17,7 +17,7 @@ from src.feature_engineering.df_initializing.init_suricata_df import (
 # Read logs and initialize as DataFrames
 class DataFrameInitializer:
     """
-    Initializes DataFrames from JSON log files for Cowrie, Dionaea, Suricata, and Tanner.
+    Initializes DataFrames from JSON log files.
     Attributes:
         suricata_json_path (str): Path to Suricata JSON log file.
         normal_traffic_json_path (str): Path to Normal Traffic JSON log file.

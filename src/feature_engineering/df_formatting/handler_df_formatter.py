@@ -112,7 +112,7 @@ class DataFrameFormatter:
         # Port categorization: well-known/registered/dynamic
         df = calculate_port_categorization(df)
 
-        if calculate_ip_geoloc == True:
+        if calculate_ip_geoloc:
             # Add source IP geolocation features
             df = calculate_src_ip_geolocation_features(df)
 
