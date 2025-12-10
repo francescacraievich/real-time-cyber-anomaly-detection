@@ -67,12 +67,11 @@ class TestFlaskAPIHelpers:
 
     def test_load_resources_initializes_globals(self):
         """Test that load_resources initializes global variables."""
-        with patch("src.dashboard.flask_api.OneClassSVMModel") as MockModel, patch(
-            "src.dashboard.flask_api.DriftDetector"
-        ) as MockDrift, patch(
-            "src.dashboard.flask_api.pd.read_csv"
-        ) as mock_read_csv, patch.object(
-            Path, "exists", return_value=True
+        with (
+            patch("src.dashboard.flask_api.OneClassSVMModel") as MockModel,
+            patch("src.dashboard.flask_api.DriftDetector") as MockDrift,
+            patch("src.dashboard.flask_api.pd.read_csv") as mock_read_csv,
+            patch.object(Path, "exists", return_value=True),
         ):
 
             # Mock model
