@@ -5,7 +5,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from src.feature_engineering.precalculations_functions import (
-    calculate_ip_classification_features, is_private_ip)
+    calculate_ip_classification_features,
+    is_private_ip,
+)
 
 
 class TestIsPrivateIp:

@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from src.feature_engineering.precalculations_functions import \
-    calculate_ratio_features
+from src.feature_engineering.precalculations_functions import calculate_ratio_features
 
 
 class TestCalculateRatioFeatures:

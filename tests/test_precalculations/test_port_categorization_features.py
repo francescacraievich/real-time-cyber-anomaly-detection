@@ -8,7 +8,9 @@ import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from src.feature_engineering.precalculations_functions import (
-    calculate_port_categorization, is_port_common)
+    calculate_port_categorization,
+    is_port_common,
+)
 
 
 class TestIsPortCommon:

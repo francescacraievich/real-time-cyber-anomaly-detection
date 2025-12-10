@@ -5,8 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from src.feature_engineering.df_initializing import \
-    NormalTrafficDataFrameInitializer
+from src.feature_engineering.df_initializing import NormalTrafficDataFrameInitializer
 
 
 class TestNormalTrafficDataFrameInitializer:
