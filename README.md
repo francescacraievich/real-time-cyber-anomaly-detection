@@ -6,7 +6,7 @@
 &nbsp;&nbsp;
 [![codecov](https://codecov.io/gh/francescacraievich/real-time-cyber-anomaly-detection/branch/main/graph/badge.svg)](https://codecov.io/gh/francescacraievich/real-time-cyber-anomaly-detection)
 &nbsp;&nbsp;
-[![Streamlit Dashboard](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dashboard-realtimeanomalydetection.streamlit.app/)
+[![Dashboard Alerts](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dashboard-alerts.streamlit.app/)
 &nbsp;&nbsp;
 [![ML Monitoring](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://monitoring-model.streamlit.app/)
 
