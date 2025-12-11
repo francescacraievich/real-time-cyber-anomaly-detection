@@ -2,8 +2,8 @@
 
 ## Real-Time Cyber Anomaly Detection System
 
-**Version:** 1.0
-**Date:** 2025-11-29
+**Version:** 1.1
+**Date:** 2025-12-11
 **Authors:** Francesca Craievich, Lucas Jakin, Francesco Rumiz
 
 ---
@@ -271,7 +271,7 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 ### 5.2 Component Descriptions
 
 #### 5.2.1 Data Initialization Module
-**Location**: `feature_engineering/df_initializing/`
+**Location**: `src/feature_engineering/df_initializing/`
 
 **Components**:
 - `init_suricata_df.py`: Suricata log DataFrame initializer
@@ -284,7 +284,7 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - Initialize pandas DataFrames for downstream processing
 
 #### 5.2.2 Feature Engineering Module
-**Location**: `feature_engineering/`
+**Location**: `src/feature_engineering/`
 
 **Formatting Components** (`df_formatting/`):
 - `format_suricata_df.py`: Suricata-specific feature extraction
@@ -303,10 +303,14 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - `metrics_features.py`: Event counts, trend analysis, protocol statistics
 
 #### 5.2.3 Model Training & Inference Module
-**Location**: `model/`
+**Location**: `src/model/`
 
 **Components**:
 - `oneCSVM_model.py`: OneClassSVMModel class implementation
+- `drift_detector.py`: ADWIN-based drift detection for monitoring model performance
+- `grid_search.py`: Hyperparameter optimization utilities
+- `simulation_evaluation.py`: Model evaluation and simulation utilities
+- `main.py`: Training entry point
 
 **Key Methods**:
 - `fit()`: Train model on benign data with configurable parameters
@@ -322,13 +326,42 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - `oneclass_svm_preprocessor.pkl`: ColumnTransformer (RobustScaler + OneHotEncoder)
 - `oneclass_svm_config.pkl`: Configuration (threshold, features, hyperparameters)
 
-#### 5.2.4 Testing Module
+#### 5.2.4 Dashboard & API Module
+**Location**: `src/dashboard/`
+
+**Components**:
+- `streamlit_app.py`: Main real-time anomaly visualization dashboard
+- `streamlit_monitoring.py`: ML model monitoring dashboard with Grafana integration
+- `flask_api.py`: REST API backend for predictions and metrics
+- `prediction_worker.py`: Background worker for continuous predictions
+- `geolocation_service.py`: IP geolocation lookup service for attack source mapping
+
+**Features**:
+- Real-time traffic visualization with Kibana-style interface
+- Severity distribution charts (GREEN/ORANGE/RED)
+- Geolocation mapping of traffic sources
+- Drift detection status monitoring
+- Embedded Grafana dashboards
+
+#### 5.2.5 Monitoring Module
+**Location**: `src/monitoring/`
+
+**Components**:
+- `metrics.py`: Prometheus metrics registry and collectors
+
+**Docker Stack** (`monitoring/`):
+- `docker-compose.yml`: Prometheus and Grafana container setup
+- `grafana/`: Pre-configured dashboards for ML metrics
+
+#### 5.2.6 Testing Module
 **Location**: `tests/`
 
 **Test Suites**:
 - `test_precalculations/`: Unit tests for all precalculation functions
 - `test_aggregations/`: Unit tests for aggregation functions
 - `test_formatters/`: Unit tests for data formatters
+- `test_model/`: Unit tests for ML model and drift detection
+- `test_dashboard/`: Unit tests for Flask API and dashboard components
 
 ### 5.3 Data Flow
 
@@ -361,8 +394,15 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - `mkdocs==1.6.1`: Documentation generation
 - `mkdocs-material==9.7.0`: Documentation theme
 
+**Monitoring Stack**:
+- `prometheus-client`: Metrics collection and exposition
+- Prometheus: Time-series metrics storage
+- Grafana: Visualization and dashboards
+
 **CI/CD**:
 - GitHub Actions for automated testing and documentation deployment
+- Codecov for code coverage reporting
+- Black, isort, flake8 for code formatting and linting
 
 **Version Control**: Git with GitHub
 
@@ -540,6 +580,11 @@ Actual Anomaly   500    4500
 - No storage of sensitive user data
 - Anonymization of IP addresses where required
 - Secure model artifact storage
+- GitHub Code Scanning (CodeQL) for vulnerability detection
+- Secret Scanning enabled to detect committed credentials
+- CI/CD workflows with minimal permissions (`contents: read`)
+- Flask API runs with `debug=False` and no stack trace exposure
+- See [SECURITY.md](https://github.com/francescacraievich/real-time-cyber-anomaly-detection/blob/main/SECURITY.md) for full security policy
 
 ---
 
@@ -596,3 +641,4 @@ Actual Anomaly   500    4500
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2025-11-29 | F. Craievich, L. Jakin, F. Rumiz | Initial SSD creation |
+| 1.1 | 2025-12-11 | F. Craievich | Updated project structure (src/), added Dashboard & Monitoring modules, CI/CD details |

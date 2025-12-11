@@ -611,8 +611,8 @@ def evaluate_model():
             }
         )
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        return jsonify({"error": "Evaluation failed"}), 500
 
 
 # Initialize resources on startup

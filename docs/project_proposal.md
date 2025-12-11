@@ -2,8 +2,8 @@
 
 ## Real-Time Cyber Anomaly Detection System
 
-**Version:** 1.0
-**Date:** 2025-11-29
+**Version:** 1.1
+**Date:** 2025-12-11
 **Team:** Francesca Craievich (PM), Lucas Jakin (ML Engineer), Francesco Rumiz (Data Scientist)
 
 ---
@@ -47,9 +47,12 @@ The Real-Time Cyber Anomaly Detection System is a machine learning-based platfor
 - User authentication and access control
 
 ### 2.3 Implemented Features
-- **Flask REST API**: Backend API for serving predictions and statistics (`dashboard/flask_api.py`)
-- **Streamlit Dashboard**: Interactive real-time visualization dashboard with Kibana-style interface (`dashboard/streamlit_app.py`)
-- **Geolocation Service**: IP geolocation for attack source mapping (`dashboard/geolocation_service.py`)
+- **Flask REST API**: Backend API for serving predictions and statistics (`src/dashboard/flask_api.py`)
+- **Streamlit Dashboard**: Interactive real-time visualization dashboard with Kibana-style interface (`src/dashboard/streamlit_app.py`)
+- **ML Monitoring Dashboard**: Technical monitoring dashboard with drift detection (`src/dashboard/streamlit_monitoring.py`)
+- **Geolocation Service**: IP geolocation for attack source mapping (`src/dashboard/geolocation_service.py`)
+- **Drift Detection**: ADWIN-based drift detection for model performance monitoring (`src/model/drift_detector.py`)
+- **Prometheus/Grafana Stack**: Full ML model monitoring with metrics collection (`src/monitoring/`)
 
 ### 2.4 Deliverables
 
@@ -110,9 +113,9 @@ The Real-Time Cyber Anomaly Detection System is a machine learning-based platfor
 | M2: Data Collection Complete | Week 4 | ✓ Completed | Honeypot logs, normal traffic dataset |
 | M3: Feature Engineering Ready | Week 5 | ✓ Completed | Feature extraction pipeline |
 | M4: Model Training Complete | Week 6 | ✓ Completed | Trained OCSVM model (90.7% TPR) |
-| M5: Testing Infrastructure | Week 7 | ✓ Completed | Pytest suite, CI/CD pipeline |
-| M6: Documentation Published | Week 9 | In Progress | MkDocs site, SSD, proposal docs |
-| M7: Final Delivery | Week 10 | Pending | Complete system, all documentation |
+| M5: Testing Infrastructure | Week 7 | ✓ Completed | Pytest suite (116 tests), CI/CD pipeline |
+| M6: Documentation Published | Week 9 | ✓ Completed | MkDocs site, SSD, proposal docs |
+| M7: Dashboards Deployed | Week 10 | ✓ Completed | Streamlit Cloud apps, monitoring stack |
 
 ---
 
@@ -494,23 +497,23 @@ https://francescacraievich.github.io/real-time-cyber-anomaly-detection/
 The project is considered successful when:
 
 ### 12.1 Technical Criteria
-- [ ] One-Class SVM model achieves ≥85% TPR with ≤15% FPR
-- [ ] System processes ≥1,000 events/second
-- [ ] Inference latency ≤100ms per event
-- [ ] All unit tests pass with ≥70% coverage
-- [ ] CI/CD pipeline is operational
+- [x] One-Class SVM model achieves ≥85% TPR with ≤15% FPR ✓ (90.7% TPR, 10% FPR)
+- [x] System processes ≥1,000 events/second ✓
+- [x] Inference latency ≤100ms per event ✓
+- [x] All unit tests pass with ≥70% coverage ✓ (116 tests passing)
+- [x] CI/CD pipeline is operational ✓ (GitHub Actions + Codecov)
 
 ### 12.2 Delivery Criteria
-- [ ] All deliverables (D1-D10) are completed
-- [ ] Documentation is published and accessible
-- [ ] Code is merged to main branch
-- [ ] System is deployable from repository
+- [x] All deliverables (D1-D10) are completed ✓
+- [x] Documentation is published and accessible ✓ (GitHub Pages)
+- [x] Code is merged to main branch ✓
+- [x] System is deployable from repository ✓
 
 ### 12.3 Documentation Criteria
-- [ ] System Specification Document is complete
-- [ ] Project Proposal & Development Plan is finalized
-- [ ] Operational Governance Document is published
-- [ ] All technical documentation is up-to-date
+- [x] System Specification Document is complete ✓
+- [x] Project Proposal & Development Plan is finalized ✓
+- [x] Operational Governance Document is published ✓
+- [x] All technical documentation is up-to-date ✓
 
 ---
 
@@ -570,11 +573,11 @@ M7 (Final Delivery)                             ▼
 - Performance benchmarking
 - CI/CD automation
 
-### Low Priority (Could Have)
-- Dashboard prototype
+### Low Priority (Could Have) - ✓ Implemented
+- ✓ Dashboard prototype → Full Streamlit dashboards deployed
 - Alert notification system
 - Advanced logging
-- Monitoring dashboards
+- ✓ Monitoring dashboards → Prometheus/Grafana stack
 - Model explainability
 
 ---
@@ -594,3 +597,4 @@ M7 (Final Delivery)                             ▼
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2025-11-29 | F. Craievich | Initial proposal creation |
+| 1.1 | 2025-12-11 | F. Craievich | Updated milestones to completed, added implemented features, updated success criteria |
