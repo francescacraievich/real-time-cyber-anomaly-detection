@@ -2,8 +2,8 @@
 
 ## Real-Time Cyber Anomaly Detection System
 
-**Version:** 1.0
-**Date:** 2025-11-29
+**Version:** 2.0
+**Date:** 2025-12-12
 **Team:** Francesca Craievich (PM), Lucas Jakin (ML Engineer), Francesco Rumiz (Data Scientist)
 
 ---
@@ -13,18 +13,26 @@
 ### 1.1 Project Overview
 The Real-Time Cyber Anomaly Detection System is a machine learning-based platform designed to identify malicious network traffic patterns and security threats in real-time. By analyzing Suricata IDS logs (selected for complete feature set) and normal network traffic, the system employs One-Class SVM to distinguish between benign and anomalous network behavior.
 
-### 1.2 Business Value
+### 1.2 Objectives
+- Develop an ML-based anomaly detection system for network security
+- Achieve high detection accuracy with minimal false positives
+- Create a modular, maintainable codebase following MLOps best practices
+- Deploy real-time dashboards for security analysts and ML engineers
+
+### 1.3 Business Value
 - **Proactive Threat Detection**: Identify security threats before they cause damage
 - **Reduced Response Time**: Real-time anomaly detection enables immediate action
 - **Cost Efficiency**: Automated detection reduces manual security monitoring effort
 - **Research Contribution**: Advances understanding of cyber attack patterns
 
-### 1.3 Success Metrics
-- Detection Rate (TPR) ≥ 85%
-- False Positive Rate (FPR) ≤ 15%
-- Processing Latency ≤ 100ms per event
-- System Uptime ≥ 99%
-- Throughput ≥ 1,000 events/second
+### 1.4 Success Metrics
+| Metric | Target | Achieved |
+|--------|--------|----------|
+| Detection Rate (TPR) | ≥ 85% | 90.7% ✓ |
+| False Positive Rate (FPR) | ≤ 15% | ~10% ✓ |
+| Processing Latency | ≤ 100ms per event | ✓ |
+| System Uptime | ≥ 99% | ✓ |
+| Throughput | ≥ 1,000 events/second | ✓ |
 
 ---
 
@@ -35,80 +43,103 @@ The Real-Time Cyber Anomaly Detection System is a machine learning-based platfor
 - Feature engineering pipeline for network traffic logs
 - One-Class SVM model training and deployment
 - Anomaly detection inference engine
-- Basic alert generation mechanism
+- Real-time dashboards (anomaly alerts + ML monitoring)
+- REST API for predictions and statistics
 - Documentation and testing infrastructure
 - CI/CD pipeline for automated deployment
+- Drift detection and model monitoring
 
 ### 2.2 Out of Scope (Future Phases)
 - Real-time stream processing (Kafka/MQTT integration)
-- Interactive dashboard (Streamlit/Grafana)
 - Multi-model ensemble approaches
-- Cloud deployment infrastructure
+- Cloud deployment infrastructure (AWS/Azure/GCP)
 - Advanced alert notification systems (email, Slack)
 - User authentication and access control
 
 ### 2.3 Deliverables
 
-| Deliverable | Description | Owner |
-|-------------|-------------|-------|
-| **D1: Data Collection Pipeline** | Scripts to extract and preprocess honeypot logs | Data Scientist |
-| **D2: Feature Engineering Module** | Statistical feature extraction from network traffic | Data Scientist |
-| **D3: ML Model** | Trained One-Class SVM anomaly detection model | ML Engineer |
-| **D4: Inference Engine** | Real-time classification service | ML Engineer |
-| **D5: Testing Suite** | Unit and integration tests (pytest) | All Team |
-| **D6: Documentation** | Technical documentation (MkDocs) | Project Manager |
-| **D7: CI/CD Pipeline** | GitHub Actions workflows | ML Engineer |
-| **D8: System Specification** | SSD document | All Team |
-| **D9: Development Plan** | This document | Project Manager |
-| **D10: Operational Guide** | Governance and versioning document | Project Manager |
+| ID | Deliverable | Description | Owner | Status |
+|----|-------------|-------------|-------|--------|
+| D1 | Data Collection Pipeline | Scripts to extract and preprocess honeypot logs | Data Scientist | ✓ Completed |
+| D2 | Feature Engineering Module | Statistical feature extraction from network traffic | Data Scientist | ✓ Completed |
+| D3 | ML Model | Trained One-Class SVM anomaly detection model | ML Engineer | ✓ Completed |
+| D4 | Inference Engine | Real-time classification service with Flask API | All Team | ✓ Completed |
+| D5 | Testing Suite | Unit and integration tests (pytest) | All Team | ✓ Completed |
+| D6 | Documentation | Technical documentation (MkDocs) | Project Manager | ✓ Completed |
+| D7 | CI/CD Pipeline | GitHub Actions workflows | Project Manager | ✓ Completed |
+| D8 | System Specification | SSD document | All Team | ✓ Completed |
+| D9 | Dashboards | Streamlit dashboards (alerts + monitoring) | Software Developer | ✓ Completed |
+| D10 | Monitoring Stack | Prometheus + Grafana setup | Software Developer | ✓ Completed |
 
 ---
 
 ## 3. Project Timeline & Milestones
 
-### 3.1 Development Phases
+### 3.1 Project Evolution Timeline
 
-**Phase 1: Planning & Requirements (Week 1-2)**
+The project evolved through several distinct phases, each marked by key technical decisions and milestones:
+
+| Period | Milestone | Key Deliverable | Commit Reference |
+|--------|-----------|-----------------|------------------|
+| Oct 2024 | Project Initialization | Repository setup, documentation structure | `e951421` Initial commit |
+| Oct 2024 | Data Collection | T-Pot honeypot deployment on GCP, 148K events collected | Infrastructure setup |
+| Oct 2024 | Data Engineering Foundation | DataFrame initializer classes | `5954d85` DfInitializer class |
+| Nov 2024 | Feature Analysis | Column mapping, honeypot evaluation | `9f2f925` log_formatting |
+| Nov 2024 | Data Source Decision | Selection of Suricata as primary source | Feature compatibility analysis |
+| Nov 2024 | Initial Model | One-Class SVM v2 with contamination parameter | `808c4ff` One Class SVM v2 |
+| Nov 2024 | Model Optimization | Grid Search hyperparameter tuning | `380b450` GridSearch |
+| Nov 2024 | Model Refinement | Hyperparameter tuning, multiclass distinction | `7ceeac3` model v4 |
+| Dec 2024 | Drift Detection v1 | Initial ADWIN implementation | `feff13a` Drift Detection first version |
+| Dec 2024 | Drift Detection v2 | Anomaly rate-based drift detection | `ccb1328` Drift implementation v2 |
+| Dec 2024 | Dashboard & API | Flask REST API + Streamlit dashboard | `1c88ac8` Streamlit dashboard with Flask API |
+| Dec 2024 | Monitoring Stack | Prometheus + Grafana integration | `2e85927` Add Grafana and Prometheus monitoring |
+| Dec 2024 | Cloud Deployment | Streamlit Cloud deployment | `01c6e80`, `8934f37` Streamlit Cloud links |
+| Dec 2024 | Code Quality | Black, isort formatting, linting fixes | `5878ba7`, `a4d9fc8` Format and lint |
+| Dec 2024 | Security Hardening | SECURITY.md, CodeQL integration | `378b5f5` Security improvements |
+
+### 3.2 Development Phases
+
+**Phase 1: Planning & Requirements**
 - Requirements gathering and analysis
 - System architecture design
 - Technology stack selection
 - Documentation setup
 
-**Phase 2: Data Pipeline Development (Week 3-4)**
+**Phase 2: Data Pipeline Development**
 - Honeypot log collection from TPOT
 - Data preprocessing and cleaning
 - Feature engineering implementation
 - DataFrame initialization modules
 
-**Phase 3: Model Development (Week 5-6)**
+**Phase 3: Model Development**
 - One-Class SVM implementation
 - Model training and hyperparameter tuning
 - Performance evaluation and validation
 - Model persistence mechanism
 
-**Phase 4: Integration & Testing (Week 7-8)**
+**Phase 4: Integration & Testing**
 - Component integration
 - Unit and integration testing
 - Performance benchmarking
 - Bug fixing and optimization
 
-**Phase 5: Documentation & Deployment (Week 9-10)**
+**Phase 5: Documentation & Deployment**
 - Technical documentation completion
 - CI/CD pipeline setup
-- GitHub Actions configuration
+- Dashboard deployment to Streamlit Cloud
 - Final testing and validation
 
-### 3.2 Key Milestones
+### 3.3 Key Milestones
 
-| Milestone | Target Date | Status | Deliverables |
-|-----------|-------------|--------|--------------|
-| M1: Project Kickoff | Week 1 | ✓ Completed | Requirements doc, team roles |
-| M2: Data Collection Complete | Week 4 | ✓ Completed | Honeypot logs, normal traffic dataset |
-| M3: Feature Engineering Ready | Week 5 | ✓ Completed | Feature extraction pipeline |
-| M4: Model Training Complete | Week 6 | ✓ Completed | Trained OCSVM model (90.7% TPR) |
-| M5: Testing Infrastructure | Week 7 | ✓ Completed | Pytest suite, CI/CD pipeline |
-| M6: Documentation Published | Week 9 | In Progress | MkDocs site, SSD, proposal docs |
-| M7: Final Delivery | Week 10 | Pending | Complete system, all documentation |
+| Milestone | Status | Deliverables |
+|-----------|--------|--------------|
+| M1: Project Kickoff | ✓ Completed | Requirements doc, team roles |
+| M2: Data Collection Complete | ✓ Completed | Honeypot logs, normal traffic dataset |
+| M3: Feature Engineering Ready | ✓ Completed | Feature extraction pipeline |
+| M4: Model Training Complete | ✓ Completed | Trained OCSVM model (90.7% TPR) |
+| M5: Testing Infrastructure | ✓ Completed | Pytest suite (116 tests), CI/CD pipeline |
+| M6: Documentation Published | ✓ Completed | MkDocs site, SSD, proposal docs |
+| M7: Dashboards Deployed | ✓ Completed | Streamlit Cloud apps, monitoring stack |
 
 ---
 
@@ -136,42 +167,32 @@ The Real-Time Cyber Anomaly Detection System is a machine learning-based platfor
 - 1.1.5 Documentation coordination
 
 **1.2 Data Engineering**
-- 1.2.1 Suricata IDS log collection from TPOT (selected as primary malicious source)
+- 1.2.1 Suricata IDS log collection from TPOT
 - 1.2.2 Normal traffic dataset acquisition (CICIDS/ISCX benign traffic)
 - 1.2.3 JSON parsing and preprocessing
 - 1.2.4 Data validation and quality checks
 - 1.2.5 Feature extraction pipeline
   - 1.2.5.1 Suricata feature extraction
   - 1.2.5.2 Normal traffic feature extraction
-  - 1.2.5.3 Aggregation functions (metrics_features.py)
-  - 1.2.5.4 Precalculation utilities (rate, ratio, temporal, IP, port features)
+  - 1.2.5.3 Aggregation functions
+  - 1.2.5.4 Precalculation utilities
 - 1.2.6 DataFrame initialization modules
-  - 1.2.6.1 Suricata DataFrame initializer
-  - 1.2.6.2 Normal traffic DataFrame initializer (with gzip support)
-  - 1.2.6.3 Handler orchestration
 
 **1.3 Machine Learning**
 - 1.3.1 Algorithm selection and justification
 - 1.3.2 One-Class SVM implementation
-- 1.3.3 Hyperparameter tuning
-  - 1.3.3.1 Kernel selection (RBF)
-  - 1.3.3.2 Nu parameter optimization
-  - 1.3.3.3 Gamma parameter tuning
+- 1.3.3 Hyperparameter tuning (Grid Search)
 - 1.3.4 Model training pipeline
 - 1.3.5 Model evaluation and validation
 - 1.3.6 Model persistence (pickle/joblib)
 - 1.3.7 Inference engine development
-- 1.3.8 Performance optimization
+- 1.3.8 Drift detection implementation
 
 **1.4 Testing & Quality Assurance**
 - 1.4.1 Unit test development (pytest)
 - 1.4.2 Integration testing
 - 1.4.3 Performance testing
-- 1.4.4 Code quality checks
-- 1.4.5 CI/CD pipeline configuration
-  - 1.4.5.1 GitHub Actions workflow setup
-  - 1.4.5.2 Automated testing jobs
-  - 1.4.5.3 Documentation build jobs
+- 1.4.4 Code quality checks (Black, isort, flake8)
 
 **1.5 Documentation**
 - 1.5.1 MkDocs setup and configuration
@@ -179,106 +200,110 @@ The Real-Time Cyber Anomaly Detection System is a machine learning-based platfor
 - 1.5.3 Project Proposal & Development Plan
 - 1.5.4 Operational Governance Document
 - 1.5.5 README and quick start guide
-- 1.5.6 API documentation
-- 1.5.7 Honeypot guide
-- 1.5.8 Feature engineering documentation
 
 **1.6 Deployment & Operations**
 - 1.6.1 Environment setup (requirements.txt)
-- 1.6.2 GitHub repository configuration
-- 1.6.3 GitHub Pages deployment
-- 1.6.4 Monitoring setup
-- 1.6.5 Maintenance procedures
+- 1.6.2 Dashboard development (Streamlit)
+- 1.6.3 API development (Flask)
+- 1.6.4 Streamlit Cloud deployment
+- 1.6.5 Monitoring stack setup (Prometheus/Grafana)
 
 ---
 
-## 5. Sprint Planning (Agile Approach)
+## 5. Sprint Planning & Agile Methodology
 
-### 5.1 Sprint Overview
-The project follows a 2-week sprint cycle with continuous delivery.
+### 5.1 Methodology Framework
 
-### Sprint 1: Foundation (Week 1-2)
-**Goal**: Establish project infrastructure and data collection
+The project adopted **CRISP-DM** (Cross-Industry Standard Process for Data Mining) as the guiding methodology framework, integrated with Agile/Scrum practices:
 
-**User Stories**:
-- As a data scientist, I need to access honeypot logs so that I can analyze attack patterns
-- As a team member, I need project documentation so that I understand system requirements
+| CRISP-DM Phase | Sprint Focus | Key Deliverables |
+|----------------|--------------|------------------|
+| Business Understanding | Sprint 1 | Requirements, success metrics, architecture design |
+| Data Understanding | Sprint 1-2 | EDA, data quality assessment, honeypot analysis |
+| Data Preparation | Sprint 2-3 | Feature engineering, data pipeline, dataset creation |
+| Modeling | Sprint 3-4 | OCSVM implementation, hyperparameter tuning |
+| Evaluation | Sprint 4-5 | Performance validation, drift detection |
+| Deployment | Sprint 5-6 | Flask API, Streamlit dashboards, Streamlit Cloud |
+| Monitoring | Ongoing | Prometheus/Grafana, ADWIN drift detection |
 
-**Tasks**:
-- Setup GitHub repository
-- Configure development environment
-- Extract logs from TPOT platform
-- Create initial documentation structure
+CRISP-DM was preferred over KDD (Knowledge Discovery in Databases) due to its iterative nature and explicit focus on deployment and monitoring phases, which align with the project's MLOps objectives.
 
-**Deliverables**: Project repository, raw log data, README
+### 5.2 Agile Implementation
 
----
+The team adopted Agile methodology with Scrum elements adapted for a three-person development team.
 
-### Sprint 2: Data Pipeline (Week 3-4)
-**Goal**: Build robust data processing pipeline
+**Sprint Duration**: 1-2 weeks, adjusted based on deliverable complexity
 
-**User Stories**:
-- As a data scientist, I need clean datasets so that I can train accurate models
-- As a developer, I need modular code so that I can maintain the system
+**Sprint Ceremonies**:
 
-**Tasks**:
-- Implement JSON parsing with ijson
-- Create DataFrame initialization modules
-- Handle gzip compression
-- Add data validation
+| Ceremony | Frequency | Duration | Purpose |
+|----------|-----------|----------|---------|
+| Sprint Planning | Start of sprint | 1-2 hours | Define scope, assign tasks, estimate effort |
+| Daily Standup | As needed | 15 minutes | Sync on progress, identify blockers (via Teams) |
+| Sprint Review | End of sprint | 1 hour | Demo completed work, gather feedback |
+| Sprint Retrospective | End of sprint | 30 minutes | Reflect on process, identify improvements |
 
-**Deliverables**: Data ingestion modules, preprocessed datasets
+**Communication Channels**:
 
----
+| Type | Tool | Purpose |
+|------|------|---------|
+| Synchronous | Microsoft Teams | Video calls, sprint ceremonies, pair programming |
+| Asynchronous | GitHub Issues | Task tracking with acceptance criteria |
+| Asynchronous | GitHub PRs | Code review comments and discussions |
+| Asynchronous | WhatsApp | Quick team coordination |
 
-### Sprint 3: Feature Engineering (Week 5-6)
-**Goal**: Extract meaningful features from network traffic
+**Project Management Tools**:
 
-**User Stories**:
-- As an ML engineer, I need statistical features so that I can train the model
-- As a data scientist, I need feature documentation so that I understand the data
+| Tool | Purpose | Status |
+|------|---------|--------|
+| GitHub Issues | Task tracking, bug reporting, feature requests | Active |
+| Trello | Kanban board visualization | Active |
+| Pull Requests | Code review, CI validation gate | Active |
+| Milestones | Sprint goal tracking | Active |
 
-**Tasks**:
-- Implement feature extraction functions
-- Create aggregation utilities
-- Build formatting pipeline
-- Document feature definitions
+### 5.3 Sprint Details
 
-**Deliverables**: Feature engineering module, feature documentation
+**Sprint 1: Foundation**
+- Goal: Establish project infrastructure and data collection
+- User Stories:
+  - As a data scientist, I need to access honeypot logs so that I can analyze attack patterns
+  - As a team member, I need project documentation so that I understand system requirements
+- Deliverables: Project repository, raw log data, README
 
----
+**Sprint 2: Data Pipeline**
+- Goal: Build robust data processing pipeline
+- User Stories:
+  - As a data scientist, I need clean datasets so that I can train accurate models
+  - As a developer, I need modular code so that I can maintain the system
+- Deliverables: Data ingestion modules, preprocessed datasets
 
-### Sprint 4: Model Development (Week 7-8)
-**Goal**: Train and validate One-Class SVM model
+**Sprint 3: Feature Engineering**
+- Goal: Extract meaningful features from network traffic
+- User Stories:
+  - As an ML engineer, I need statistical features so that I can train the model
+  - As a data scientist, I need feature documentation so that I understand the data
+- Deliverables: Feature engineering module, feature documentation
 
-**User Stories**:
-- As an ML engineer, I need a trained model so that I can detect anomalies
-- As a security analyst, I need high accuracy so that I can trust the alerts
+**Sprint 4: Model Development**
+- Goal: Train and validate One-Class SVM model
+- User Stories:
+  - As an ML engineer, I need a trained model so that I can detect anomalies
+  - As a security analyst, I need high accuracy so that I can trust the alerts
+- Deliverables: Trained model (90.7% TPR, 10% FPR, F1=0.885)
 
-**Tasks**:
-- Implement OCSVM training pipeline
-- Tune hyperparameters
-- Evaluate model performance
-- Create model persistence mechanism
+**Sprint 5: Testing & CI/CD**
+- Goal: Ensure code quality and automated deployment
+- User Stories:
+  - As a developer, I need automated tests so that I can prevent regressions
+  - As a team lead, I need CI/CD so that deployment is reliable
+- Deliverables: Test suite, CI/CD pipeline, deployed documentation
 
-**Deliverables**: Trained model (90.7% TPR, 10% FPR, F1=0.885)
-
----
-
-### Sprint 5: Testing & CI/CD (Week 9-10)
-**Goal**: Ensure code quality and automated deployment
-
-**User Stories**:
-- As a developer, I need automated tests so that I can prevent regressions
-- As a team lead, I need CI/CD so that deployment is reliable
-
-**Tasks**:
-- Write unit tests with pytest
-- Configure GitHub Actions
-- Setup documentation deployment
-- Create test coverage reports
-
-**Deliverables**: Test suite, CI/CD pipeline, deployed documentation
+**Sprint 6: Dashboards & Deployment**
+- Goal: Deploy user-facing dashboards
+- User Stories:
+  - As a security analyst, I need a dashboard to view alerts
+  - As an ML engineer, I need to monitor model health
+- Deliverables: Streamlit dashboards, Prometheus/Grafana stack
 
 ---
 
@@ -288,30 +313,28 @@ A task is considered complete when ALL criteria are met:
 
 ### 6.1 Code Criteria
 - [ ] Code is written and follows Python best practices (PEP 8)
+- [ ] Code is formatted with Black and isort
+- [ ] Code passes flake8 linting checks
 - [ ] Code is reviewed by at least one team member
-- [ ] All functions have docstrings
 - [ ] No hardcoded values (use configuration)
 - [ ] Error handling is implemented
 
 ### 6.2 Testing Criteria
 - [ ] Unit tests written and passing
-- [ ] Test coverage ≥ 70% for new code
-- [ ] Integration tests pass (if applicable)
+- [ ] Test coverage ≥ 40% for new code (Codecov threshold)
 - [ ] No regression in existing tests
 - [ ] CI/CD pipeline passes all checks
 
 ### 6.3 Documentation Criteria
-- [ ] Code is documented with clear comments
+- [ ] Code is documented with clear comments where needed
 - [ ] README updated (if applicable)
-- [ ] MkDocs documentation updated
-- [ ] API documentation complete
-- [ ] Examples/usage provided
+- [ ] MkDocs documentation updated (if applicable)
 
 ### 6.4 Quality Criteria
 - [ ] No critical bugs or security issues
 - [ ] Performance requirements met
 - [ ] Code is merged to main branch
-- [ ] Feature is deployed (if applicable)
+- [ ] Feature branch is deleted after merge
 
 ---
 
@@ -320,10 +343,10 @@ A task is considered complete when ALL criteria are met:
 A task can be started when ALL criteria are met:
 
 ### 7.1 Clarity Criteria
-- [ ] User story is clearly defined
-- [ ] Acceptance criteria are documented
-- [ ] Dependencies are identified
-- [ ] Technical approach is discussed
+- [ ] User story or task description is clear and unambiguous
+- [ ] Acceptance criteria are defined and testable
+- [ ] Dependencies are identified and resolved (or explicitly noted)
+- [ ] Technical approach has been discussed with the team
 
 ### 7.2 Resources Criteria
 - [ ] Required data/resources are available
@@ -332,10 +355,9 @@ A task can be started when ALL criteria are met:
 - [ ] Blocking issues are resolved
 
 ### 7.3 Planning Criteria
-- [ ] Task is properly estimated
+- [ ] Estimated effort is assigned (S/M/L)
 - [ ] Priority is assigned
 - [ ] Owner is identified
-- [ ] Related tasks are understood
 
 ---
 
@@ -343,11 +365,11 @@ A task can be started when ALL criteria are met:
 
 ### 8.1 Team Structure
 
-| Role | Team Member | Responsibilities | Time Allocation |
-|------|-------------|------------------|-----------------|
-| **Project Manager** | Francesca Craievich | Project planning, coordination, documentation, milestone tracking | 100% |
-| **ML Engineer** | Lucas Jakin | Model development, deployment, CI/CD, performance optimization | 100% |
-| **Data Scientist** | Francesco Rumiz | Data analysis, feature engineering, model validation, experimentation | 100% |
+| Role | Team Member | Responsibilities |
+|------|-------------|------------------|
+| **Project Manager** | Francesca Craievich | Project planning, coordination, documentation, milestone tracking, stakeholder communication, infrastructure setup |
+| **ML Engineer** | Lucas Jakin | Model development, drift detection, performance optimization |
+| **Data Scientist** | Francesco Rumiz | Data analysis, feature engineering, model validation, data quality assurance |
 
 ### 8.2 Tools & Infrastructure
 
@@ -363,12 +385,15 @@ A task can be started when ALL criteria are met:
 - pytest: Testing
 - mkdocs: Documentation
 - ijson: Streaming JSON parsing
+- flask, streamlit: Dashboard & API
+- prometheus-client: Metrics
 
 **Infrastructure**:
 - Local development machines
 - GitHub repository: https://github.com/francescacraievich/real-time-cyber-anomaly-detection
 - GitHub Actions: CI/CD
 - GitHub Pages: Documentation hosting
+- Streamlit Cloud: Dashboard hosting
 
 ### 8.3 Budget Considerations
 This is an academic/research project with zero financial budget. All tools and services used are open-source or free-tier offerings.
@@ -395,11 +420,13 @@ This is an academic/research project with zero financial budget. All tools and s
 - TPOT honeypot platform availability
 - Python package ecosystem stability
 - GitHub service uptime
+- Streamlit Cloud availability
 
 **Internal Dependencies**:
 - Data pipeline must complete before model training
 - Feature engineering depends on data collection
 - Testing requires completed implementations
+- Dashboards depend on Flask API
 
 ---
 
@@ -407,38 +434,21 @@ This is an academic/research project with zero financial budget. All tools and s
 
 ### 10.1 Team Meetings
 
-**Daily Standups** (15 minutes)
-- What did you do yesterday?
-- What will you do today?
-- Any blockers?
-
-**Sprint Planning** (2 hours, bi-weekly)
-- Review backlog
-- Select sprint tasks
-- Estimate effort
-- Assign owners
-
-**Sprint Review** (1 hour, bi-weekly)
-- Demo completed work
-- Gather feedback
-- Update documentation
-
-**Sprint Retrospective** (1 hour, bi-weekly)
-- What went well?
-- What needs improvement?
-- Action items
+| Meeting | Frequency | Duration | Agenda |
+|---------|-----------|----------|--------|
+| Daily Standup | As needed | 15 min | Progress, blockers, plans |
+| Sprint Planning | Bi-weekly | 2 hours | Backlog review, task assignment |
+| Sprint Review | Bi-weekly | 1 hour | Demo, feedback |
+| Sprint Retrospective | Bi-weekly | 30 min | Process improvements |
 
 ### 10.2 Communication Channels
 
-**Synchronous**:
-- Video calls for meetings
-- Pair programming sessions
-
-**Asynchronous**:
-- GitHub Issues for task tracking
-- GitHub Pull Requests for code review
-- GitHub Discussions for Q&A
-- Email for formal communications
+| Channel | Purpose | Response Time |
+|---------|---------|---------------|
+| Microsoft Teams | Meetings, urgent issues | Immediate |
+| GitHub Issues | Task tracking | Within 24 hours |
+| GitHub PRs | Code review | Within 48 hours |
+| WhatsApp | Quick coordination | Within hours |
 
 ### 10.3 Documentation Repository
 
@@ -447,90 +457,54 @@ https://francescacraievich.github.io/real-time-cyber-anomaly-detection/
 
 ---
 
-## 11. Quality Assurance Plan
-
-### 11.1 Code Quality Standards
-- Follow PEP 8 style guide
-- Use type hints where applicable
-- Maximum function complexity: 10 (cyclomatic)
-- Maximum file length: 500 lines
-- Meaningful variable and function names
-
-### 11.2 Testing Strategy
-
-**Unit Testing**:
-- Test coverage target: ≥70%
-- Framework: pytest
-- Automated via CI/CD
-
-**Integration Testing**:
-- End-to-end pipeline tests
-- Module interaction validation
-
-**Performance Testing**:
-- Latency benchmarks (≤100ms)
-- Throughput validation (≥1,000 events/sec)
-- Memory profiling
-
-### 11.3 Continuous Integration
-
-**GitHub Actions Workflow**:
-- Trigger: Push to main, pull requests
-- Jobs:
-  - Lint and format check
-  - Unit tests (Python 3.11, 3.12)
-  - Documentation build
-  - Performance benchmarks
-
----
-
-## 12. Success Criteria
+## 11. Success Criteria
 
 The project is considered successful when:
 
-### 12.1 Technical Criteria
-- [ ] One-Class SVM model achieves ≥85% TPR with ≤15% FPR
-- [ ] System processes ≥1,000 events/second
-- [ ] Inference latency ≤100ms per event
-- [ ] All unit tests pass with ≥70% coverage
-- [ ] CI/CD pipeline is operational
+### 11.1 Technical Criteria
+- [x] One-Class SVM model achieves ≥85% TPR with ≤15% FPR ✓ (90.7% TPR, 10% FPR)
+- [x] System processes ≥1,000 events/second ✓
+- [x] Inference latency ≤100ms per event ✓
+- [x] All unit tests pass ✓ (116 tests passing)
+- [x] CI/CD pipeline is operational ✓ (GitHub Actions + Codecov)
 
-### 12.2 Delivery Criteria
-- [ ] All deliverables (D1-D10) are completed
-- [ ] Documentation is published and accessible
-- [ ] Code is merged to main branch
-- [ ] System is deployable from repository
+### 11.2 Delivery Criteria
+- [x] All deliverables (D1-D12) are completed ✓
+- [x] Documentation is published and accessible ✓ (GitHub Pages)
+- [x] Code is merged to main branch ✓
+- [x] System is deployable from repository ✓
+- [x] Dashboards are accessible ✓ (Streamlit Cloud)
 
-### 12.3 Documentation Criteria
-- [ ] System Specification Document is complete
-- [ ] Project Proposal & Development Plan is finalized
-- [ ] Operational Governance Document is published
-- [ ] All technical documentation is up-to-date
+### 11.3 Documentation Criteria
+- [x] System Specification Document is complete ✓
+- [x] Project Proposal & Development Plan is finalized ✓
+- [x] Operational Governance Document is published ✓
+- [x] All technical documentation is up-to-date ✓
 
 ---
 
-## 13. Future Roadmap
+## 12. Future Roadmap
 
-### 13.1 Version 2.0 Features
+### 12.1 Version 2.0 Features
 - Real-time stream processing with Kafka
-- Interactive dashboard (Streamlit)
 - Multi-model ensemble (Isolation Forest, Autoencoder)
 - Advanced alert notification (Email, Slack, webhooks)
+- Enhanced dashboard features
 
-### 13.2 Version 3.0 Features
+### 12.2 Version 3.0 Features
 - Cloud deployment (AWS/Azure/GCP)
 - Kubernetes orchestration
 - Distributed processing with Apache Spark
 - Time-series database integration (InfluxDB)
-- Explainable AI (SHAP/LIME)
+- Experiment tracking with Neptune.ai
 
 ---
 
 ## Appendix A: Gantt Chart
 
 ```
-Week  1  2  3  4  5  6  7  8  9  10
-      |==|==|==|==|==|==|==|==|==|==|
+                  Week  1  2  3  4  5  6  7  8  9  10
+                       |==|==|==|==|==|==|==|==|==|==|
 Phase 1: Planning        [██]
 Phase 2: Data Pipeline      [████]
 Phase 3: Model Dev              [████]
@@ -551,41 +525,43 @@ M7 (Final Delivery)                             ▼
 
 ## Appendix B: Backlog Prioritization
 
-### High Priority (Must Have)
-- Data collection pipeline
-- Feature engineering
-- OCSVM model training
-- Basic inference engine
-- Core documentation
+### High Priority (Must Have) - ✓ Completed
+- ✓ Data collection pipeline
+- ✓ Feature engineering
+- ✓ OCSVM model training
+- ✓ Basic inference engine
+- ✓ Core documentation
 
-### Medium Priority (Should Have)
-- Advanced feature extraction
-- Model hyperparameter optimization
-- Comprehensive testing
-- Performance benchmarking
-- CI/CD automation
+### Medium Priority (Should Have) - ✓ Completed
+- ✓ Advanced feature extraction
+- ✓ Model hyperparameter optimization
+- ✓ Comprehensive testing
+- ✓ Performance benchmarking
+- ✓ CI/CD automation
 
-### Low Priority (Could Have)
-- Dashboard prototype
-- Alert notification system
-- Advanced logging
-- Monitoring dashboards
-- Model explainability
+### Low Priority (Could Have) - ✓ Implemented
+- ✓ Dashboard prototype → Full Streamlit dashboards deployed
+- ✓ Monitoring dashboards → Prometheus/Grafana stack
+- Alert notification system (Future)
+- Model explainability (Future)
 
 ---
 
 **Document Approval**
 
-| Role | Name | Signature | Date |
-|------|------|-----------|------|
-| Project Manager | Francesca Craievich | | 2025-11-29 |
-| ML Engineer | Lucas Jakin | | 2025-11-29 |
-| Data Scientist | Francesco Rumiz | | 2025-11-29 |
+| Role | Name | Date |
+|------|------|------|
+| Project Manager | Francesca Craievich | 2025-11-29 |
+| ML Engineer | Lucas Jakin | 2025-11-29 |
+| Data Scientist | Francesco Rumiz | 2025-11-29 |
 
 ---
 
 **Document Version History**
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2025-11-29 | F. Craievich | Initial proposal creation |
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | 2025-11-29 | Initial proposal creation |
+| 1.1 | 2025-12-11 | Updated milestones, added implemented features |
+| 1.2 | 2025-12-12 | Added Project Evolution & Decision History, Agile methodology |
+| 2.0 | 2025-12-12 | Major reorganization: focused on planning/management only, moved technical rationale to SSD, consolidated Agile methodology from Governance |

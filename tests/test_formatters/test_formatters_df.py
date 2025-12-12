@@ -1,21 +1,15 @@
-import pytest
-import pandas as pd
 import json
 import os
-from pathlib import Path
 import tempfile
 
-from feature_engineering.df_formatting import (
-    DataFrameFormatter
-)
+import pytest
 
-from feature_engineering.df_initializing import (
-    DataFrameInitializer
-)
+from src.feature_engineering.df_formatting import DataFrameFormatter
+from src.feature_engineering.df_initializing import DataFrameInitializer
+
 
 class TestNormalTrafficDataFrameFormatter:
     """Test suite for NormalTrafficDataFrameFormatter"""
-        
 
     @pytest.fixture
     def sample_normal_traffic_data(self):
@@ -42,7 +36,7 @@ class TestNormalTrafficDataFrameFormatter:
                 "destinationPort": 5353,
                 "startDateTime": "6/13/2010 23:57",
                 "stopDateTime": "6/14/2010 0:11",
-                "Label": "Normal"
+                "Label": "Normal",
             },
             {
                 "generated": "3/11/2014 18:21",
@@ -65,11 +59,10 @@ class TestNormalTrafficDataFrameFormatter:
                 "destinationPort": 80,
                 "startDateTime": "6/13/2010 23:58",
                 "stopDateTime": "6/14/2010 0:01",
-                "Label": "Normal"
-            }
+                "Label": "Normal",
+            },
         ]
-    
-    
+
     @pytest.fixture
     def sample_suricata_data(self):
         """Create sample Suricata log data matching actual structure"""
@@ -97,8 +90,8 @@ class TestNormalTrafficDataFrameFormatter:
                         "confidence": ["Medium"],
                         "created_at": ["2010_09_23"],
                         "signature_severity": ["Informational"],
-                        "updated_at": ["2019_07_26"]
-                    }
+                        "updated_at": ["2019_07_26"],
+                    },
                 },
                 "direction": "to_server",
                 "flow": {
@@ -108,11 +101,11 @@ class TestNormalTrafficDataFrameFormatter:
                     "bytes_toclient": 0,
                     "start": "2025-10-24T02:44:06.405778+0000",
                     "src_ip": "16.62.107.190",
-                    "dest_ip": "10.128.0.2"
+                    "dest_ip": "10.128.0.2",
                 },
                 "payload": "GHFNO0u3l6JdADiOxuVmH48Zx6noyuYsen52WfzUL7dZBuQ+th1JTg==",
                 "payload_printable": ".qM;K...].8...f........,z~vY../.Y..>..IN",
-                "stream": 0
+                "stream": 0,
             },
             {
                 "timestamp": "2025-10-24T02:44:07.619878+0000",
@@ -137,8 +130,8 @@ class TestNormalTrafficDataFrameFormatter:
                         "confidence": ["High"],
                         "created_at": ["2010_07_30"],
                         "signature_severity": ["Informational"],
-                        "updated_at": ["2019_07_26"]
-                    }
+                        "updated_at": ["2019_07_26"],
+                    },
                 },
                 "app_proto": "failed",
                 "direction": "to_client",
@@ -151,31 +144,29 @@ class TestNormalTrafficDataFrameFormatter:
                     "src_ip": "10.128.0.2",
                     "dest_ip": "169.254.169.254",
                     "src_port": 36113,
-                    "dest_port": 53
+                    "dest_port": 53,
                 },
-                "payload": "a1yBgAABAAUAAAAAB2xvZ2dpbmcKZ29vZ2xlYXBpcwNjb20AAAEAAcAMAAUAAQAAASgADgtsb2dnaW5nLWFsdsAUwDQAAQABAAABKAAE2O8irsA0AAEAAQAAASgABNjvJq7ANAABAAEAAAEoAATY7yCuwDQAAQABAAABKAAE2O8krg==",
-                "payload_printable": "k\\...........logging\ngoogleapis.com..............(...logging-alv...4.......(....\"..4.......(....&..4.......(.... ..4.......(.....$.",
-                "stream": 0
-            }
+                "payload": "a1yBgAABAAUAAAAAB2xvZ2dpbmcKZ29vZ2xlYXBpcw==",
+                "payload_printable": "k\\...logging.googleapis...",
+                "stream": 0,
+            },
         ]
 
-    
-    
     @pytest.fixture
     def temp_normal_traffic_file(self, sample_normal_traffic_data):
         """Create temporary normal traffic JSON file in ijson-compatible format"""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
             json.dump(sample_normal_traffic_data, f)
             temp_path = f.name
         yield temp_path
         os.unlink(temp_path)
-        
+
     @pytest.fixture
     def temp_suricata_file(self, sample_suricata_data):
         """Create temporary Suricata JSON file"""
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".json") as f:
             for record in sample_suricata_data:
-                f.write(json.dumps(record) + '\n')
+                f.write(json.dumps(record) + "\n")
             temp_path = f.name
         yield temp_path
         os.unlink(temp_path)
@@ -185,41 +176,42 @@ class TestNormalTrafficDataFrameFormatter:
         """Initialize the main features"""
         df_initializer = DataFrameInitializer(
             suricata_json_path=temp_suricata_file,
-            normal_traffic_json_path=temp_normal_traffic_file
+            normal_traffic_json_path=temp_normal_traffic_file,
         )
         df_suricata, df_normal_traffic = df_initializer.initialize_dfs(sample_size=2)
         return DataFrameFormatter(df_suricata, df_normal_traffic).base_features
 
-
-    def test_formatter_output_suricata(self, temp_normal_traffic_file, temp_suricata_file, create_base_features):
+    def test_formatter_output_suricata(
+        self, temp_normal_traffic_file, temp_suricata_file, create_base_features
+    ):
         """Test that the output df has the correct features"""
         df_initializer = DataFrameInitializer(
             suricata_json_path=temp_suricata_file,
-            normal_traffic_json_path=temp_normal_traffic_file
+            normal_traffic_json_path=temp_normal_traffic_file,
         )
 
         df_suricata, df_normal_traffic = df_initializer.initialize_dfs(sample_size=2)
 
         df_formatter = DataFrameFormatter(df_suricata, df_normal_traffic)
-            
+
         expected_columns = create_base_features
         for col in expected_columns:
             assert col in df_formatter.suricata_df.columns
-            
-            
-    def test_formatter_output_normal_traffic(self, temp_normal_traffic_file, temp_suricata_file, create_base_features):
+
+    def test_formatter_output_normal_traffic(
+        self, temp_normal_traffic_file, temp_suricata_file, create_base_features
+    ):
         """Test that the output df has the correct features"""
-        
+
         df_initializer = DataFrameInitializer(
             suricata_json_path=temp_suricata_file,
-            normal_traffic_json_path=temp_normal_traffic_file
+            normal_traffic_json_path=temp_normal_traffic_file,
         )
 
         df_suricata, df_normal_traffic = df_initializer.initialize_dfs(sample_size=2)
 
         df_formatter = DataFrameFormatter(df_suricata, df_normal_traffic)
-            
+
         expected_columns = create_base_features
         for col in expected_columns:
             assert col in df_formatter.normal_traffic_df.columns
-            
