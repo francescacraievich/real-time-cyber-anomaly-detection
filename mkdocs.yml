@@ -19,15 +19,10 @@ theme:
 
 nav:
   - Home: index.md
-  - Overview: overview.md
   - Project Documents:
     - System Specification: system_specification.md
     - Project Proposal: project_proposal.md
     - Operational Governance: operational_governance.md
   - Technical:
-    - Overview: overview.md
-    - Kick Off: kick_off.md
-    - Data Collection: data_collection.md
     - Honeypot Guide: HONEYPOT_GUIDE.md
-    - Feature Engineering: feature_engineering.md
-    - ML Model & Dashboards: model_and_dashboards.md
+    - Operations Guide: operations_guide.md

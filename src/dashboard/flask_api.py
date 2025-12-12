@@ -507,6 +507,7 @@ def get_recent_alerts():
         except Exception as e:
             print(f"[ERROR] Prediction failed: {e}")
             import traceback
+
             traceback.print_exc()
 
     # Sort by severity (RED first)
