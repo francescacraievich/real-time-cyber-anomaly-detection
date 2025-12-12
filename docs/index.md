@@ -17,7 +17,7 @@ This project implements an advanced anomaly detection system for network securit
 
 ## Live Dashboards
 
-- [Real-time Anomaly Dashboard](https://dashboard-alerts.streamlit.app/) - Main visualization
+- [Real-time Anomaly Dashboard](https://dashboard-anomalydetection.streamlit.app/) - Main visualization
 - [ML Monitoring Dashboard](https://monitoring-model.streamlit.app/) - Model performance monitoring
 
 ## Project Documents

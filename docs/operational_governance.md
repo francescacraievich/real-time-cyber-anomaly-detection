@@ -302,7 +302,7 @@ The application dashboards are deployed on Streamlit Cloud for public access:
 
 | Dashboard | URL | Purpose | Target Users |
 |-----------|-----|---------|--------------|
-| **Anomaly Dashboard** | https://dashboard-alerts.streamlit.app/ | Real-time threat visualization | Security Analysts, SOC Team |
+| **Anomaly Dashboard** | https://dashboard-anomalydetection.streamlit.app/ | Real-time threat visualization | Security Analysts, SOC Team |
 | **ML Monitoring** | https://monitoring-model.streamlit.app/ | Model health monitoring | ML Engineers, Data Scientists |
 
 ### 6.2 Local Development Setup

@@ -180,7 +180,7 @@ streamlit run src/dashboard/streamlit_app.py
 ```
 
 - **URL**: http://localhost:8501
-- **Live**: https://dashboard-alerts.streamlit.app/
+- **Live**: https://dashboard-anomalydetection.streamlit.app/
 
 The dashboard auto-starts Flask API on port 5000.
 

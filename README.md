@@ -6,7 +6,7 @@
 &nbsp;&nbsp;
 [![codecov](https://codecov.io/gh/francescacraievich/real-time-cyber-anomaly-detection/branch/main/graph/badge.svg)](https://codecov.io/gh/francescacraievich/real-time-cyber-anomaly-detection)
 &nbsp;&nbsp;
-[![Dashboard Alerts](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dashboard-alerts.streamlit.app/)
+[![Dashboard Alerts](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dashboard-anomalydetection.streamlit.app/)
 &nbsp;&nbsp;
 [![ML Monitoring](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://monitoring-model.streamlit.app/)
 
@@ -28,7 +28,7 @@ A machine learning-based system for detecting cyber anomalies in network traffic
 ### Real-time Anomaly Dashboard
 Interactive dashboard for visualizing network traffic and anomaly predictions.
 
-**[Open Dashboard](https://dashboard-alerts.streamlit.app/)** | Run locally: `streamlit run src/dashboard/streamlit_app.py`
+**[Open Dashboard](https://dashboard-anomalydetection.streamlit.app/)** | Run locally: `streamlit run src/dashboard/streamlit_app.py`
 
 **Features:**
 - Live network traffic visualization
