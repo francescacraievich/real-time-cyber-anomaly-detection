@@ -2,8 +2,8 @@
 
 ## Real-Time Cyber Anomaly Detection System
 
-**Version:** 1.1
-**Date:** 2025-12-11
+**Version:** 2.0
+**Date:** 2025-12-12
 **Authors:** Francesca Craievich, Lucas Jakin, Francesco Rumiz
 
 ---
@@ -44,12 +44,22 @@ Network administrators and security teams face increasing challenges in detectin
 - **Feature Richness**: Suricata provides comprehensive flow metadata (bytes, packets, duration, protocols)
 - **Novelty**: Unknown attack patterns that signature-based systems cannot detect
 
-### 2.3 Proposed Solution
+### 2.3 ML Formulation
 A machine learning-based anomaly detection system that:
 - Uses unsupervised learning (One-Class SVM) to identify outliers in network traffic
 - Processes Suricata IDS logs as malicious traffic source (selected for complete feature set)
 - Extracts 28 statistical features from network traffic for model training
 - Provides real-time classification of traffic as normal or anomalous with severity levels (GREEN/ORANGE/RED)
+
+### 2.4 Key Performance Indicators (KPIs)
+| KPI | Target | Current |
+|-----|--------|---------|
+| Detection Rate (TPR) | ≥ 85% | 90.7% |
+| False Positive Rate (FPR) | ≤ 15% | ~10% |
+| Processing Latency | ≤ 100ms per event | ✓ Met |
+| System Uptime | ≥ 99% | ✓ Met |
+| Throughput | ≥ 1,000 events/second | ✓ Met |
+| F1-Score | ≥ 0.80 | 0.885 |
 
 ---
 
@@ -66,7 +76,31 @@ A machine learning-based anomaly detection system that:
 - **Key Attributes**: source/destination IP, ports, protocol, bytes, packets, duration, flow direction
 - **Label**: `malicious`
 
-> **Note**: Dionaea and Cowrie honeypots were evaluated but excluded from the final implementation because they lacked the complete network flow features (bytes_sent, bytes_received, pkts_sent, pkts_received, duration) required for consistent feature engineering across all data sources.
+##### Data Source Selection Process
+
+The selection of the malicious traffic source followed an iterative evaluation process involving the entire team. The T-Pot honeypot platform provided access to 30+ specialized honeypots, from which the team initially prioritized four sources based on data volume and relevance: Cowrie (SSH/Telnet), Dionaea (malware capture), Suricata (network IDS), and Tanner (web applications).
+
+**Evaluation Criteria**: The primary requirement was feature compatibility with the normal traffic dataset (ISCX/CICIDS) to enable consistent feature engineering across both classes. The following table summarizes the feature availability analysis:
+
+| Feature | Suricata | Cowrie | Dionaea | ISCX (Normal) | Required |
+|---------|:--------:|:------:|:-------:|:-------------:|:--------:|
+| `bytes_sent` | ✓ | ✗ | ✗ | ✓ | ✓ |
+| `bytes_received` | ✓ | ✗ | ✗ | ✓ | ✓ |
+| `pkts_sent` | ✓ | ✗ | ✗ | ✓ | ✓ |
+| `pkts_received` | ✓ | ✗ | ✗ | ✓ | ✓ |
+| `duration` | ✓ | ✓ | ✗ | ✓ | ✓ |
+| `source_ip` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `destination_ip` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `source_port` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `destination_port` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `transport_protocol` | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+**Selection Outcome**:
+- **Tanner**: Excluded early due to insufficient data volume for meaningful ML training
+- **Cowrie & Dionaea**: Excluded because the absence of network flow metrics (`bytes_*`, `pkts_*`) would require imputation or feature removal, compromising model quality
+- **Suricata**: Selected as the sole malicious traffic source, providing complete feature parity with the normal traffic baseline
+
+This decision required the Data Scientist to restart the data preparation pipeline, as an initial unified dataset combining three honeypot sources had already been created. The team determined that feature consistency was more valuable than data volume diversity.
 
 #### 3.1.2 Normal Traffic Dataset (Benign Baseline)
 - **Source**: CICIDS/ISCX benign network traffic dataset
@@ -132,6 +166,25 @@ Statistical aggregations (`aggregation_functions/metrics_features.py`):
 - `events_for_protocol`: Events per protocol
 - `malicious_ratio_for_protocol`: Ratio of malicious events per protocol
 
+#### 3.3.3 Feature Engineering Design Rationale
+
+The feature engineering strategy was designed to capture multiple dimensions of network traffic behavior while maintaining compatibility between malicious (Suricata) and benign (ISCX) data sources.
+
+**Feature Categories and Purpose**:
+
+| Category | Features | Purpose |
+|----------|----------|---------|
+| **Rate Features** | `bytes_per_second`, `pkts_per_second`, `bytes_per_packet` | Normalize traffic volume by duration; detect abnormal throughput patterns |
+| **Ratio Features** | `bytes_ratio`, `pkts_ratio` | Identify asymmetric communication patterns typical of attacks (e.g., exfiltration) |
+| **Temporal Features** | `hour`, `day_of_week`, `is_weekend`, `is_business_hours` | Capture temporal attack patterns; business hour anomalies may indicate insider threats |
+| **IP Classification** | `src_is_private`, `dst_is_private`, `is_internal` | Distinguish internal vs external traffic; external-to-internal flows are higher risk |
+| **Port Categorization** | `dst_port_is_common` | Flag connections to non-standard ports that may indicate covert channels |
+
+**Design Decisions**:
+- **Offline Pre-calculation**: All derived features are computed during data preparation rather than at inference time, optimizing prediction latency
+- **NaN Handling**: NaN values are not removed but replaced with default values based on feature type (e.g., "0.0.0.0" for IP addresses, 0.0 for numeric ports, "unknown" for categorical features like protocol and direction)
+- **Feature Exclusion for Model Training**: High-cardinality features (`source_ip`, `destination_ip`), temporal identifiers (`timestamp_start`), and label-leaking aggregations (`malicious_events_in_window`, `malicious_ratio_for_protocol`) are excluded from model input
+
 ### 3.4 Data Processing Pipeline
 
 ```
@@ -156,31 +209,27 @@ Raw JSON Logs → DataFrame Initialization → Feature Formatting → Precalcula
 The system shall ingest JSON log files from Suricata IDS and normal traffic datasets.
 - **Acceptance Criteria**: Successfully parse Suricata JSON logs and compressed (.gz) benign traffic files.
 
-**FR-02: Feature Engineering**
-The system shall extract and compute 28 features from raw network logs.
-- **Acceptance Criteria**: Generate rate, ratio, temporal, IP classification, and port categorization features.
-
-**FR-03: Data Normalization**
+**FR-02: Data Normalization**
 The system shall normalize all data sources to a unified schema with 14 base features.
 - **Acceptance Criteria**: All formatted DataFrames contain identical column structure.
 
-**FR-04: Model Training**
+**FR-03: Model Training**
 The system shall train a One-Class SVM model using only benign traffic data.
 - **Acceptance Criteria**: Model trained with configurable nu, gamma, and max_train_samples parameters.
 
-**FR-05: Model Persistence**
+**FR-04: Model Persistence**
 The system shall save and load trained models using joblib/pickle.
 - **Acceptance Criteria**: Model, preprocessor, and config saved to `model/` directory; fit_or_load() function works correctly.
 
-**FR-06: Anomaly Detection**
+**FR-05: Anomaly Detection**
 The system shall classify network traffic with three severity levels.
 - **Acceptance Criteria**: Predictions return GREEN (normal), ORANGE (suspicious), or RED (critical) based on decision boundary.
 
-**FR-07: Performance Evaluation**
+**FR-06: Performance Evaluation**
 The system shall compute precision, recall, F1-score, and confusion matrix.
 - **Acceptance Criteria**: evaluate_model_performance() returns all metrics and detailed breakdown.
 
-**FR-08: Simulation Mode**
+**FR-07: Simulation Mode**
 The system shall simulate real-time stream processing with batch predictions.
 - **Acceptance Criteria**: run_simulation() and run_detailed_simulation() process data in configurable chunk sizes.
 
@@ -207,13 +256,10 @@ The system shall maintain 99% uptime during operational hours.
 **NFR-07: Scalability**
 The system shall support horizontal scaling to handle increased traffic volumes.
 
-**NFR-08: Data Privacy**
-The system shall comply with data protection regulations by anonymizing sensitive information in logs.
-
-**NFR-09: Resource Utilization**
+**NFR-08: Resource Utilization**
 The system shall operate within 4GB RAM and 2 CPU cores for baseline deployment.
 
-**NFR-10: Model Performance Degradation**
+**NFR-09: Model Performance Degradation**
 The system shall trigger retraining alerts when detection accuracy drops below 80%.
 
 ---
@@ -336,12 +382,47 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - `prediction_worker.py`: Background worker for continuous predictions
 - `geolocation_service.py`: IP geolocation lookup service for attack source mapping
 
-**Features**:
-- Real-time traffic visualization with Kibana-style interface
-- Severity distribution charts (GREEN/ORANGE/RED)
-- Geolocation mapping of traffic sources
-- Drift detection status monitoring
-- Embedded Grafana dashboards
+##### Dual-Dashboard Architecture Rationale
+
+The visualization layer was designed with a dual-dashboard architecture to serve distinct stakeholder needs effectively. The initial design featured a single monolithic Streamlit application, but the team determined that operational and technical monitoring requirements warranted separation.
+
+**Real-time Anomaly Dashboard** (`streamlit_app.py`):
+| Aspect | Description |
+|--------|-------------|
+| **Target Users** | Security Analysts, SOC Team, End Customers |
+| **Primary Purpose** | Operational threat monitoring and alert prioritization |
+| **Interface Style** | Kibana-inspired for familiarity with security tools |
+| **Key Features** | Alert table with severity colors (RED/ORANGE/GREEN), World map showing attack origins via IP geolocation, Real-time traffic statistics with trend indicators, Protocol and port distribution analysis |
+
+**ML Monitoring Dashboard** (`streamlit_monitoring.py`):
+| Aspect | Description |
+|--------|-------------|
+| **Target Users** | ML Engineers, Data Scientists, Technical Staff |
+| **Primary Purpose** | Model health monitoring and performance tracking |
+| **Interface Style** | Technical dashboard with metrics and graphs |
+| **Key Features** | ADWIN drift detection status indicator, Model performance metrics (TPR, FPR, F1-score), Embedded Grafana dashboards for infrastructure metrics, Retraining buffer statistics and anomaly rate tracking |
+
+**Architectural Benefits**:
+- **Separation of Concerns**: Operational users are not overwhelmed with technical metrics; technical users have direct access to model telemetry
+- **Performance**: Each dashboard loads only relevant data, reducing latency
+- **Access Control**: Different dashboards can be secured with different access levels in production environments
+- **Maintainability**: Changes to one dashboard do not affect the other
+
+##### Flask API Endpoints
+
+The Flask API backend (`flask_api.py`) exposes REST endpoints for dashboard consumption and external integrations:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check and model status information |
+| GET | `/api/alerts/recent` | Recent predictions with severity classification |
+| GET | `/api/stats/summary` | Dataset summary statistics (protocol/port distribution) |
+| GET | `/api/stats/temporal` | Time-based traffic analysis |
+| GET | `/api/stats/traffic` | Traffic metrics (bytes/sec, packets/sec, duration) |
+| GET | `/api/stats/geolocation` | IP geolocation data for attack source mapping |
+| GET | `/api/stream` | Server-sent events for real-time data streaming |
+| GET | `/metrics` | Prometheus metrics endpoint for monitoring |
+| POST | `/api/logs/reset` | Reset data stream to beginning (for testing) |
 
 #### 5.2.5 Monitoring Module
 **Location**: `src/monitoring/`
@@ -349,9 +430,15 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 **Components**:
 - `metrics.py`: Prometheus metrics registry and collectors
 
-**Docker Stack** (`monitoring/`):
-- `docker-compose.yml`: Prometheus and Grafana container setup
-- `grafana/`: Pre-configured dashboards for ML metrics
+**Exposed Prometheus Metrics**:
+
+| Metric Name | Type | Description |
+|-------------|------|-------------|
+| `anomaly_detection_predictions_total` | Counter | Total predictions by severity label (GREEN/ORANGE/RED) |
+| `anomaly_detection_prediction_latency` | Histogram | Inference latency distribution in seconds |
+| `anomaly_detection_f1_score` | Gauge | Current model F1 performance score |
+| `anomaly_detection_drift_status` | Gauge | Drift detection status (0=stable, 1=drift detected) |
+| `anomaly_detection_anomaly_rate` | Gauge | Rolling anomaly rate percentage |
 
 #### 5.2.6 Testing Module
 **Location**: `tests/`
@@ -363,7 +450,20 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - `test_model/`: Unit tests for ML model and drift detection
 - `test_dashboard/`: Unit tests for Flask API and dashboard components
 
-### 5.3 Data Flow
+### 5.3 Project Structure
+
+```
+├── src/                        # Source code
+│   ├── dashboard/              # Streamlit apps and Flask API
+│   ├── model/                  # ML model implementation
+│   ├── monitoring/             # Prometheus metrics
+│   └── feature_engineering/    # Data processing
+├── tests/                      # Unit tests (116 tests)
+├── data/                       # Datasets
+└── docs/                       # Documentation
+```
+
+### 5.4 Data Flow
 
 1. **Ingestion**: Raw JSON logs from honeypots and normal traffic sources
 2. **Parsing**: Streaming JSON parsing with ijson for memory efficiency
@@ -373,7 +473,7 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 6. **Inference**: Real-time anomaly detection on new traffic
 7. **Alert Generation**: Threshold-based alert triggering
 
-### 5.4 Technology Stack
+### 5.5 Technology Stack
 
 **Programming Language**: Python 3.11+
 
@@ -399,11 +499,6 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - Prometheus: Time-series metrics storage
 - Grafana: Visualization and dashboards
 
-**CI/CD**:
-- GitHub Actions for automated testing and documentation deployment
-- Codecov for code coverage reporting
-- Black, isort, flake8 for code formatting and linting
-
 **Version Control**: Git with GitHub
 
 ---
@@ -420,6 +515,43 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 - Learns decision boundary around normal behavior
 - RBF kernel captures non-linear patterns in network traffic
 - Grid Search used for hyperparameter optimization (kernel, nu, gamma)
+
+#### Algorithm Evaluation Process
+
+The team evaluated several anomaly detection algorithms during the design phase, considering the specific requirements of real-time network traffic classification.
+
+**Algorithms Considered**:
+
+| Algorithm | Type | Strengths | Limitations |
+|-----------|------|-----------|-------------|
+| **River + Hoeffding Tree** | Online incremental | True streaming capability, adapts to drift | Sensitive to local noise in data stream |
+| **Isolation Forest** | Batch anomaly detection | Fast training, handles high dimensions | Requires batch processing, less stable boundaries |
+| **Local Outlier Factor (LOF)** | Density-based | Good for local anomaly patterns | Computationally expensive at inference |
+| **One-Class SVM** | Single-class classification | Compact non-linear boundaries, robust to noise | Slower training (O(n²)), requires kernel selection |
+| **Autoencoder** | Deep learning | Captures complex patterns | Requires large training data, harder to interpret |
+
+**Selection Criteria Applied**:
+
+1. **System Stationarity**: The network environment exhibits relatively stable traffic patterns over operational periods. One-Class SVM is well-suited for stationary systems where the "normal" class distribution is consistent.
+
+2. **Non-linear Decision Boundaries**: Network attack patterns often manifest in complex, non-linear relationships between features. The RBF kernel in OCSVM captures these patterns without explicit feature transformation.
+
+3. **Imbalanced Data Robustness**: Since anomalies represent a small fraction of traffic, the algorithm must avoid bias toward the majority class. OCSVM learns only from the benign class, inherently addressing this issue.
+
+4. **Low Inference Latency**: Real-time detection requires sub-100ms prediction times. OCSVM inference is efficient once trained, as it only evaluates against support vectors.
+
+5. **Temporal Stability**: Model predictions should remain consistent over time without frequent retraining. OCSVM provides stable decision boundaries compared to incremental tree methods.
+
+6. **Single-Class Training Constraint**: The project operates without labeled malicious examples for training. OCSVM is specifically designed for this scenario.
+
+**One-Class SVM Selection Justification**:
+
+The team selected OCSVM over alternatives for the following technical reasons:
+- **vs. Hoeffding Tree**: Incremental trees are sensitive to local noise in streaming data, leading to higher false alarm rates. OCSVM's kernel-based approach smooths decision boundaries.
+- **vs. Isolation Forest**: While IF is faster to train, OCSVM provides more compact and interpretable decision boundaries for the feature space.
+- **vs. LOF**: The computational cost of LOF at inference time (comparing each point to neighbors) is prohibitive for real-time applications.
+
+**Future Enhancement**: A comparative evaluation against Isolation Forest using the production dataset has been identified as a valuable validation exercise.
 
 ### 6.2 Model Architecture
 
@@ -479,6 +611,42 @@ Based on evaluation with `nu=0.2`, `contamination=0.1`, `max_train_samples=10,00
 Actual Normal   4500     500
 Actual Anomaly   500    4500
 ```
+
+### 6.7 Drift Detection
+
+The system implements continuous monitoring for concept drift using the ADWIN (Adaptive Windowing) algorithm from the River library. Drift detection ensures the model remains effective as network traffic patterns evolve over time.
+
+**ADWIN Configuration**:
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `delta` | 0.002 | Confidence parameter for change detection (lower = more sensitive) |
+| `window_size` | 100 | Size of the sliding window for anomaly rate tracking |
+| `change_threshold` | 0.08 | Minimum anomaly rate change (8%) to trigger drift alert |
+
+**Detection Methods**:
+1. **ADWIN Statistical Test**: Monitors the anomaly rate stream and detects statistically significant distribution changes
+2. **Threshold-based Detection**: Triggers when the rolling anomaly rate changes by more than 8% compared to the baseline
+
+**Drift Status**:
+
+| Status | Condition | System Response |
+|--------|-----------|-----------------|
+| **STABLE** | No significant distribution change detected | Continue normal operation |
+| **UNSTABLE** | Drift detected by ADWIN or threshold exceeded | Alert displayed in ML Monitoring Dashboard, retraining recommended |
+
+**Auto-Retraining Trigger**:
+When drift is detected and the retraining buffer accumulates more than 1,000 labeled samples, the system can automatically initiate model retraining using recent data. This ensures the model adapts to evolving traffic patterns while maintaining detection accuracy.
+
+### 6.8 Alert Severity Classification
+
+The system classifies predictions into three severity levels based on the model's decision function score:
+
+| Severity | Condition | Interpretation |
+|----------|-----------|----------------|
+| **RED** (Critical) | `score < threshold - 0.5` | High-confidence anomaly requiring immediate attention |
+| **ORANGE** (Suspicious) | `threshold - 0.5 ≤ score < threshold` | Potential anomaly requiring investigation |
+| **GREEN** (Normal) | `score ≥ threshold` | Traffic classified as benign |
 
 ---
 
@@ -580,11 +748,6 @@ Actual Anomaly   500    4500
 - No storage of sensitive user data
 - Anonymization of IP addresses where required
 - Secure model artifact storage
-- GitHub Code Scanning (CodeQL) for vulnerability detection
-- Secret Scanning enabled to detect committed credentials
-- CI/CD workflows with minimal permissions (`contents: read`)
-- Flask API runs with `debug=False` and no stack trace exposure
-- See [SECURITY.md](https://github.com/francescacraievich/real-time-cyber-anomaly-detection/blob/main/SECURITY.md) for full security policy
 
 ---
 
@@ -626,19 +789,19 @@ Actual Anomaly   500    4500
 ### 11.1 External Resources
 - TPOT Honeypot Platform: https://github.com/telekom-security/tpotce
 - Suricata IDS Documentation: https://suricata.io/
-- One-Class SVM: Schölkopf et al., "Support Vector Method for Novelty Detection"
 
 ### 11.2 Related Documentation
-- [Project Overview](overview.md)
-- [Data Collection Guide](data_collection.md)
-- [Feature Engineering](feature_engineering.md)
-- [Honeypot Guide](HONEYPOT_GUIDE.md)
+- [Project Proposal](project_proposal.md)
+- [Operational Governance](operational_governance.md)
 
 ---
 
 **Document Version History**
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2025-11-29 | F. Craievich, L. Jakin, F. Rumiz | Initial SSD creation |
-| 1.1 | 2025-12-11 | F. Craievich | Updated project structure (src/), added Dashboard & Monitoring modules, CI/CD details |
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | 2025-11-29 | Initial SSD creation |
+| 1.1 | 2025-12-11 | Updated project structure, added Dashboard & Monitoring modules |
+| 1.2 | 2025-12-12 | Added Data Source Selection, Feature Engineering Rationale, Algorithm Evaluation |
+| 1.3 | 2025-12-12 | Added Drift Detection, Flask API Endpoints |
+| 2.0 | 2025-12-12 | Major reorganization: focused on technical specifications only, removed operational/planning content to respective documents |

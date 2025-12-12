@@ -71,18 +71,22 @@ def start_flask_server():
         return False
 
     try:
+        # Log Flask output to file for debugging
+        log_file = dashboard_dir / "flask_debug.log"
+        log_handle = open(log_file, "w")
+
         if sys.platform == "win32":
             subprocess.Popen(
                 [sys.executable, str(flask_script)],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=log_handle,
+                stderr=log_handle,
                 creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
             )
         else:
             subprocess.Popen(
                 [sys.executable, str(flask_script)],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                stdout=log_handle,
+                stderr=log_handle,
                 start_new_session=True,
             )
 
@@ -282,6 +286,15 @@ def render_sidebar():
                 requests.post(f"{API_BASE_URL}/logs/reset", timeout=5)
             except Exception:
                 pass
+
+    # Debug section
+    st.sidebar.markdown("---")
+    if st.sidebar.checkbox("Show Debug Info"):
+        log_file = Path(__file__).parent / "flask_debug.log"
+        if log_file.exists():
+            st.sidebar.text_area("Flask Logs", log_file.read_text(), height=200)
+        else:
+            st.sidebar.warning("No debug log file found")
 
     return auto_refresh, refresh_interval, window_size, severity_filter
 

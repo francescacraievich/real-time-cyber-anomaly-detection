@@ -4,7 +4,7 @@ Welcome to the documentation for the real-time network anomaly detection system.
 
 ## Project Overview
 
-This project implements an advanced anomaly detection system for network security using **One-Class SVM** machine learning and real-time analysis. The system analyzes network traffic patterns from honeypot sources and predicts potential security threats with severity classification (RED/ORANGE/GREEN).
+This project implements an advanced anomaly detection system for network security using **One-Class SVM** machine learning and real-time analysis. The system uses two data sources: **Suricata IDS logs** from T-Pot honeypot (malicious traffic) and **ISCX dataset** (normal traffic). It predicts potential security threats with severity classification (RED/ORANGE/GREEN).
 
 ## Key Features
 
@@ -12,7 +12,7 @@ This project implements an advanced anomaly detection system for network securit
 - **Real-time Dashboards**: Two Streamlit dashboards for visualization and monitoring
 - **Drift Detection**: ADWIN-based drift detection to monitor model performance
 - **Prometheus/Grafana Monitoring**: Full ML model monitoring stack
-- **Multi-source Data Processing**: Handles logs from Suricata IDS honeypots
+- **Dual Data Sources**: Suricata IDS (malicious) + ISCX dataset (normal traffic)
 - **Severity Classification**: Three-tier alert system (RED: critical, ORANGE: warning, GREEN: normal)
 
 ## Live Dashboards
@@ -28,12 +28,8 @@ This project implements an advanced anomaly detection system for network securit
 
 ## Technical Documentation
 
-- [Overview](overview.md) - Technical overview of the system
-- [Kick Off](kick_off.md) - Initial project documentation
-- [Data Collection](data_collection.md) - Log extraction and analysis from TPOT
-- [Honeypot Guide](HONEYPOT_GUIDE.md) - Overview and purpose of each honeypot
-- [Feature Engineering](feature_engineering.md) - Data formatting and feature engineering
-- [ML Model & Dashboards](model_and_dashboards.md) - One-Class SVM model and Streamlit integration
+- [Operations Guide](operations_guide.md) - Commands, formulas, and technical setup
+- [Honeypot Guide](HONEYPOT_GUIDE.md) - Overview and purpose of T-Pot honeypots
 
 ## Quick Start
 
@@ -61,7 +57,6 @@ streamlit run src/dashboard/streamlit_app.py
 │   ├── monitoring/         # Prometheus metrics
 │   └── feature_engineering/ # Data processing
 ├── tests/                  # Unit tests (116 tests)
-├── monitoring/             # Docker monitoring stack
 ├── data/                   # Datasets
 └── docs/                   # Documentation
 ```

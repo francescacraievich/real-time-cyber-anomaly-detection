@@ -504,8 +504,10 @@ def get_recent_alerts():
                         "country": row.get("src_country", "Unknown"),
                     }
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[ERROR] Prediction failed: {e}")
+            import traceback
+            traceback.print_exc()
 
     # Sort by severity (RED first)
     severity_order = {"RED": 0, "ORANGE": 1, "GREEN": 2, "UNKNOWN": 3}
