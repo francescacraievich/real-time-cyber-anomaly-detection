@@ -5,7 +5,7 @@ This document describes all honeypots present in T-Pot and the data they collect
 
 **Total Events Collected:** 148,063
 **Data Size:** 621 MB (296 MB compressed)
-**Collection Period:** October 2024
+**Collection Period:** October 2025
 
 ---
 

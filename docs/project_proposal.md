@@ -81,21 +81,21 @@ The project evolved through several distinct phases, each marked by key technica
 
 | Period | Milestone | Key Deliverable | Commit Reference |
 |--------|-----------|-----------------|------------------|
-| Oct 2024 | Project Initialization | Repository setup, documentation structure | `e951421` Initial commit |
-| Oct 2024 | Data Collection | T-Pot honeypot deployment on GCP, 148K events collected | Infrastructure setup |
-| Oct 2024 | Data Engineering Foundation | DataFrame initializer classes | `5954d85` DfInitializer class |
-| Nov 2024 | Feature Analysis | Column mapping, honeypot evaluation | `9f2f925` log_formatting |
-| Nov 2024 | Data Source Decision | Selection of Suricata as primary source | Feature compatibility analysis |
-| Nov 2024 | Initial Model | One-Class SVM v2 with contamination parameter | `808c4ff` One Class SVM v2 |
-| Nov 2024 | Model Optimization | Grid Search hyperparameter tuning | `380b450` GridSearch |
-| Nov 2024 | Model Refinement | Hyperparameter tuning, multiclass distinction | `7ceeac3` model v4 |
-| Dec 2024 | Drift Detection v1 | Initial ADWIN implementation | `feff13a` Drift Detection first version |
-| Dec 2024 | Drift Detection v2 | Anomaly rate-based drift detection | `ccb1328` Drift implementation v2 |
-| Dec 2024 | Dashboard & API | Flask REST API + Streamlit dashboard | `1c88ac8` Streamlit dashboard with Flask API |
-| Dec 2024 | Monitoring Stack | Prometheus + Grafana integration | `2e85927` Add Grafana and Prometheus monitoring |
-| Dec 2024 | Cloud Deployment | Streamlit Cloud deployment | `01c6e80`, `8934f37` Streamlit Cloud links |
-| Dec 2024 | Code Quality | Black, isort formatting, linting fixes | `5878ba7`, `a4d9fc8` Format and lint |
-| Dec 2024 | Security Hardening | SECURITY.md, CodeQL integration | `378b5f5` Security improvements |
+| Oct 2025 | Project Initialization | Repository setup, documentation structure | `e951421` Initial commit |
+| Oct 2025 | Data Collection | T-Pot honeypot deployment on GCP, 148K events collected | Infrastructure setup |
+| Oct 2025 | Data Engineering Foundation | DataFrame initializer classes | `5954d85` DfInitializer class |
+| Nov 2025 | Feature Analysis | Column mapping, honeypot evaluation | `9f2f925` log_formatting |
+| Nov 2025 | Data Source Decision | Selection of Suricata as primary source | Feature compatibility analysis |
+| Nov 2025 | Initial Model | One-Class SVM v2 with contamination parameter | `808c4ff` One Class SVM v2 |
+| Nov 2025 | Model Optimization | Grid Search hyperparameter tuning | `380b450` GridSearch |
+| Nov 2025 | Model Refinement | Hyperparameter tuning, multiclass distinction | `7ceeac3` model v4 |
+| Dec 2025 | Drift Detection v1 | Initial ADWIN implementation | `feff13a` Drift Detection first version |
+| Dec 2025 | Drift Detection v2 | Anomaly rate-based drift detection | `ccb1328` Drift implementation v2 |
+| Dec 2025 | Dashboard & API | Flask REST API + Streamlit dashboard | `1c88ac8` Streamlit dashboard with Flask API |
+| Dec 2025 | Monitoring Stack | Prometheus + Grafana integration | `2e85927` Add Grafana and Prometheus monitoring |
+| Dec 2025 | Cloud Deployment | Streamlit Cloud deployment | `01c6e80`, `8934f37` Streamlit Cloud links |
+| Dec 2025 | Code Quality | Black, isort formatting, linting fixes | `5878ba7`, `a4d9fc8` Format and lint |
+| Dec 2025 | Security Hardening | SECURITY.md, CodeQL integration | `378b5f5` Security improvements |
 
 ### 3.2 Development Phases
 
