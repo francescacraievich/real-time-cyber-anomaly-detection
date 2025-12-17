@@ -12,7 +12,7 @@
 
 ## Overview
 
-A machine learning-based system for detecting cyber anomalies in network traffic using **One-Class SVM**. The application analyzes Suricata IDS logs from T-Pot honeypot and predicts potential security threats in real-time with severity classification (RED/ORANGE/GREEN).
+A machine learning-based system for detecting cyber anomalies in network traffic using **One-Class SVM**. The application analyzes Suricata logs from T-Pot honeypot and predicts potential security threats in real-time with severity classification (RED/ORANGE/GREEN).
 
 ## Key Features
 
@@ -20,7 +20,7 @@ A machine learning-based system for detecting cyber anomalies in network traffic
 - **Real-time Dashboards**: Two Streamlit dashboards for visualization and monitoring
 - **Drift Detection**: ADWIN-based drift detection to monitor model performance over time
 - **Prometheus/Grafana Monitoring**: Full ML model monitoring stack with metrics
-- **Suricata IDS Integration**: Network intrusion detection logs from T-Pot honeypot
+- **Suricata Integration**: Network intrusion detection logs from T-Pot honeypot
 - **Severity Classification**: Three-tier alert system (RED: critical, ORANGE: suspicious, GREEN: normal)
 
 ## Dashboards
@@ -52,7 +52,7 @@ Technical monitoring dashboard for model performance and drift detection.
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │   Data Sources  │     │  Feature Engine  │     │   ML Model      │
-│  - Suricata IDS │────▶│  - Extraction    │────▶│  - One-Class    │
+│  - Suricata │────▶│  - Extraction    │────▶│  - One-Class    │
 │    (malicious)  │     │  - Normalization │     │    SVM          │
 │  - ISCX (normal)│     │  - Engineering   │     │  - Prediction   │
 └─────────────────┘     └──────────────────┘     └────────┬────────┘

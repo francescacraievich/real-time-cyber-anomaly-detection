@@ -38,7 +38,7 @@ The team follows a **feature branch workflow** with protected main branch.
 | **Docs** | `docs/<issue>-<desc>` | Documentation | `docs/8-update-documentation` |
 | **Test** | `test/<issue>-<desc>` | Test additions | `test/6-add-tests-for-initializer` |
 
-#### Active Branches
+####  Branches
 
 | Branch | Purpose |
 |--------|---------|
@@ -111,7 +111,7 @@ The team follows a **feature branch workflow** with protected main branch.
 **Test Job** (`test`):
 ```yaml
 - Matrix strategy: Python 3.11, 3.12
-- Install dependencies from requirements.txt and requirements-dev.txt
+- Install dependencies from requirements.txt
 - Linting: black, isort, flake8 checks on src/ and tests/
 - Testing: pytest with coverage reporting
 - Coverage: Upload to Codecov
@@ -223,7 +223,7 @@ src/model/
 |-----------|---------|----------|
 | **Prometheus** | Metrics collection and storage | Docker container (`monitoring/`) |
 | **Grafana** | Visualization dashboards | Docker container (`monitoring/`) |
-| **prometheus-client** | Python metrics library | `src/monitoring/metrics.py` |
+
 
 ### 5.2 Docker Setup
 
@@ -231,10 +231,6 @@ src/model/
 # Start monitoring stack
 cd monitoring/
 docker-compose up -d
-
-# Access points:
-# - Prometheus: http://localhost:9090 (metrics storage and querying)
-# - Grafana: http://localhost:3000 (visualization dashboards)
 ```
 
 ### 5.3 Prometheus Metrics
@@ -314,7 +310,6 @@ cd real-time-cyber-anomaly-detection
 
 # Install dependencies
 pip install -r requirements.txt
-pip install -r requirements-dev.txt  # For development
 
 # Run Flask API
 python -m src.dashboard.flask_api

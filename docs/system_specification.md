@@ -11,7 +11,7 @@
 ## 1. Introduction
 
 ### 1.1 Purpose
-The Real-Time Cyber Anomaly Detection System is designed to identify malicious network traffic patterns and security threats in real-time by analyzing Suricata IDS logs and normal network traffic. The system leverages machine learning techniques, specifically One-Class SVM, to distinguish between benign and anomalous network behavior.
+The Real-Time Cyber Anomaly Detection System is designed to identify malicious network traffic patterns and security threats in real-time by analyzing Suricata logs and normal network traffic. The system leverages machine learning techniques, specifically One-Class SVM, to distinguish between benign and anomalous network behavior.
 
 ### 1.2 Scope
 This document describes the functional and non-functional requirements, system architecture, data specifications, and risk analysis for the Real-Time Cyber Anomaly Detection platform. The system targets network security monitoring in enterprise environments and research contexts.
@@ -47,7 +47,7 @@ Network administrators and security teams face increasing challenges in detectin
 ### 2.3 ML Formulation
 A machine learning-based anomaly detection system that:
 - Uses unsupervised learning (One-Class SVM) to identify outliers in network traffic
-- Processes Suricata IDS logs as malicious traffic source (selected for complete feature set)
+- Processes Suricata logs as malicious traffic source (selected for complete feature set)
 - Extracts 28 statistical features from network traffic for model training
 - Provides real-time classification of traffic as normal or anomalous with severity levels (GREEN/ORANGE/RED)
 
@@ -67,7 +67,7 @@ A machine learning-based anomaly detection system that:
 
 ### 3.1 Data Sources
 
-#### 3.1.1 Malicious Traffic (Suricata IDS)
+#### 3.1.1 Malicious Traffic (Suricata)
 **Suricata** was selected as the primary malicious traffic source due to its comprehensive feature set:
 
 - **Volume**: 71,679 log entries
@@ -78,7 +78,7 @@ A machine learning-based anomaly detection system that:
 
 ##### Data Source Selection Process
 
-The selection of the malicious traffic source followed an iterative evaluation process involving the entire team. The T-Pot honeypot platform provided access to 30+ specialized honeypots, from which the team initially prioritized four sources based on data volume and relevance: Cowrie (SSH/Telnet), Dionaea (malware capture), Suricata (network IDS), and Tanner (web applications).
+The selection of the malicious traffic source followed an iterative evaluation process involving the entire team. The T-Pot honeypot platform provided access to 30+ specialized honeypots, from which the team initially prioritized four sources based on data volume and relevance: Cowrie (SSH/Telnet), Dionaea (malware capture), Suricata (network), and Tanner (web applications).
 
 **Evaluation Criteria**: The primary requirement was feature compatibility with the normal traffic dataset (ISCX/CICIDS) to enable consistent feature engineering across both classes. The following table summarizes the feature availability analysis:
 
@@ -206,7 +206,7 @@ Raw JSON Logs → DataFrame Initialization → Feature Formatting → Precalcula
 ### 4.1 Functional Requirements
 
 **FR-01: Data Ingestion**
-The system shall ingest JSON log files from Suricata IDS and normal traffic datasets.
+The system shall ingest JSON log files from Suricata and normal traffic datasets.
 - **Acceptance Criteria**: Successfully parse Suricata JSON logs and compressed (.gz) benign traffic files.
 
 **FR-02: Data Normalization**
@@ -272,7 +272,7 @@ The system shall trigger retraining alerts when detection accuracy drops below 8
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Data Collection Layer                     │
 ├───────────────────────────────┬─────────────────────────────────┤
-│       Suricata IDS            │       Normal Traffic            │
+│       Suricata            │       Normal Traffic            │
 │    (Malicious Traffic)        │     (Benign Baseline)           │
 │      71,679 events            │      ~10,000 samples            │
 └───────────────┬───────────────┴───────────────┬─────────────────┘
@@ -788,7 +788,6 @@ The system classifies predictions into three severity levels based on the model'
 
 ### 11.1 External Resources
 - TPOT Honeypot Platform: https://github.com/telekom-security/tpotce
-- Suricata IDS Documentation: https://suricata.io/
 
 ### 11.2 Related Documentation
 - [Project Proposal](project_proposal.md)
@@ -800,8 +799,8 @@ The system classifies predictions into three severity levels based on the model'
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0 | 2025-11-29 | Initial SSD creation |
-| 1.1 | 2025-12-11 | Updated project structure, added Dashboard & Monitoring modules |
-| 1.2 | 2025-12-12 | Added Data Source Selection, Feature Engineering Rationale, Algorithm Evaluation |
-| 1.3 | 2025-12-12 | Added Drift Detection, Flask API Endpoints |
+| 1.0 | 2025-10-29 | Initial SSD creation |
+| 1.1 | 2025-11-11 | Updated project structure, added Dashboard & Monitoring modules |
+| 1.2 | 2025-11-20 | Added Data Source Selection, Feature Engineering Rationale, Algorithm Evaluation |
+| 1.3 | 2025-12-08 | Added Drift Detection, Flask API Endpoints |
 | 2.0 | 2025-12-12 | Major reorganization: focused on technical specifications only, removed operational/planning content to respective documents |

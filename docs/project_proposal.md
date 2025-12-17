@@ -11,7 +11,7 @@
 ## 1. Executive Summary
 
 ### 1.1 Project Overview
-The Real-Time Cyber Anomaly Detection System is a machine learning-based platform designed to identify malicious network traffic patterns and security threats in real-time. By analyzing Suricata IDS logs (selected for complete feature set) and normal network traffic, the system employs One-Class SVM to distinguish between benign and anomalous network behavior.
+The Real-Time Cyber Anomaly Detection System is a machine learning-based platform designed to identify malicious network traffic patterns and security threats in real-time. By analyzing Suricata logs (selected for complete feature set) and normal network traffic, the system employs One-Class SVM to distinguish between benign and anomalous network behavior.
 
 ### 1.2 Objectives
 - Develop an ML-based anomaly detection system for network security
@@ -167,7 +167,7 @@ The project evolved through several distinct phases, each marked by key technica
 - 1.1.5 Documentation coordination
 
 **1.2 Data Engineering**
-- 1.2.1 Suricata IDS log collection from TPOT
+- 1.2.1 Suricata log collection from TPOT
 - 1.2.2 Normal traffic dataset acquisition (CICIDS/ISCX benign traffic)
 - 1.2.3 JSON parsing and preprocessing
 - 1.2.4 Data validation and quality checks
@@ -224,7 +224,7 @@ The project adopted **CRISP-DM** (Cross-Industry Standard Process for Data Minin
 | Modeling | Sprint 3-4 | OCSVM implementation, hyperparameter tuning |
 | Evaluation | Sprint 4-5 | Performance validation, drift detection |
 | Deployment | Sprint 5-6 | Flask API, Streamlit dashboards, Streamlit Cloud |
-| Monitoring | Ongoing | Prometheus/Grafana, ADWIN drift detection |
+| Monitoring | Sprint 6 | Prometheus/Grafana, ADWIN drift detection |
 
 CRISP-DM was preferred over KDD (Knowledge Discovery in Databases) due to its iterative nature and explicit focus on deployment and monitoring phases, which align with the project's MLOps objectives.
 
@@ -257,7 +257,7 @@ The team adopted Agile methodology with Scrum elements adapted for a three-perso
 | Tool | Purpose | Status |
 |------|---------|--------|
 | GitHub Issues | Task tracking, bug reporting, feature requests | Active |
-| Trello | Kanban board visualization | Active |
+| GitHub Projects | Sprint board, task tracking, milestones | Active |
 | Pull Requests | Code review, CI validation gate | Active |
 | Milestones | Sprint goal tracking | Active |
 
@@ -561,7 +561,7 @@ M7 (Final Delivery)                             ▼
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0 | 2025-11-29 | Initial proposal creation |
-| 1.1 | 2025-12-11 | Updated milestones, added implemented features |
-| 1.2 | 2025-12-12 | Added Project Evolution & Decision History, Agile methodology |
+| 1.0 | 2025-10-30 | Initial proposal creation |
+| 1.1 | 2025-11-11 | Updated milestones, added implemented features |
+| 1.2 | 2025-11-25 | Added Project Evolution & Decision History, Agile methodology |
 | 2.0 | 2025-12-12 | Major reorganization: focused on planning/management only, moved technical rationale to SSD, consolidated Agile methodology from Governance |

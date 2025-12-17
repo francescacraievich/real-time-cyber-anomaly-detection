@@ -4,7 +4,7 @@ Welcome to the documentation for the real-time network anomaly detection system.
 
 ## Project Overview
 
-This project implements an advanced anomaly detection system for network security using **One-Class SVM** machine learning and real-time analysis. The system uses two data sources: **Suricata IDS logs** from T-Pot honeypot (malicious traffic) and **ISCX dataset** (normal traffic). It predicts potential security threats with severity classification (RED/ORANGE/GREEN).
+This project implements an advanced anomaly detection system for network security using **One-Class SVM** machine learning and real-time analysis. The system uses two data sources: **Suricata logs** from T-Pot honeypot (malicious traffic) and **ISCX dataset** (normal traffic). It predicts potential security threats with severity classification (RED/ORANGE/GREEN).
 
 ## Key Features
 
@@ -12,7 +12,7 @@ This project implements an advanced anomaly detection system for network securit
 - **Real-time Dashboards**: Two Streamlit dashboards for visualization and monitoring
 - **Drift Detection**: ADWIN-based drift detection to monitor model performance
 - **Prometheus/Grafana Monitoring**: Full ML model monitoring stack
-- **Dual Data Sources**: Suricata IDS (malicious) + ISCX dataset (normal traffic)
+- **Dual Data Sources**: Suricata (malicious) + ISCX dataset (normal traffic)
 - **Severity Classification**: Three-tier alert system (RED: critical, ORANGE: warning, GREEN: normal)
 
 ## Live Dashboards
