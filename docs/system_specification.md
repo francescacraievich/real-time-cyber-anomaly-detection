@@ -214,12 +214,12 @@ The system shall normalize all data sources to a unified schema with 14 base fea
 - **Acceptance Criteria**: All formatted DataFrames contain identical column structure.
 
 **FR-03: Model Training**
-The system shall train a One-Class SVM model using only benign traffic data.
-- **Acceptance Criteria**: Model trained with configurable nu, gamma, and max_train_samples parameters.
+The system shall train an anomaly detection model using only benign traffic data.
+- **Acceptance Criteria**: Model learns normal traffic patterns and can distinguish anomalies without requiring labeled malicious samples.
 
 **FR-04: Model Persistence**
-The system shall save and load trained models using joblib/pickle.
-- **Acceptance Criteria**: Model, preprocessor, and config saved to `model/` directory; fit_or_load() function works correctly.
+The system shall support saving and loading trained models for reuse.
+- **Acceptance Criteria**: Trained model, preprocessing pipeline, and configuration can be persisted and restored without retraining.
 
 **FR-05: Anomaly Detection**
 The system shall classify network traffic with three severity levels.
